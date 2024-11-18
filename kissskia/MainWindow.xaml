@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WinEx:WindowEx x:Class="kissskia.MainWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:WinEx="using:WinUIEx"
+                xmlns:local="using:kissskia"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:win2dcanvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+                mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource AppBarBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0"
+                Name="AppTitleBar">
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Left">
+                <FontIcon Glyph="&#xE726;"
+                          Margin="8,0,0,0" />
+                <TextBlock VerticalAlignment="Center"
+                           Margin="8,0,0,0">KissSkia</TextBlock>
+            </StackPanel>
+        </Border>
+        <!--<local:HexBox Name="HexViewer"></local:HexBox>-->
+        <win2dcanvas:CanvasControl Grid.Row="1"  Draw="CanvasControl_Draw"
+                                    ClearColor="CornflowerBlue">
+            
+        </win2dcanvas:CanvasControl>
+    </Grid>
+</WinEx:WindowEx>

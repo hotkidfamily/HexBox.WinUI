@@ -1,0 +1,57 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:kissskia">
+
+    <Style TargetType="local:HexBox" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:HexBox">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Canvas Name="PART_Canvas"
+                                Background="{TemplateBinding Background}"
+                                Margin="5">
+                            <Canvas.ContextFlyout>
+                                <MenuFlyout>
+                                    <MenuFlyoutItem Text="Copy"
+                                                    Icon="Copy">
+                                        <MenuFlyoutItem.Command>
+                                            <Binding  RelativeSource="{RelativeSource TemplatedParent}"
+                                                      Path="CopyCommand"></Binding>
+                                        </MenuFlyoutItem.Command>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Paste"
+                                                    Icon="Paste">
+                                        <MenuFlyoutItem.Command>
+                                            <Binding  RelativeSource="{RelativeSource TemplatedParent}"
+                                                      Path="PasteCommand"></Binding>
+                                        </MenuFlyoutItem.Command>
+                                    </MenuFlyoutItem>
+                                    <MenuFlyoutItem Text="Delete"
+                                                    Icon="Delete">
+                                        <MenuFlyoutItem.Command>
+                                            <Binding  RelativeSource="{RelativeSource TemplatedParent}"
+                                                      Path="DeleteCommand"></Binding>
+                                        </MenuFlyoutItem.Command>
+                                    </MenuFlyoutItem>
+                                </MenuFlyout>
+                            </Canvas.ContextFlyout>
+                        </Canvas>
+
+                        <ScrollBar Name="PART_VerticalScrollBar"
+                                   Grid.Column="1" />
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "kissskia (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "kissskia (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

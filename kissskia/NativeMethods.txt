@@ -1,0 +1,4 @@
+CreateCaret
+ShowCaret
+DestroyCaret
+SetCaretPos

@@ -6,10 +6,12 @@
                 xmlns:local="using:kissskia"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                xmlns:win2dcanvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+                xmlns:skia="using:SkiaSharp.Views.Windows"
                 mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource AppBarBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource AppBarBackgroundThemeBrush}"
+          VerticalAlignment="Stretch"
+          HorizontalAlignment="Stretch">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
@@ -25,10 +27,17 @@
                            Margin="8,0,0,0">KissSkia</TextBlock>
             </StackPanel>
         </Border>
-        <!--<local:HexBox Name="HexViewer"></local:HexBox>-->
-        <win2dcanvas:CanvasControl Grid.Row="1"  Draw="CanvasControl_Draw"
-                                    ClearColor="CornflowerBlue">
-            
-        </win2dcanvas:CanvasControl>
+        <!--<skia:SKXamlCanvas Grid.Column="2"
+                           Height="400"
+                           PaintSurface="SKXamlCanvas_PaintSurface" />-->
+        <local:HexBox  Grid.Row="1"
+                       Name="HexViewer"
+                       DataSource="{x:Bind Reader}"
+                       Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
+                       Background="Transparent"
+                       Margin="4"
+                       BorderBrush="Blue"
+                       BorderThickness="2">
+        </local:HexBox>
     </Grid>
 </WinEx:WindowEx>

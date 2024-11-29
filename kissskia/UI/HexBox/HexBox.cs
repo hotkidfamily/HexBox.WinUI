@@ -1,7 +1,4 @@
 using kissskia.Library.EndianConvert;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.Geometry;
-using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -14,7 +11,6 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
@@ -27,7 +23,7 @@ using Windows.UI.Core;
 
 namespace kissskia
 {
-    [TemplatePart(Name = nameof(PartCanvas), Type = typeof(CanvasControl))]
+    [TemplatePart(Name = nameof(PartCanvas), Type = typeof(SKXamlCanvas))]
     [TemplatePart(Name = nameof(PartVerticalScrollBar), Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
@@ -43,8 +39,8 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty AddressBrushProperty =
             DependencyProperty.Register(nameof(AddressBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(Colors.Blue, OnPropertyChangedInvalidateMeasure));
-
+                new PropertyMetadata(new SolidColorBrush(Colors.CornflowerBlue), OnPropertyChangedInvalidateMeasure));
+        
         /// <summary>
         /// Defines the width of the addresses displayed in the address section of the control.
         /// </summary>
@@ -57,7 +53,7 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty AlternatingDataColumnTextBrushProperty =
             DependencyProperty.Register(nameof(AlternatingDataColumnTextBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(Colors.LightBlue, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.Gray), OnPropertyChangedInvalidateMeasure));
 
         /// <summary>
         /// Defines the number of columns to display.
@@ -85,7 +81,7 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty DataSignednessProperty =
             DependencyProperty.Register(nameof(DataSignedness), typeof(DataSignedness), typeof(HexBox),
-                new PropertyMetadata(DataSignedness.Signed, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(DataSignedness.Unsigned, OnPropertyChangedInvalidateMeasure));
 
         /// <summary>
         /// Defines the data source which is used to read the data to display within this control.
@@ -135,14 +131,14 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty SelectionBrushProperty =
             DependencyProperty.Register(nameof(SelectionBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(Colors.Honeydew, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.Blue), OnPropertyChangedInvalidateMeasure));
 
         /// <summary>
         /// Defines the brush used for selected text.
         /// </summary>
         public static readonly DependencyProperty SelectionTextBrushProperty =
             DependencyProperty.Register(nameof(SelectionTextBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(Colors.Pink, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateMeasure));
 
         /// <summary>
         /// Defines the offset from <see cref="DataSourceProperty"/> of where the user selection has ended.
@@ -193,11 +189,9 @@ namespace kissskia
         private const int CharsBetweenDataColumns = 1;
         private const int ScrollWheelScrollRows = 3;
 
-        //private FormattedText cachedFormattedChar;
-        //private TextBlock cachedText;
-        private TextBlock cachedFormattedChar;
+        private SKRect cachedFormattedChar;
 
-        private CanvasControl PartCanvas;
+        private SKXamlCanvas PartCanvas;
 
         private SelectionArea highlightBegin = SelectionArea.None;
         private SelectionArea highlightState = SelectionArea.None;
@@ -524,7 +518,7 @@ namespace kissskia
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            PartCanvas = GetTemplateChild(nameof(PartCanvas)) as CanvasControl;
+            PartCanvas = GetTemplateChild(nameof(PartCanvas)) as SKXamlCanvas;
 
             if (PartCanvas != null)
             {
@@ -533,6 +527,7 @@ namespace kissskia
                                     CopyCommand,
                                     CopyExecuted,
                                     CopyCanExecute));*/
+                PartCanvas.PaintSurface += PartCanvas_PaintSurface;
             }
             else
             {
@@ -558,6 +553,569 @@ namespace kissskia
             else
             {
                 throw new InvalidOperationException($"Could not find {nameof(PartVerticalScrollBar)} template child.");
+            }
+        }
+
+        private void DrawSelectionGeometry(SKCanvas Canvas,
+                                            Brush brush,
+                                            Point point0,
+                                            Point point1,
+                                            SelectionArea relativeTo)
+        {
+            if ((long)point0.Y > (long)point1.Y)
+            {
+                throw new ArgumentException($"{nameof(point0)}.Y > {nameof(point1)}.Y", nameof(point0));
+            }
+
+            Point lhsVerticalLinePoint0;
+            Point rhsVerticalLinePoint0;
+
+            double selectionBoxXPadding;
+            double selectionBoxYPadding;
+
+            switch (relativeTo)
+            {
+                case SelectionArea.Data:
+                    {
+                        lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                        rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+
+                        selectionBoxXPadding = SelectionBoxDataXPadding;
+                        selectionBoxYPadding = SelectionBoxDataYPadding;
+                    }
+
+                    break;
+
+                case SelectionArea.Text:
+                    {
+                        lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                        rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+
+                        selectionBoxXPadding = SelectionBoxTextXPadding;
+                        selectionBoxYPadding = SelectionBoxTextYPadding;
+                    }
+
+                    break;
+
+                default:
+                    {
+                        throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
+                    }
+            }
+
+            point0.X -=  selectionBoxXPadding;
+            point1.X +=  selectionBoxXPadding;
+            point0.Y -=  selectionBoxYPadding;
+            point1.Y +=  selectionBoxYPadding;
+
+            SKPath path = new();
+            SKPoint[] points; 
+
+            if ((long)point0.X < (long)point1.X)
+            {
+                if ((long)point0.Y < (long)point1.Y)
+                {
+                    // +---------------------------+
+                    // |                           |
+                    // |             0-------------2
+                    // |             |             |
+                    // 6-------------7     1-------3
+                    // |                   |       |
+                    // 5-------------------4       |
+                    // |                           |
+                    // |                           |
+                    // |                           |
+                    // +---------------------------+
+                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding), (float)point0.Y);
+                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding), (float)point1.Y);
+                    SKPoint point4 = new((float)point1.X, (float)(point1.Y + cachedFormattedChar.Height));
+                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding), (float)(point1.Y + cachedFormattedChar.Height));
+                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding), (float)(point0.Y + cachedFormattedChar.Height));
+                    SKPoint point7 = new((float)point0.X, (float)(point0.Y + cachedFormattedChar.Height));
+
+                    points = [point0.ToSKPoint(), point2, point3, point1.ToSKPoint(), point4, point5, point6, point7];
+                }
+                else
+                {
+                    // +---------------------------+
+                    // |                           |
+                    // |     0-------------1       |
+                    // |     |             |       |
+                    // |     3-------------2       |
+                    // |                           |
+                    // |                           |
+                    // |                           |
+                    // |                           |
+                    // |                           |
+                    // +---------------------------+
+                    Point point2 = new(point1.X, (float)(point1.Y + cachedFormattedChar.Height));
+                    Point point3 = new(point0.X, (float)(point0.Y + cachedFormattedChar.Height));
+
+                    points = [point0.ToSKPoint(), point1.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint() ];
+                }
+            }
+            else
+            {
+                if ((long)(point0.Y + cachedFormattedChar.Height) == (long)point1.Y)
+                {
+                    // +---------------------------+
+                    // |                           |
+                    // |             0-------------2
+                    // |             |             |
+                    // 7--------1    4-------------3
+                    // |        |                  |
+                    // 6--------5                  |
+                    // |                           |
+                    // |                           |
+                    // |                           |
+                    // +---------------------------+
+                    {
+                        Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                        Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                        Point point4 = new(point0.X, point1.Y);
+
+                        points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point4.ToSKPoint()];
+                    }
+
+                    {
+                        Point point5 = new(point1.X, point1.Y + cachedFormattedChar.Height);
+                        Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                        Point point7 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
+                        points = [point1.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
+                    }
+                }
+                else
+                {
+                    // +---------------------------+
+                    // |                           |
+                    // |             0-------------2
+                    // |             |             |
+                    // 6-------------7             |
+                    // |                           |
+                    // |        1------------------3
+                    // |        |                  |
+                    // 5--------4                  |
+                    // |                           |
+                    // +---------------------------+
+                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    Point point4 = new(point1.X, (float)(point1.Y + cachedFormattedChar.Height));
+                    Point point5 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, (float)(point1.Y + cachedFormattedChar.Height));
+                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
+                    Point point7 = new(point0.X, point0.Y + cachedFormattedChar.Height);
+
+                    points = [ point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint() ];
+                }
+            }
+
+            path.AddPoly(points);
+            SKPaint paint = new();
+            if (brush is SolidColorBrush s)
+                paint.Color = s.Color.ToSKColor();
+            Canvas.DrawPath(path, paint);
+        }
+
+        private void PartCanvas_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        {
+            var view = sender as SKXamlCanvas;
+            var canvas = e.Surface.Canvas;
+
+            UpdateState();
+
+            if (DataSource != null)
+            {
+                long savedDataSourcePosition = DataSource.BaseStream.Position;
+
+                DataSource.BaseStream.Position = Offset;
+
+                {
+                    // Add a small padding of 1 pixel to not clip the selection box on the last row
+                    var clipRect = new Rect(0, 0, view.ActualWidth, (MaxVisibleRows * cachedFormattedChar.Height) + 1.0);
+                    if (ShowAddress)
+                    {
+                        var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
+                        var addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
+
+                        using var AddressPaint = new SKPaint
+                        {
+                            Color = SKColors.Black,
+                            IsStroke = true,
+                            IsAntialias = true,
+                            StrokeWidth = 2
+                        };
+
+                        var p0 = addressVerticalLinePoint0.ToSKPoint();
+                        var p1 = addressVerticalLinePoint1.ToSKPoint();
+
+                        canvas.DrawLine(p0, p1, AddressPaint);
+                    }
+
+                    if (ShowData)
+                    {
+                        var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                        var dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
+
+                        using var paint = new SKPaint
+                        {
+                            Color = SKColors.Gray,
+                            IsStroke = true,
+                            IsAntialias = true,
+                            StrokeWidth = 2
+                        };
+                        var p0 = dataVerticalLinePoint0.ToSKPoint();
+                        var p1 = dataVerticalLinePoint1.ToSKPoint();
+                        canvas.DrawLine(p0, p1, paint);
+
+                        if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
+                        {
+                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
+                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
+
+                            if ((SelectedOffset + SelectionLength - Offset) / BytesPerColumn % Columns == 0)
+                            {
+                                // We're selecting the last column so the end point is the data vertical line (effectively)
+                                selectionPoint1.X = dataVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width);
+                                selectionPoint1.Y -=  cachedFormattedChar.Height;
+                            }
+                            else
+                            {
+                                selectionPoint1.X -= CharsBetweenDataColumns * cachedFormattedChar.Width;
+                            }
+
+                            DrawSelectionGeometry(canvas, SelectionBrush, selectionPoint0, selectionPoint1, SelectionArea.Data);
+                        }
+                    }
+
+                    if (ShowText)
+                    {
+                        var textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+                        var textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
+
+                        if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
+                        {
+                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
+                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
+
+                            if ((SelectedOffset + SelectionLength - Offset) / BytesPerColumn % Columns == 0)
+                            {
+                                // We're selecting the last column so the end point is the text vertical line (effectively)
+                                selectionPoint1.X = textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width);
+                                selectionPoint1.Y -= cachedFormattedChar.Height;
+                            }
+
+                            DrawSelectionGeometry(canvas, SelectionBrush, selectionPoint0, selectionPoint1, SelectionArea.Text);
+                        }
+                    }
+
+                    SKPoint origin = default;
+
+
+                    SKTypeface cachedTypeface = SKTypeface.FromFamilyName(FontFamily.ToString());
+
+                    for (var row = 0; row < MaxVisibleRows; ++row)
+                    {
+                        if (ShowAddress)
+                        {
+                            if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                            {
+                                var textToFormat = GetFormattedAddressText(Address + (ulong)DataSource.BaseStream.Position);
+                                var paint = new SKPaint();
+                                paint.TextSize = (float)FontSize;
+                                paint.Typeface = cachedTypeface;
+                                paint.TextScaleX = 1f;
+                                if (AddressBrush is SolidColorBrush s)
+                                {
+                                    paint.Color = s.Color.ToSKColor();
+                                }
+                                canvas.DrawText(textToFormat, origin.X, origin.Y, paint);
+
+                                origin.X += (float)((CalculateAddressColumnCharWidth() + CharsBetweenSections) * cachedFormattedChar.Width);
+                            }
+                        }
+
+                        long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
+
+                        if (ShowData)
+                        {
+                            origin.X += (float)(CharsBetweenSections * cachedFormattedChar.Width);
+
+                            var cachedDataColumnCharWidth = CalculateDataColumnCharWidth();
+
+                            // Needed to track text in alternating columns so we can use a different brush when drawing
+                            var evenColumnBuilder = new StringBuilder(Columns * DataWidth);
+                            var oddColumnBuilder = new StringBuilder(Columns * DataWidth);
+
+                            var column = 0;
+
+                            // Draw text up until selection start point
+                            while (column < Columns)
+                            {
+                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                {
+                                    if (DataSource.BaseStream.Position >= SelectedOffset)
+                                    {
+                                        break;
+                                    }
+
+                                    var textToFormat = ReadFormattedData();
+
+                                    if (column % 2 == 0)
+                                    {
+                                        evenColumnBuilder.Append(textToFormat);
+                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+
+                                        oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                    }
+                                    else
+                                    {
+                                        oddColumnBuilder.Append(textToFormat);
+                                        oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+
+                                        evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                    }
+                                }
+                                else
+                                {
+                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                    oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                }
+
+                                ++column;
+                            }
+
+                            var paint = new SKPaint();
+                            paint.TextSize = (float)FontSize;
+                            paint.Typeface = cachedTypeface;
+                            paint.TextAlign = SKTextAlign.Left;
+                            { 
+                                if (Foreground is SolidColorBrush s)
+                                {
+                                    paint.Color = s.Color.ToSKColor();
+                                }
+                            }
+                            paint.TextScaleX = 1.0f;
+                            canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, paint);
+
+                            { 
+                                if (AlternatingDataColumnTextBrush is SolidColorBrush s)
+                                {
+                                    paint.Color = s.Color.ToSKColor();
+                                }
+                            }
+                            canvas.DrawText(oddColumnBuilder.ToString(), origin.X, origin.Y, paint);
+
+
+                            origin.X +=  8;
+
+                            if (column < Columns)
+                            {
+                                // We'll reuse this builder for drawing selection text
+                                evenColumnBuilder.Clear();
+
+                                // Draw text starting from selection start point
+                                while (column < Columns)
+                                {
+                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                    {
+                                        if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
+                                        {
+                                            break;
+                                        }
+
+                                        var textToFormat = ReadFormattedData();
+
+                                        evenColumnBuilder.Append(textToFormat);
+                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                    }
+                                    else
+                                    {
+                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                    }
+
+                                    ++column;
+                                }
+
+                                { 
+                                    if (SelectionTextBrush is SolidColorBrush s)
+                                    {
+                                        paint.Color = s.Color.ToSKColor();
+                                    }
+                                }
+                                paint.TextScaleX = 1.0f;
+                                canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, paint);
+
+                                origin.X += 8;
+
+                                if (column < Columns)
+                                {
+                                    evenColumnBuilder.Clear();
+                                    oddColumnBuilder.Clear();
+
+                                    // Draw text after end of selection
+                                    while (column < Columns)
+                                    {
+                                        if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                        {
+                                            var textToFormat = ReadFormattedData();
+
+                                            if (column % 2 == 0)
+                                            {
+                                                evenColumnBuilder.Append(textToFormat);
+                                                evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+
+                                                oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                            }
+                                            else
+                                            {
+                                                oddColumnBuilder.Append(textToFormat);
+                                                oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+
+                                                evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                            oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                        }
+
+                                        ++column;
+                                    }
+
+                                    {
+                                        if (Foreground is SolidColorBrush s)
+                                        {
+                                            paint.Color = s.Color.ToSKColor();
+                                        }
+                                    }
+                                    canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, paint);
+
+                                    {
+                                        if (AlternatingDataColumnTextBrush is SolidColorBrush s)
+                                        {
+                                            paint.Color = s.Color.ToSKColor();
+                                        }
+                                    }
+                                    canvas.DrawText(oddColumnBuilder.ToString(), origin.X, origin.Y, paint);
+
+                                    origin.X += 8;
+                                }
+                            }
+
+                            // Compensate for the extra space added at the end of the builder
+                            origin.X += (float)((CharsBetweenSections - CharsBetweenDataColumns) * cachedFormattedChar.Width);
+                        }
+
+                        if (ShowText)
+                        {
+                            origin.X += (float)(CharsBetweenSections * cachedFormattedChar.Width);
+
+                            if (ShowData)
+                            {
+                                // Reset the stream to read one byte at a time
+                                DataSource.BaseStream.Position = savedDataSourcePositionBeforeReadingData;
+                            }
+
+                            var builder = new StringBuilder(Columns * DataWidth);
+
+                            var column = 0;
+
+                            // Draw text up until selection start point
+                            while (column < Columns)
+                            {
+                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                {
+                                    if (DataSource.BaseStream.Position >= SelectedOffset)
+                                    {
+                                        break;
+                                    }
+
+                                    var textToFormat = ReadFormattedText();
+                                    builder.Append(textToFormat);
+                                }
+
+                                ++column;
+                            }
+
+                            var paint = new SKPaint();
+                            paint.TextSize = (float)FontSize;
+                            paint.Typeface = cachedTypeface;
+                            paint.TextAlign = SKTextAlign.Left;
+                            paint.TextScaleX = 1.0f;
+                            {
+                                if (Foreground is SolidColorBrush s)
+                                {
+                                    paint.Color = s.Color.ToSKColor();
+                                }
+                            }
+                            canvas.DrawText(builder.ToString(), origin.X, origin.Y, paint);
+
+                            if (column < Columns)
+                            {
+                                origin.X += 8;
+
+                                builder.Clear();
+
+                                // Draw text starting from selection start point
+                                while (column < Columns)
+                                {
+                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                    {
+                                        if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
+                                        {
+                                            break;
+                                        }
+
+                                        var textToFormat = ReadFormattedText();
+                                        builder.Append(textToFormat);
+                                    }
+
+                                    ++column;
+                                }
+
+                                {
+                                    if (SelectionTextBrush is SolidColorBrush s)
+                                    {
+                                        paint.Color = s.Color.ToSKColor();
+                                    }
+                                }
+                                canvas.DrawText(builder.ToString(), origin.X, origin.Y, paint);
+
+                                if (column < Columns)
+                                {
+                                    origin.X += 8;
+
+                                    builder.Clear();
+
+                                    // Draw text after end of selection
+                                    while (column < Columns)
+                                    {
+                                        if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                        {
+                                            var textToFormat = ReadFormattedText();
+                                            builder.Append(textToFormat);
+                                        }
+
+                                        ++column;
+                                    }
+
+                                    {
+                                        if (Foreground is SolidColorBrush s)
+                                        {
+                                            paint.Color = s.Color.ToSKColor();
+                                        }
+                                    }
+                                    canvas.DrawText(builder.ToString(), origin.X, origin.Y, paint);
+                                }
+                            }
+                        }
+
+                        origin.X = 0;
+                        origin.Y += (float)(cachedFormattedChar.Height);
+                    }
+
+                    DataSource.BaseStream.Position = savedDataSourcePosition;
+                }
             }
         }
 
@@ -980,385 +1538,13 @@ namespace kissskia
 
             ReleasePointerCapture(e.Pointer);
         }
-#if eeee
-        /// <inheritdoc/>
-        protected override void OnRender (DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
 
-            UpdateState();
-
-            canvas.Children.Clear();
-
-            if (DataSource != null)
-            {
-                long savedDataSourcePosition = DataSource.BaseStream.Position;
-
-                // Adjust the data source position based on the current offset
-                DataSource.BaseStream.Position = Offset;
-
-                DrawingVisual drawingVisual = new DrawingVisual();
-
-                using (drawingContext = drawingVisual.RenderOpen())
-                {
-                    // Add a small padding of 1 pixel to not clip the selection box on the last row
-                    var clipRect = new Rect(0, 0, canvas.ActualWidth, (MaxVisibleRows * cachedFormattedChar.Height) + 1.0);
-
-                    // Clip the drawing to the bounds of the number of rows we can display to prevent the selection
-                    // box from being drawn where there is no text. This can happen if the control size is changed
-                    // while the selection remains active.
-                    drawingContext.PushClip(new RectangleGeometry(clipRect));
-
-                    var pen = new Pen(Foreground, 1.0);
-
-                    double halfPenThickness = pen.Thickness / 2;
-
-                    // Create guidelines to make sure our coordinate snap to device pixels
-                    GuidelineSet guidelines = new GuidelineSet();
-
-                    drawingContext.PushGuidelineSet(guidelines);
-
-                    if (ShowAddress)
-                    {
-                        var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                        var addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
-
-                        guidelines.GuidelinesX.Add(addressVerticalLinePoint0.X + halfPenThickness);
-                        guidelines.GuidelinesX.Add(addressVerticalLinePoint1.X + halfPenThickness);
-                        guidelines.GuidelinesY.Add(addressVerticalLinePoint0.Y + halfPenThickness);
-                        guidelines.GuidelinesY.Add(addressVerticalLinePoint1.Y + halfPenThickness);
-
-                        drawingContext.DrawLine(pen, addressVerticalLinePoint0, addressVerticalLinePoint1);
-                    }
-
-                    if (ShowData)
-                    {
-                        var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                        var dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
-
-                        guidelines.GuidelinesX.Add(dataVerticalLinePoint0.X + halfPenThickness);
-                        guidelines.GuidelinesX.Add(dataVerticalLinePoint1.X + halfPenThickness);
-                        guidelines.GuidelinesY.Add(dataVerticalLinePoint0.Y + halfPenThickness);
-                        guidelines.GuidelinesY.Add(dataVerticalLinePoint1.Y + halfPenThickness);
-
-                        drawingContext.DrawLine(pen, dataVerticalLinePoint0, dataVerticalLinePoint1);
-
-                        if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
-                        {
-                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
-                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
-
-                            if (((SelectedOffset + SelectionLength - Offset) / BytesPerColumn) % Columns == 0)
-                            {
-                                // We're selecting the last column so the end point is the data vertical line (effectively)
-                                selectionPoint1.X = dataVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width);
-                                selectionPoint1.Y -= cachedFormattedChar.Height;
-                            }
-                            else
-                            {
-                                selectionPoint1.X -= CharsBetweenDataColumns * cachedFormattedChar.Width;
-                            }
-
-                            DrawSelectionGeometry(drawingContext, SelectionBrush, pen, selectionPoint0, selectionPoint1, SelectionArea.Data);
-                        }
-                    }
-
-                    if (ShowText)
-                    {
-                        var textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
-                        var textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
-
-                        guidelines.GuidelinesX.Add(textVerticalLinePoint0.X + halfPenThickness);
-                        guidelines.GuidelinesX.Add(textVerticalLinePoint1.X + halfPenThickness);
-                        guidelines.GuidelinesY.Add(textVerticalLinePoint0.Y + halfPenThickness);
-                        guidelines.GuidelinesY.Add(textVerticalLinePoint1.Y + halfPenThickness);
-
-                        drawingContext.DrawLine(pen, textVerticalLinePoint0, textVerticalLinePoint1);
-
-                        if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
-                        {
-                            Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
-                            Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
-
-                            if (((SelectedOffset + SelectionLength - Offset) / BytesPerColumn) % Columns == 0)
-                            {
-                                // We're selecting the last column so the end point is the text vertical line (effectively)
-                                selectionPoint1.X = textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width);
-                                selectionPoint1.Y -= cachedFormattedChar.Height;
-                            }
-
-                            DrawSelectionGeometry(drawingContext, SelectionBrush, pen, selectionPoint0, selectionPoint1, SelectionArea.Text);
-                        }
-                    }
-
-                    Point origin = default;
-
-                    Typeface cachedTypeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
-
-                    for (var row = 0; row < MaxVisibleRows; ++row)
-                    {
-                        if (ShowAddress)
-                        {
-                            if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                            {
-                                var textToFormat = GetFormattedAddressText(Address + (ulong)DataSource.BaseStream.Position);
-                                var formattedText = new FormattedText(textToFormat, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, AddressBrush, 1.0);
-                                drawingContext.DrawText(formattedText, origin);
-
-                                origin.X += (CalculateAddressColumnCharWidth() + CharsBetweenSections) * cachedFormattedChar.Width;
-                            }
-                        }
-
-                        long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
-
-                        if (ShowData)
-                        {
-                            origin.X += CharsBetweenSections * cachedFormattedChar.Width;
-
-                            var cachedDataColumnCharWidth = CalculateDataColumnCharWidth();
-
-                            // Needed to track text in alternating columns so we can use a different brush when drawing
-                            var evenColumnBuilder = new StringBuilder(Columns * DataWidth);
-                            var oddColumnBuilder = new StringBuilder(Columns * DataWidth);
-
-                            var column = 0;
-
-                            // Draw text up until selection start point
-                            while (column < Columns)
-                            {
-                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                {
-                                    if (DataSource.BaseStream.Position >= SelectedOffset)
-                                    {
-                                        break;
-                                    }
-
-                                    var textToFormat = ReadFormattedData();
-
-                                    if (column % 2 == 0)
-                                    {
-                                        evenColumnBuilder.Append(textToFormat);
-                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
-
-                                        oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
-                                    }
-                                    else
-                                    {
-                                        oddColumnBuilder.Append(textToFormat);
-                                        oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
-
-                                        evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
-                                    }
-                                }
-                                else
-                                {
-                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                    oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                }
-
-                                ++column;
-                            }
-
-                            var evenFormattedText = new FormattedText(evenColumnBuilder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, Foreground, 1.0);
-                            drawingContext.DrawText(evenFormattedText, origin);
-
-                            var oddFormattedText = new FormattedText(oddColumnBuilder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, AlternatingDataColumnTextBrush, 1.0);
-                            drawingContext.DrawText(oddFormattedText, origin);
-
-                            origin.X += evenFormattedText.WidthIncludingTrailingWhitespace;
-
-                            if (column < Columns)
-                            {
-                                // We'll reuse this builder for drawing selection text
-                                evenColumnBuilder.Clear();
-
-                                // Draw text starting from selection start point
-                                while (column < Columns)
-                                {
-                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                    {
-                                        if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
-                                        {
-                                            break;
-                                        }
-
-                                        var textToFormat = ReadFormattedData();
-
-                                        evenColumnBuilder.Append(textToFormat);
-                                        evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
-                                    }
-                                    else
-                                    {
-                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                    }
-
-                                    ++column;
-                                }
-
-                                evenFormattedText = new FormattedText(evenColumnBuilder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, SelectionTextBrush, 1.0);
-                                drawingContext.DrawText(evenFormattedText, origin);
-
-                                origin.X += evenFormattedText.WidthIncludingTrailingWhitespace;
-
-                                if (column < Columns)
-                                {
-                                    evenColumnBuilder.Clear();
-                                    oddColumnBuilder.Clear();
-
-                                    // Draw text after end of selection
-                                    while (column < Columns)
-                                    {
-                                        if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                        {
-                                            var textToFormat = ReadFormattedData();
-
-                                            if (column % 2 == 0)
-                                            {
-                                                evenColumnBuilder.Append(textToFormat);
-                                                evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
-
-                                                oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
-                                            }
-                                            else
-                                            {
-                                                oddColumnBuilder.Append(textToFormat);
-                                                oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
-
-                                                evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
-                                            }
-                                        }
-                                        else
-                                        {
-                                            evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                            oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                        }
-
-                                        ++column;
-                                    }
-
-                                    evenFormattedText = new FormattedText(evenColumnBuilder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, Foreground, 1.0);
-                                    drawingContext.DrawText(evenFormattedText, origin);
-
-                                    oddFormattedText = new FormattedText(oddColumnBuilder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, AlternatingDataColumnTextBrush, 1.0);
-                                    drawingContext.DrawText(oddFormattedText, origin);
-
-                                    origin.X += evenFormattedText.WidthIncludingTrailingWhitespace;
-                                }
-                            }
-
-                            // Compensate for the extra space added at the end of the builder
-                            origin.X += (CharsBetweenSections - CharsBetweenDataColumns) * cachedFormattedChar.Width;
-                        }
-
-                        if (ShowText)
-                        {
-                            origin.X += CharsBetweenSections * cachedFormattedChar.Width;
-
-                            if (ShowData)
-                            {
-                                // Reset the stream to read one byte at a time
-                                DataSource.BaseStream.Position = savedDataSourcePositionBeforeReadingData;
-                            }
-
-                            var builder = new StringBuilder(Columns * DataWidth);
-
-                            var column = 0;
-
-                            // Draw text up until selection start point
-                            while (column < Columns)
-                            {
-                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                {
-                                    if (DataSource.BaseStream.Position >= SelectedOffset)
-                                    {
-                                        break;
-                                    }
-
-                                    var textToFormat = ReadFormattedText();
-                                    builder.Append(textToFormat);
-                                }
-
-                                ++column;
-                            }
-
-                            var formattedText = new FormattedText(builder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, Foreground, 1.0);
-                            drawingContext.DrawText(formattedText, origin);
-
-                            if (column < Columns)
-                            {
-                                origin.X += formattedText.WidthIncludingTrailingWhitespace;
-
-                                builder.Clear();
-
-                                // Draw text starting from selection start point
-                                while (column < Columns)
-                                {
-                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                    {
-                                        if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
-                                        {
-                                            break;
-                                        }
-
-                                        var textToFormat = ReadFormattedText();
-                                        builder.Append(textToFormat);
-                                    }
-
-                                    ++column;
-                                }
-
-                                formattedText = new FormattedText(builder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, SelectionTextBrush, 1.0);
-                                drawingContext.DrawText(formattedText, origin);
-
-                                if (column < Columns)
-                                {
-                                    origin.X += formattedText.WidthIncludingTrailingWhitespace;
-
-                                    builder.Clear();
-
-                                    // Draw text after end of selection
-                                    while (column < Columns)
-                                    {
-                                        if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
-                                        {
-                                            var textToFormat = ReadFormattedText();
-                                            builder.Append(textToFormat);
-                                        }
-
-                                        ++column;
-                                    }
-
-                                    formattedText = new FormattedText(builder.ToString(), CultureInfo.CurrentCulture, FlowDirection.LeftToRight, cachedTypeface, FontSize, Foreground, 1.0);
-                                    drawingContext.DrawText(formattedText, origin);
-                                }
-                            }
-                        }
-
-                        origin.X = 0;
-                        origin.Y += cachedFormattedChar.Height;
-                    }
-
-                    DataSource.BaseStream.Position = savedDataSourcePosition;
-
-                    drawingContext.Pop();
-                    drawingContext.Pop();
-                }
-
-                var visualHost = new CanvasVisualHost
-                {
-                    Visual = drawingVisual,
-                    IsHitTestVisible = false,
-                };
-
-                canvas.Children.Add(visualHost);
-            }
-        }
-#endif
         private static void OnPropertyChangedInvalidateMeasure(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var HexBox = (HexBox)d;
 
             HexBox.InvalidateMeasure();
+            HexBox.InvalidateArrange();
         }
 
         private static void OnSelectionEndChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -1366,6 +1552,7 @@ namespace kissskia
             var HexBox = (HexBox)d;
 
             HexBox.InvalidateMeasure();
+            HexBox.InvalidateArrange();
             HexBox.OnPropertyChanged(nameof(SelectionEnd));
             HexBox.OnPropertyChanged(nameof(SelectionLength));
             HexBox.OnPropertyChanged(nameof(SelectedOffset));
@@ -1378,6 +1565,7 @@ namespace kissskia
             var HexBox = (HexBox)d;
 
             HexBox.InvalidateMeasure();
+            HexBox.InvalidateArrange();
             HexBox.OnPropertyChanged(nameof(SelectionStart));
             HexBox.OnPropertyChanged(nameof(SelectionLength));
             HexBox.OnPropertyChanged(nameof(SelectedOffset));
@@ -2142,247 +2330,6 @@ namespace kissskia
             return point2;
         }
 
-        private void DrawSelectionGeometry(CanvasDrawEventArgs sender, 
-                                            ICanvasBrush brush,
-                                            Point point0, 
-                                            Point point1, 
-                                            SelectionArea relativeTo)
-        {
-            if ((long)point0.Y > (long)point1.Y)
-            {
-                throw new ArgumentException($"{nameof(point0)}.Y > {nameof(point1)}.Y", nameof(point0));
-            }
-
-            Point lhsVerticalLinePoint0;
-            Point rhsVerticalLinePoint0;
-
-            double selectionBoxXPadding;
-            double selectionBoxYPadding;
-
-            switch (relativeTo)
-            {
-                case SelectionArea.Data:
-                    {
-                        lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                        rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-
-                        selectionBoxXPadding = SelectionBoxDataXPadding;
-                        selectionBoxYPadding = SelectionBoxDataYPadding;
-                    }
-
-                    break;
-
-                case SelectionArea.Text:
-                    {
-                        lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                        rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
-
-                        selectionBoxXPadding = SelectionBoxTextXPadding;
-                        selectionBoxYPadding = SelectionBoxTextYPadding;
-                    }
-
-                    break;
-
-                default:
-                    {
-                        throw new ArgumentException($"Invalid relative area {relativeTo}", nameof(relativeTo));
-                    }
-            }
-
-            CanvasPathBuilder pathBuilder = new(sender.DrawingSession.Device);
-
-            point0.X -= selectionBoxXPadding;
-            point1.X += selectionBoxXPadding;
-            point0.Y -= selectionBoxYPadding;
-            point1.Y += selectionBoxYPadding;
-
-            PathFigure figure = new PathFigure
-            {
-                StartPoint = point0,
-                IsClosed = true,
-            };
-
-            if ((long)point0.X < (long)point1.X)
-            {
-                if ((long)point0.Y < (long)point1.Y)
-                {
-                    // +---------------------------+
-                    // |                           |
-                    // |             0-------------2
-                    // |             |             |
-                    // 6-------------7     1-------3
-                    // |                   |       |
-                    // 5-------------------4       |
-                    // |                           |
-                    // |                           |
-                    // |                           |
-                    // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new(point0.X, point0.Y + cachedFormattedChar.Height);
-
-                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
-                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
-                    pathBuilder.AddLine((float)point1.X, (float)point1.Y);
-                    pathBuilder.AddLine((float)point4.X, (float)point4.Y);
-                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
-                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
-                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
-                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
-                }
-                else
-                {
-                    // +---------------------------+
-                    // |                           |
-                    // |     0-------------1       |
-                    // |     |             |       |
-                    // |     3-------------2       |
-                    // |                           |
-                    // |                           |
-                    // |                           |
-                    // |                           |
-                    // |                           |
-                    // +---------------------------+
-                    Point point2 = new(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point3 = new(point0.X, point0.Y + cachedFormattedChar.Height);
-
-                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point1.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
-                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
-                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
-                }
-            }
-            else
-            {
-                if ((long)(point0.Y + cachedFormattedChar.Height) == (long)point1.Y)
-                {
-                    // +---------------------------+
-                    // |                           |
-                    // |             0-------------2
-                    // |             |             |
-                    // 7--------1    4-------------3
-                    // |        |                  |
-                    // 6--------5                  |
-                    // |                           |
-                    // |                           |
-                    // |                           |
-                    // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new(point0.X, point1.Y);
-
-                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point2.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point3.X, (float)point2.Y);
-                    pathBuilder.AddLine((float)point4.X, (float)point3.Y);
-                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
-
-                    Point point5 = new(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point7 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
-
-                    pathBuilder.BeginFigure((float)point1.X, (float)point1.Y);
-                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
-                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
-                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
-                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
-                }
-                else
-                {
-                    // +---------------------------+
-                    // |                           |
-                    // |             0-------------2
-                    // |             |             |
-                    // 6-------------7             |
-                    // |                           |
-                    // |        1------------------3
-                    // |        |                  |
-                    // 5--------4                  |
-                    // |                           |
-                    // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new(point0.X, point0.Y + cachedFormattedChar.Height);
-
-                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point0.X, (float)point0.Y);
-                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
-                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
-                    pathBuilder.AddLine((float)point1.X, (float)point1.Y);
-                    pathBuilder.AddLine((float)point4.X, (float)point4.Y);
-                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
-                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
-                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
-                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
-                }
-            }
-
-            CanvasGeometry triangleGeometry = CanvasGeometry.CreatePath(pathBuilder);
-            Vector2 p = new(0, 0);
-            sender.DrawingSession.DrawGeometry(triangleGeometry, p, brush); 
-        }
-
-
-        private void OnPaintSurface(object sender, SkiaSharp.Views.Windows.SKPaintSurfaceEventArgs e)
-        {
-            var view = sender as SKXamlCanvas;
-            DrawOverlayText(view, e.Surface.Canvas, view.CanvasSize, "canvas");
-        }
-
-        private void DrawOverlayText(FrameworkElement view, SKCanvas canvas, SKSize canvasSize, string backend)
-        {
-            const int TextOverlayPadding = 8;
-            SKPaint textPaint = new()
-            {
-                TextSize = 16,
-                IsAntialias = true,
-            };
-
-            canvas.Clear();
-
-            SKFont textFont = new()
-            {
-                BaselineSnap = true,
-            };
-
-            // make sure no previous transforms still apply
-            canvas.ResetMatrix();
-
-            // get and apply the current scale
-            var scale = canvasSize.Width / (float)view.ActualWidth;
-            canvas.Scale(scale);
-
-            var y = (float)view.ActualHeight - TextOverlayPadding;
-
-            var text = $"Current scaling = {scale:0.0}x";
-            canvas.DrawText(text, TextOverlayPadding, y, textFont, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "SkiaSharp: " + SkiaSharpVersion.Native.ToString();
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "HarfBuzzSharp: " + "v1.1.0";
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "Backend: " + backend;
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-        }
-
-
         private void UpdateState()
         {
             UpdateMaxVisibleRowsAndColumns();
@@ -2396,23 +2343,17 @@ namespace kissskia
 
             if ((ShowAddress || ShowData || ShowText) && PartCanvas != null)
             {
-                // TODO: We should not be updating this every time. Cache it once if the font on the control changes. Same with typeface and use it throughout.
-/*                cachedFormattedChar = new FormattedText("X", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyle, FontWeight, FontStretch), FontSize, Foreground, 1.0);*/
-
-                cachedFormattedChar = new TextBlock()
+                using (var paint = new SKPaint())
                 {
-                    Text = "X",
-                    FlowDirection = FlowDirection.LeftToRight,
-                    TextWrapping = TextWrapping.Wrap,
-                    FontFamily = FontFamily,
-                    FontStyle = FontStyle,
-                    FontWeight = FontWeight,
-                    FontStretch = FontStretch,
-                    FontSize = FontSize,
-                    Foreground = Foreground,
-                };
+                    paint.TextSize = (float)FontSize;
+                    paint.IsAntialias = true;
+                    paint.TextEncoding = SKTextEncoding.Utf8;
+                    paint.SubpixelText = true;
 
-                maxVisibleRows = 28;// Math.Max(0, (int)(PartCanvas.ActualHeight / cachedFormattedChar.Height));
+                    paint.MeasureText("X", ref cachedFormattedChar);
+                }
+
+                maxVisibleRows = Math.Max(0, (int)(PartCanvas.ActualHeight / cachedFormattedChar.Height));
 
                 if (ShowData || ShowText)
                 {
@@ -2559,13 +2500,13 @@ namespace kissskia
                         Point textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
 
                         // Clamp the X coordinate to within the text region
-                        position.X = position.X.Clamp(dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width), textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width));
+                        position.X = position.X.Clamp((float)(dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width)), (float)(textVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width)));
 
                         // Normalize with respect to the text region
-                        position.X -= dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+                        position.X -= (float)(dataVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width));
 
                         // Convert the X coordinate to the column number
-                        position.X /= CalculateTextColumnCharWidth() * cachedFormattedChar.Width;
+                        position.X /= (float)(CalculateTextColumnCharWidth() * cachedFormattedChar.Width);
 
                         if (position.X >= Columns)
                         {
@@ -2578,7 +2519,7 @@ namespace kissskia
                         position.Y = position.Y.Clamp(textVerticalLinePoint0.Y, textVerticalLinePoint1.Y);
 
                         // Convert the Y coordinate to the row number
-                        position.Y /= cachedFormattedChar.Height;
+                        position.Y /= (float)cachedFormattedChar.Height;
 
                         if (position.Y >= MaxVisibleRows)
                         {
@@ -2610,7 +2551,7 @@ namespace kissskia
                     {
                         Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
 
-                        position.X = addressVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width);
+                        position.X = addressVerticalLinePoint0.X + CharsBetweenSections * cachedFormattedChar.Width;
                         position.Y = addressVerticalLinePoint0.Y;
 
                         // Normalize requested offset to a zero based column
@@ -2622,11 +2563,11 @@ namespace kissskia
                         {
                             // Negative normalized offset means the Y position is above the current offset. Because division
                             // rounds toward zero we need to compensate here.
-                            position.Y += (((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height;
+                            position.Y += (float)((((normalizedColumn + 1) / Columns) - 1) * cachedFormattedChar.Height);
                         }
                         else
                         {
-                            position.Y += normalizedColumn / Columns * cachedFormattedChar.Height;
+                            position.Y += (float)(normalizedColumn / Columns * cachedFormattedChar.Height);
                         }
                     }
 

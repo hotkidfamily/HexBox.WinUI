@@ -1,4 +1,4 @@
-﻿namespace HexView.Wpf
+﻿namespace kissskia
 {
     /// <summary>
     /// Enumerates the address column formatting options.

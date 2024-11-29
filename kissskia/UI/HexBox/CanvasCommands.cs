@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace kissskia.UI.HexBox
+namespace kissskia
 {
     public class MyViewModel
     {

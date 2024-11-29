@@ -1,7 +1,6 @@
 ﻿namespace kissskia.Library.EndianConvert
 {
     using System;
-    using System.Runtime.Serialization;
 
     /// <summary>
     /// The exception that is thrown when an input file or a data stream is malformed.

@@ -1,6 +1,6 @@
-using HexView.Wpf;
 using kissskia.Library.EndianConvert;
-using kissskia.UI.HexBox;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.Geometry;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using Microsoft.UI;
 using Microsoft.UI.Input;
@@ -9,23 +9,26 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using SkiaSharp;
+using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
-using Windows.UI.Composition;
 using Windows.UI.Core;
-using WinRT;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace kissskia
 {
+    [TemplatePart(Name = nameof(PartCanvas), Type = typeof(CanvasControl))]
+    [TemplatePart(Name = nameof(PartVerticalScrollBar), Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -183,9 +186,6 @@ namespace kissskia
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateMeasure));
 
-        private const string CanvasName = "PART_Canvas";
-        private const string VerticalScrollBarName = "PART_VerticalScrollBar";
-
         private const int MaxColumns = 128;
         private const int MaxRows = 128;
 
@@ -197,22 +197,14 @@ namespace kissskia
         //private TextBlock cachedText;
         private TextBlock cachedFormattedChar;
 
-        private Canvas canvas;
+        private CanvasControl PartCanvas;
 
         private SelectionArea highlightBegin = SelectionArea.None;
         private SelectionArea highlightState = SelectionArea.None;
 
         private double lastVerticalScrollValue = 0;
 
-        private ScrollBar verticalScrollBar;
-
-        /// <summary>
-        /// Initializes static members of the <see cref="HexBox"/> class.
-        /// </summary>
-        static HexBox()
-        {
-            //DefaultStyleKeyProperty.OverrideMetadata(typeof(HexBox), new PropertyMetadata(typeof(HexBox)));
-        }
+        private ScrollBar PartVerticalScrollBar;
 
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -529,47 +521,43 @@ namespace kissskia
             }
         }
 
-        /// <inheritdoc/>
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+            PartCanvas = GetTemplateChild(nameof(PartCanvas)) as CanvasControl;
 
-            // TODO: Validate FontFamily is a fixed width font
-            // see https://social.msdn.microsoft.com/Forums/windows/en-US/5b582b96-ade5-4354-99cf-3fe64cc6b53b/determining-if-font-is-monospaced?forum=winforms
-            canvas = GetTemplateChild(CanvasName) as Canvas;
-
-            if (canvas != null)
+            if (PartCanvas != null)
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
-/*                CommandBindings.Add(new CommandBinding(
-                    CopyCommand,
-                    CopyExecuted,
-                    CopyCanExecute));*/
+                /*                CommandBindings.Add(new CommandBinding(
+                                    CopyCommand,
+                                    CopyExecuted,
+                                    CopyCanExecute));*/
             }
             else
             {
-                throw new InvalidOperationException($"Could not find {CanvasName} template child.");
+                throw new InvalidOperationException($"Could not find {nameof(PartCanvas)} template child.");
             }
 
-            if (verticalScrollBar != null)
+            if (PartVerticalScrollBar != null)
             {
-                verticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
+                PartVerticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
             }
 
-            verticalScrollBar = GetTemplateChild(VerticalScrollBarName) as ScrollBar;
+            PartVerticalScrollBar = GetTemplateChild(nameof(PartVerticalScrollBar)) as ScrollBar;
 
-            if (verticalScrollBar != null)
+            if (PartVerticalScrollBar != null)
             {
-                verticalScrollBar.Scroll += OnVerticalScrollBarScroll;
-                verticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
+                PartVerticalScrollBar.Scroll += OnVerticalScrollBarScroll;
+                PartVerticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
 
-                verticalScrollBar.Minimum = 0;
-                verticalScrollBar.SmallChange = 1;
-                verticalScrollBar.LargeChange = MaxVisibleRows;
+                PartVerticalScrollBar.Minimum = 0;
+                PartVerticalScrollBar.SmallChange = 1;
+                PartVerticalScrollBar.LargeChange = MaxVisibleRows;
             }
             else
             {
-                throw new InvalidOperationException($"Could not find {VerticalScrollBarName} template child.");
+                throw new InvalidOperationException($"Could not find {nameof(PartVerticalScrollBar)} template child.");
             }
         }
 
@@ -831,7 +819,7 @@ namespace kissskia
             base.OnDoubleTapped(e);
             if(e.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                OnMouseDoubleClick(e.GetPosition(canvas));
+                OnMouseDoubleClick(e.GetPosition(PartCanvas));
             }
         }
 
@@ -893,7 +881,7 @@ namespace kissskia
                 case SelectionArea.Data:
                 case SelectionArea.Text:
                     {
-                        var position = e.GetCurrentPoint(canvas).Position;
+                        var position = e.GetCurrentPoint(PartCanvas).Position;
 
                         var currentMouseOverOffset = ConvertPositionToOffset(position);
 
@@ -919,15 +907,15 @@ namespace kissskia
 
             if (Delta < 0)
             {
-                verticalScrollBar.Value += ScrollWheelScrollRows;
+                PartVerticalScrollBar.Value += ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(verticalScrollBar, ScrollEventType.SmallIncrement, verticalScrollBar.Value);
+                OnVerticalScrollBarScroll(PartVerticalScrollBar, ScrollEventType.SmallIncrement, PartVerticalScrollBar.Value);
             }
             else
             {
-                verticalScrollBar.Value -= ScrollWheelScrollRows;
+                PartVerticalScrollBar.Value -= ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(verticalScrollBar, ScrollEventType.SmallDecrement, verticalScrollBar.Value);
+                OnVerticalScrollBarScroll(PartVerticalScrollBar, ScrollEventType.SmallDecrement, PartVerticalScrollBar.Value);
             }
         }
 
@@ -954,7 +942,7 @@ namespace kissskia
         {
             if (highlightState == SelectionArea.None && CapturePointer(e.Pointer))
             {
-                Point position = e.GetCurrentPoint(canvas).Position;
+                Point position = e.GetCurrentPoint(PartCanvas).Position;
 
                 Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
                 Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
@@ -2096,7 +2084,7 @@ namespace kissskia
                 point2.X = (CalculateAddressColumnCharWidth() + CharsBetweenSections) * cachedFormattedChar.Width;
             }
 
-            point2.Y = Math.Min(cachedFormattedChar.Height * MaxVisibleRows, canvas.ActualHeight);
+            point2.Y = Math.Min(cachedFormattedChar.Height * MaxVisibleRows, PartCanvas.ActualHeight);
 
             return point2;
         }
@@ -2153,8 +2141,12 @@ namespace kissskia
 
             return point2;
         }
-#if DGASJFIJDSA
-        private void DrawSelectionGeometry(DrawingContext drawingContext, Brush brush, Pen pen, Point point0, Point point1, SelectionArea relativeTo)
+
+        private void DrawSelectionGeometry(CanvasDrawEventArgs sender, 
+                                            ICanvasBrush brush,
+                                            Point point0, 
+                                            Point point1, 
+                                            SelectionArea relativeTo)
         {
             if ((long)point0.Y > (long)point1.Y)
             {
@@ -2197,14 +2189,7 @@ namespace kissskia
                     }
             }
 
-            // Create guidelines to make sure our coordinate snap to device pixels
-            GuidelineSet guidelines = new GuidelineSet();
-
-            drawingContext.PushGuidelineSet(guidelines);
-
-            double halfPenThickness = pen.Thickness / 2;
-
-            PathGeometry geometry = new PathGeometry();
+            CanvasPathBuilder pathBuilder = new(sender.DrawingSession.Device);
 
             point0.X -= selectionBoxXPadding;
             point1.X += selectionBoxXPadding;
@@ -2232,30 +2217,23 @@ namespace kissskia
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
+                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    Point point4 = new(point1.X, point1.Y + cachedFormattedChar.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
+                    Point point7 = new(point0.X, point0.Y + cachedFormattedChar.Height);
 
-                    figure.Segments.Add(new LineSegment(point0, true));
-                    figure.Segments.Add(new LineSegment(point2, true));
-                    figure.Segments.Add(new LineSegment(point3, true));
-                    figure.Segments.Add(new LineSegment(point1, true));
-                    figure.Segments.Add(new LineSegment(point4, true));
-                    figure.Segments.Add(new LineSegment(point5, true));
-                    figure.Segments.Add(new LineSegment(point6, true));
-                    figure.Segments.Add(new LineSegment(point7, true));
-
-                    guidelines.GuidelinesX.Add(point6.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point0.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point1.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point2.X + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point0.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point6.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point1.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point5.Y + halfPenThickness);
+                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
+                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
+                    pathBuilder.AddLine((float)point1.X, (float)point1.Y);
+                    pathBuilder.AddLine((float)point4.X, (float)point4.Y);
+                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
+                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
+                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
+                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
                 else
                 {
@@ -2270,17 +2248,14 @@ namespace kissskia
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point3 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
+                    Point point2 = new(point1.X, point1.Y + cachedFormattedChar.Height);
+                    Point point3 = new(point0.X, point0.Y + cachedFormattedChar.Height);
 
-                    figure.Segments.Add(new LineSegment(point1, true));
-                    figure.Segments.Add(new LineSegment(point2, true));
-                    figure.Segments.Add(new LineSegment(point3, true));
-
-                    guidelines.GuidelinesX.Add(point0.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point1.X + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point0.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point3.Y + halfPenThickness);
+                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point1.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
+                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
+                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
             }
             else
@@ -2298,39 +2273,25 @@ namespace kissskia
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point0.X, point1.Y);
+                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    Point point4 = new(point0.X, point1.Y);
 
-                    figure.Segments.Add(new LineSegment(point2, true));
-                    figure.Segments.Add(new LineSegment(point3, true));
-                    figure.Segments.Add(new LineSegment(point4, true));
+                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point2.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point3.X, (float)point2.Y);
+                    pathBuilder.AddLine((float)point4.X, (float)point3.Y);
+                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
 
-                    guidelines.GuidelinesX.Add(point0.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point2.X + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point0.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point4.Y + halfPenThickness);
+                    Point point5 = new(point1.X, point1.Y + cachedFormattedChar.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    Point point7 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
 
-                    PathFigure lhsFigure = new PathFigure
-                    {
-                        StartPoint = point1,
-                        IsClosed = true,
-                    };
-
-                    Point point5 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y);
-
-                    lhsFigure.Segments.Add(new LineSegment(point5, true));
-                    lhsFigure.Segments.Add(new LineSegment(point6, true));
-                    lhsFigure.Segments.Add(new LineSegment(point7, true));
-
-                    guidelines.GuidelinesX.Add(point7.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point1.X + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point7.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point6.Y + halfPenThickness);
-
-                    geometry.Figures.Add(lhsFigure);
+                    pathBuilder.BeginFigure((float)point1.X, (float)point1.Y);
+                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
+                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
+                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
+                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
                 else
                 {
@@ -2345,40 +2306,82 @@ namespace kissskia
                     // 5--------4                  |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
-                    Point point3 = new Point(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
-                    Point point4 = new Point(point1.X, point1.Y + cachedFormattedChar.Height);
-                    Point point5 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
-                    Point point6 = new Point(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
-                    Point point7 = new Point(point0.X, point0.Y + cachedFormattedChar.Height);
-                    var v1 = new LineSegment();
+                    Point point2 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - (CharsBetweenSections * cachedFormattedChar.Width) + selectionBoxXPadding, point1.Y);
+                    Point point4 = new(point1.X, point1.Y + cachedFormattedChar.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point1.Y + cachedFormattedChar.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + (CharsBetweenSections * cachedFormattedChar.Width) - selectionBoxXPadding, point0.Y + cachedFormattedChar.Height);
+                    Point point7 = new(point0.X, point0.Y + cachedFormattedChar.Height);
 
-                    figure.Segments.Add(new LineSegment(point0, true));
-                    figure.Segments.Add(new LineSegment(point2, true));
-                    figure.Segments.Add(new LineSegment(point3, true));
-                    figure.Segments.Add(new LineSegment(point1, true));
-                    figure.Segments.Add(new LineSegment(point4, true));
-                    figure.Segments.Add(new LineSegment(point5, true));
-                    figure.Segments.Add(new LineSegment(point6, true));
-                    figure.Segments.Add(new LineSegment(point7, true));
-
-                    guidelines.GuidelinesX.Add(point6.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point1.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point0.X + halfPenThickness);
-                    guidelines.GuidelinesX.Add(point2.X + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point0.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point6.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point1.Y + halfPenThickness);
-                    guidelines.GuidelinesY.Add(point5.Y + halfPenThickness);
+                    pathBuilder.BeginFigure((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point0.X, (float)point0.Y);
+                    pathBuilder.AddLine((float)point2.X, (float)point2.Y);
+                    pathBuilder.AddLine((float)point3.X, (float)point3.Y);
+                    pathBuilder.AddLine((float)point1.X, (float)point1.Y);
+                    pathBuilder.AddLine((float)point4.X, (float)point4.Y);
+                    pathBuilder.AddLine((float)point5.X, (float)point5.Y);
+                    pathBuilder.AddLine((float)point6.X, (float)point6.Y);
+                    pathBuilder.AddLine((float)point7.X, (float)point7.Y);
+                    pathBuilder.EndFigure(CanvasFigureLoop.Closed);
                 }
             }
 
-            geometry.Figures.Add(figure);
-
-            drawingContext.DrawGeometry(brush, pen, geometry);
-            drawingContext.Pop();
+            CanvasGeometry triangleGeometry = CanvasGeometry.CreatePath(pathBuilder);
+            Vector2 p = new(0, 0);
+            sender.DrawingSession.DrawGeometry(triangleGeometry, p, brush); 
         }
-#endif
+
+
+        private void OnPaintSurface(object sender, SkiaSharp.Views.Windows.SKPaintSurfaceEventArgs e)
+        {
+            var view = sender as SKXamlCanvas;
+            DrawOverlayText(view, e.Surface.Canvas, view.CanvasSize, "canvas");
+        }
+
+        private void DrawOverlayText(FrameworkElement view, SKCanvas canvas, SKSize canvasSize, string backend)
+        {
+            const int TextOverlayPadding = 8;
+            SKPaint textPaint = new()
+            {
+                TextSize = 16,
+                IsAntialias = true,
+            };
+
+            canvas.Clear();
+
+            SKFont textFont = new()
+            {
+                BaselineSnap = true,
+            };
+
+            // make sure no previous transforms still apply
+            canvas.ResetMatrix();
+
+            // get and apply the current scale
+            var scale = canvasSize.Width / (float)view.ActualWidth;
+            canvas.Scale(scale);
+
+            var y = (float)view.ActualHeight - TextOverlayPadding;
+
+            var text = $"Current scaling = {scale:0.0}x";
+            canvas.DrawText(text, TextOverlayPadding, y, textFont, textPaint);
+
+            y -= textPaint.TextSize + TextOverlayPadding;
+
+            text = "SkiaSharp: " + SkiaSharpVersion.Native.ToString();
+            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
+
+            y -= textPaint.TextSize + TextOverlayPadding;
+
+            text = "HarfBuzzSharp: " + "v1.1.0";
+            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
+
+            y -= textPaint.TextSize + TextOverlayPadding;
+
+            text = "Backend: " + backend;
+            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
+        }
+
 
         private void UpdateState()
         {
@@ -2391,7 +2394,7 @@ namespace kissskia
             int maxVisibleRows = 0;
             int maxVisibleColumns = 0;
 
-            if ((ShowAddress || ShowData || ShowText) && canvas != null)
+            if ((ShowAddress || ShowData || ShowText) && PartCanvas != null)
             {
                 // TODO: We should not be updating this every time. Cache it once if the font on the control changes. Same with typeface and use it throughout.
 /*                cachedFormattedChar = new FormattedText("X", CultureInfo.CurrentUICulture, FlowDirection.LeftToRight, new Typeface(FontFamily, FontStyle, FontWeight, FontStretch), FontSize, Foreground, 1.0);*/
@@ -2400,6 +2403,7 @@ namespace kissskia
                 {
                     Text = "X",
                     FlowDirection = FlowDirection.LeftToRight,
+                    TextWrapping = TextWrapping.Wrap,
                     FontFamily = FontFamily,
                     FontStyle = FontStyle,
                     FontWeight = FontWeight,
@@ -2408,11 +2412,11 @@ namespace kissskia
                     Foreground = Foreground,
                 };
 
-                maxVisibleRows = Math.Max(0, (int)(canvas.ActualHeight / cachedFormattedChar.Height));
+                maxVisibleRows = 28;// Math.Max(0, (int)(PartCanvas.ActualHeight / cachedFormattedChar.Height));
 
                 if (ShowData || ShowText)
                 {
-                    int charsPerRow = (int)(canvas.ActualWidth / cachedFormattedChar.Width);
+                    int charsPerRow = (int)(PartCanvas.ActualWidth / cachedFormattedChar.Width);
 
                     if (ShowAddress)
                     {
@@ -2451,7 +2455,7 @@ namespace kissskia
             MaxVisibleColumns = maxVisibleColumns;
 
             // Maximum visible rows has now changed and so we must update the maximum amount we should scroll by
-            verticalScrollBar.LargeChange = maxVisibleRows;
+            PartVerticalScrollBar.LargeChange = maxVisibleRows;
         }
 
         private void UpdateScrollBar()
@@ -2462,21 +2466,21 @@ namespace kissskia
                 long r = DataSource.BaseStream.Length % BytesPerRow;
 
                 // Each scroll value represents a single drawn row
-                verticalScrollBar.Maximum = q + (r > 0 ? 1 : 0);
+                PartVerticalScrollBar.Maximum = q + (r > 0 ? 1 : 0);
 
                 // Adjust the scroll value based on the current offset
-                verticalScrollBar.Value = Offset / BytesPerRow;
+                PartVerticalScrollBar.Value = Offset / BytesPerRow;
 
                 // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
                 // and the current offset is less than the number of bytes we can display per row
-                if (verticalScrollBar.Value == 0 && Offset > 0)
+                if (PartVerticalScrollBar.Value == 0 && Offset > 0)
                 {
-                    ++verticalScrollBar.Value;
+                    ++PartVerticalScrollBar.Value;
                 }
             }
             else
             {
-                verticalScrollBar.Maximum = 0;
+                PartVerticalScrollBar.Maximum = 0;
             }
         }
 
@@ -2668,18 +2672,6 @@ namespace kissskia
             long maxBytesDisplayed = BytesPerRow * MaxVisibleRows;
 
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
-        }
-
-        private class CanvasVisualHost : UIElement
-        {
-            protected CanvasVisualHost(DerivedComposed _) : base(_)
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the Visual.
-            /// </summary>
-            public Visual _visual{ get; set; }
         }
 
         /// <summary>

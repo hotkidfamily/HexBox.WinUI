@@ -851,7 +851,7 @@ namespace kissskia
                 }
 
                 SKPoint origin = default;
-                origin.Y = _TextMeasure.Height;
+                origin.Y = _TextMeasure.Height; // left bottom to right top
 
                 for (var row = 0; row < MaxVisibleRows; ++row)
                 {
@@ -2301,7 +2301,7 @@ namespace kissskia
                 point2.X = (CalculateAddressColumnCharWidth() + CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = Math.Min(_TextMeasure.Height * MaxVisibleRows, PartCanvas.ActualHeight);
+            point2.Y = Math.Min((_TextMeasure.Height + 1) * MaxVisibleRows, PartCanvas.ActualHeight);
 
             return point2;
         }

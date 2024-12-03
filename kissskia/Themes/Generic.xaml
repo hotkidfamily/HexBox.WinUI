@@ -17,28 +17,22 @@
                         
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="16" />
+                            <ColumnDefinition Width="24" />
                         </Grid.ColumnDefinitions>
-                        <skia:SKXamlCanvas Name="PartCanvas"
+                        
+                        <skia:SKXamlCanvas Grid.Column="0"
+                                           Name="PartCanvas"
                                            Margin="2,0,2,0"
-                                           Grid.Column="0"
                                            VerticalAlignment="Stretch"
-                                           HorizontalAlignment="Stretch">
-                        </skia:SKXamlCanvas>
+                                           HorizontalAlignment="Stretch" />
 
-                        <!--<win2dcanvas:CanvasControl Name="PartCanvas"
-                                                   Margin="2,0,2,0"
-                                                   BorderThickness="2"
-                                                   BorderBrush="Green"
-                                                   Grid.Column="0">
-                        </win2dcanvas:CanvasControl>-->
-
-                        <ScrollBar Name="PartVerticalScrollBar"
-                                   Grid.Column="1"
+                        <ScrollBar Grid.Column="1"
+                                   Name="PartVerticalScrollBar"
                                    VerticalAlignment="Stretch"
-                                   BorderThickness="2"
-                                   BorderBrush="Red"
-                                   Margin="0,0,2,0"/>
+                                   HorizontalAlignment="Stretch"
+                                   Margin="0,0,2,0"
+                                   IndicatorMode="MouseIndicator"
+                                   Orientation="Vertical"/>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

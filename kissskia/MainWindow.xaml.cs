@@ -1,6 +1,4 @@
-using Microsoft.UI.Xaml;
-using SkiaSharp;
-using SkiaSharp.Views.Windows;
+﻿using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Threading;
@@ -44,10 +42,13 @@ namespace kissskia
             var rand = new Random();
 
             // 10 MB of random data
-            var bytes = new byte[10 * 1024 * 1024];
+            var bytes = new byte[1 * 1024 * 1024];
             rand.NextBytes(bytes);
 
-            Reader = new BinaryReader(new MemoryStream(bytes));
+            var fs = new FileStream("D:/temp/测试🌼/avrecoder-x64.mp4", FileMode.Open, FileAccess.Read);
+            //Reader = new BinaryReader(new MemoryStream(bytes));
+            Reader = new BinaryReader(fs);
+            Root.RequestedTheme = ElementTheme.Light;
         }
 
         private async void FreshCaret(CancellationToken token)
@@ -58,56 +59,5 @@ namespace kissskia
             } catch (TaskCanceledException) {
             }
         }
-
-        private void SKXamlCanvas_PaintSurface(object sender, SkiaSharp.Views.Windows.SKPaintSurfaceEventArgs e)
-        {
-            var view = sender as SKXamlCanvas;
-            DrawOverlayText(view, e.Surface.Canvas, view.CanvasSize, "canvas");
-        }
-
-        private void DrawOverlayText(FrameworkElement view, SKCanvas canvas, SKSize canvasSize, string backend)
-        {
-            const int TextOverlayPadding = 8;
-            SKPaint textPaint = new()
-            {
-                TextSize = 16,
-                IsAntialias = true,
-            };
-
-            canvas.Clear();
-
-            SKFont textFont = new()
-            {
-                BaselineSnap = true,
-            };
-
-            // make sure no previous transforms still apply
-            canvas.ResetMatrix();
-
-            // get and apply the current scale
-            var scale = canvasSize.Width / (float)view.ActualWidth;
-            canvas.Scale(scale);
-
-            var y = (float)view.ActualHeight - TextOverlayPadding;
-
-            var text = $"Current scaling = {scale:0.0}x";
-            canvas.DrawText(text, TextOverlayPadding, y, textFont, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "SkiaSharp: " + SkiaSharpVersion.Native.ToString();
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "HarfBuzzSharp: " + "v1.1.0";
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-
-            y -= textPaint.TextSize + TextOverlayPadding;
-
-            text = "Backend: " + backend;
-            canvas.DrawText(text, TextOverlayPadding, y, textPaint);
-        }
-
     }
 }

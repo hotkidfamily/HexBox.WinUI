@@ -14,6 +14,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
@@ -217,7 +218,7 @@ namespace kissskia
         /// <summary>
         /// Gets the <see cref="ApplicationCommands.Copy"/> routed command.
         /// </summary>
-        public static RelayCommand CopyCommand;
+        public ICommand CopyCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the address at which the data in the <see cref="DataSource"/> begins.
@@ -530,10 +531,6 @@ namespace kissskia
             if (PartCanvas != null)
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
-                /*                CommandBindings.Add(new CommandBinding(
-                                    CopyCommand,
-                                    CopyExecuted,
-                                    CopyCanExecute));*/
                 PartCanvas.PaintSurface += PartCanvas_PaintSurface;
             }
             else
@@ -1773,9 +1770,6 @@ namespace kissskia
 
         private void Reflush()
         {
-            //this.InvalidateArrange();
-            //this.InvalidateMeasure();
-            //this.UpdateLayout();
             if (PartCanvas != null)
             {
                 PartCanvas.Invalidate();
@@ -2004,11 +1998,13 @@ namespace kissskia
 
         private void CopyExecuted(object sender)
         {
+            Debugger.Log(0, "s", $"CopyExecuted {count++}");
             Copy();
         }
 
         private bool CopyCanExecute(object sender)
         {
+            Debugger.Log(0, "s", $"CopyCanExecute {count++}");
             return IsSelectionActive;
         }
 

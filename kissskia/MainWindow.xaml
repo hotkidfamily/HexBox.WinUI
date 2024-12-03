@@ -9,8 +9,7 @@
                 xmlns:skia="using:SkiaSharp.Views.Windows"
                 mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource AppBarBackgroundThemeBrush}"
-          VerticalAlignment="Stretch"
+    <Grid VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
           Name="Root">
         <Grid.RowDefinitions>
@@ -19,7 +18,8 @@
         </Grid.RowDefinitions>
         <Border Grid.Row="0"
                 Name="AppTitleBar"
-                IsTabStop="False">
+                IsTabStop="False"
+                Background="{ThemeResource AppBarBackgroundThemeBrush}">
             <StackPanel Orientation="Horizontal"
                         VerticalAlignment="Center"
                         HorizontalAlignment="Left">

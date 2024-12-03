@@ -3,25 +3,6 @@ using System.Windows.Input;
 
 namespace kissskia
 {
-    public class MyViewModel
-    {
-        public ICommand MyCommand { get; }
-
-        public MyViewModel()
-        {
-            MyCommand = new RelayCommand(ExecuteMyCommand, CanExecuteMyCommand);
-        }
-
-        private void ExecuteMyCommand(object parameter)
-        {
-        }
-
-        private bool CanExecuteMyCommand(object parameter)
-        {
-            return true;
-        }
-    }
-
     public class RelayCommand : ICommand
     {
         private readonly Action<object> _execute;

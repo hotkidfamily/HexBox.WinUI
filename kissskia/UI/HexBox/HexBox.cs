@@ -184,6 +184,20 @@ namespace kissskia
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateMeasure));
 
+        /// <summary>
+        /// Gets the <see cref="Copy"/> command.
+        /// </summary>
+        public ICommand CopyCommand
+        {
+            get { return (ICommand)GetValue(CopyCommandProperty); }
+            set { SetValue(CopyCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CopyCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CopyCommandProperty =
+            DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(HexBox), new PropertyMetadata(null));
+
+
         private const int _MaxColumns = 128;
         private const int _MaxRows = 128;
 
@@ -216,11 +230,6 @@ namespace kissskia
             Data,
             Text,
         }
-
-        /// <summary>
-        /// Gets the <see cref="ApplicationCommands.Copy"/> routed command.
-        /// </summary>
-        public ICommand CopyCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the address at which the data in the <see cref="DataSource"/> begins.
@@ -528,6 +537,7 @@ namespace kissskia
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
+
             _Canvas = GetTemplateChild(_CanvasName) as SKXamlCanvas;
 
             if (_Canvas != null)
@@ -559,8 +569,9 @@ namespace kissskia
             }
             else
             {
-                throw new InvalidOperationException($"Could not find {nameof(_ScrollBar)} template child.");
+                throw new InvalidOperationException($"Could not find {_ScrollBarName} template child.");
             }
+            
         }
 
 
@@ -2001,13 +2012,11 @@ namespace kissskia
 
         private void CopyExecuted(object sender)
         {
-            Debugger.Log(0, "s", $"CopyExecuted {_count++}");
             Copy();
         }
 
         private bool CopyCanExecute(object sender)
         {
-            Debugger.Log(0, "s", $"CopyCanExecute {_count++}");
             return IsSelectionActive;
         }
 

@@ -53,7 +53,8 @@
                                 <MenuFlyoutSeparator />
                                 <MenuFlyoutItem Text="Copy"
                                                 Icon="Copy"
-                                                Command="{Binding CopyCommand}" />
+                                                Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                                 />
                             </MenuFlyout>
                         </Grid.Resources>
 

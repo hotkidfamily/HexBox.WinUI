@@ -59,11 +59,11 @@ namespace kissskia
 
         private void CopyExecuted(object sender)
         {
-            Debugger.Log(0, "s", $"CopyExecuted\n");
+            Debugger.Log(0, "s", $"[Main] Copy CopyExecuted\n");
         }
         private bool CopyCanExecute(object sender)
         {
-            Debugger.Log(0, "s", $"CopyCanExecute\n");
+            Debugger.Log(0, "s", $"[Main] Copy CopyCanExecute\n");
             return true;
         }
 

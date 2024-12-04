@@ -25,8 +25,8 @@ using Windows.UI.Core;
 
 namespace kissskia
 {
-    [TemplatePart(Name = nameof(PartCanvas), Type = typeof(SKXamlCanvas))]
-    [TemplatePart(Name = nameof(PartVerticalScrollBar), Type = typeof(ScrollBar))]
+    [TemplatePart(Name = "PartCanvas", Type = typeof(SKXamlCanvas))]
+    [TemplatePart(Name = "PartVerticalScrollBar", Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -184,25 +184,27 @@ namespace kissskia
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateMeasure));
 
-        private const int MaxColumns = 128;
-        private const int MaxRows = 128;
+        private const int _MaxColumns = 128;
+        private const int _MaxRows = 128;
 
-        private const int CharsBetweenSections = 2;
-        private const int CharsBetweenDataColumns = 1;
-        private const int ScrollWheelScrollRows = 3;
+        private const int _CharsBetweenSections = 2;
+        private const int _CharsBetweenDataColumns = 1;
+        private const int _ScrollWheelScrollRows = 3;
 
         private SKRect _TextMeasure;
-        private SKTypeface _TextTypeFace = SKTypeface.FromFamilyName("Monaco", SKFontStyle.Normal);
+        private SKTypeface _TextTypeFace;
         private float _LineSize = 1.0f;
 
-        private SKXamlCanvas PartCanvas;
+        private SKXamlCanvas _Canvas;
+        private string _CanvasName = "PartCanvas";
 
-        private SelectionArea highlightBegin = SelectionArea.None;
-        private SelectionArea highlightState = SelectionArea.None;
+        private SelectionArea _HighlightBegin = SelectionArea.None;
+        private SelectionArea _HighlightState = SelectionArea.None;
 
-        private double lastVerticalScrollValue = 0;
+        private double _LastVerticalScrollValue = 0;
 
-        private ScrollBar PartVerticalScrollBar;
+        private ScrollBar _ScrollBar;
+        private string _ScrollBarName = "PartVerticalScrollBar";
 
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -404,7 +406,7 @@ namespace kissskia
                 }
                 else
                 {
-                    return SelectionStart - SelectionEnd + BytesPerColumn;
+                    return SelectionStart - SelectionEnd + _BytesPerColumn;
                 }
             }
         }
@@ -479,21 +481,21 @@ namespace kissskia
             set => SetValue(TextFormatProperty, value);
         }
 
-        private double SelectionBoxDataXPadding => _TextMeasure.Width / 4;
+        private double _SelectionBoxDataXPadding => _TextMeasure.Width / 4;
 
-        private double SelectionBoxDataYPadding => 0;
+        private double _SelectionBoxDataYPadding => 0;
 
-        private double SelectionBoxTextXPadding => 0;
+        private double _SelectionBoxTextXPadding => 0;
 
-        private double SelectionBoxTextYPadding => 0;
+        private double _SelectionBoxTextYPadding => 0;
 
-        private int BytesPerColumn => DataWidth;
+        private int _BytesPerColumn => DataWidth;
 
-        private int BytesPerRow => DataWidth * Columns;
+        private int _BytesPerRow => DataWidth * Columns;
 
-        private const int WidthIncludingTrailingWhitespace = 0;
+        private const int _WidthIncludingTrailingWhitespace = 0;
 
-        private int count = 0;
+        private int _count = 0;
 
         /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
@@ -526,37 +528,38 @@ namespace kissskia
         protected override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            PartCanvas = GetTemplateChild(nameof(PartCanvas)) as SKXamlCanvas;
+            _Canvas = GetTemplateChild(_CanvasName) as SKXamlCanvas;
 
-            if (PartCanvas != null)
+            if (_Canvas != null)
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
-                PartCanvas.PaintSurface += PartCanvas_PaintSurface;
+                _Canvas.PaintSurface += PartCanvas_PaintSurface;
             }
             else
             {
-                throw new InvalidOperationException($"Could not find {nameof(PartCanvas)} template child.");
+                throw new InvalidOperationException($"Could not find {_CanvasName} template child.");
             }
 
-            if (PartVerticalScrollBar != null)
+            if (_ScrollBar != null)
             {
-                PartVerticalScrollBar.Scroll -= OnVerticalScrollBarScroll;
+                _ScrollBar.Scroll -= OnVerticalScrollBarScroll;
             }
 
-            PartVerticalScrollBar = GetTemplateChild(nameof(PartVerticalScrollBar)) as ScrollBar;
+            _ScrollBar = GetTemplateChild(_ScrollBarName) as ScrollBar;
 
-            if (PartVerticalScrollBar != null)
+            if (_ScrollBar != null)
             {
-                PartVerticalScrollBar.Scroll += OnVerticalScrollBarScroll;
-                PartVerticalScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
+                _ScrollBar.Scroll += OnVerticalScrollBarScroll;
+                _ScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
 
-                PartVerticalScrollBar.Minimum = 0;
-                PartVerticalScrollBar.SmallChange = 1;
-                PartVerticalScrollBar.LargeChange = MaxVisibleRows;
+                _ScrollBar.Minimum = 0;
+                _ScrollBar.SmallChange = 1;
+                _ScrollBar.LargeChange = MaxVisibleRows;
+                _TextTypeFace = SKTypeface.FromFamilyName(_ScrollBar.FontFamily.Source, SKFontStyle.Normal);
             }
             else
             {
-                throw new InvalidOperationException($"Could not find {nameof(PartVerticalScrollBar)} template child.");
+                throw new InvalidOperationException($"Could not find {nameof(_ScrollBar)} template child.");
             }
         }
 
@@ -586,8 +589,8 @@ namespace kissskia
                         lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
                         rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
 
-                        selectionBoxXPadding = SelectionBoxDataXPadding;
-                        selectionBoxYPadding = SelectionBoxDataYPadding;
+                        selectionBoxXPadding = _SelectionBoxDataXPadding;
+                        selectionBoxYPadding = _SelectionBoxDataYPadding;
                     }
 
                     break;
@@ -597,8 +600,8 @@ namespace kissskia
                         lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
                         rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
 
-                        selectionBoxXPadding = SelectionBoxTextXPadding;
-                        selectionBoxYPadding = SelectionBoxTextYPadding;
+                        selectionBoxXPadding = _SelectionBoxTextXPadding;
+                        selectionBoxYPadding = _SelectionBoxTextYPadding;
                     }
 
                     break;
@@ -632,11 +635,11 @@ namespace kissskia
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point0.Y);
-                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point1.Y);
+                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point0.Y);
+                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point1.Y);
                     SKPoint point4 = new((float)point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point0.Y + _TextMeasure.Height));
+                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point1.Y + _TextMeasure.Height));
+                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point0.Y + _TextMeasure.Height));
                     SKPoint point7 = new((float)point0.X, (float)(point0.Y + _TextMeasure.Height));
 
                     points = [point0.ToSKPoint(), point2, point3, point1.ToSKPoint(), point4, point5, point6, point7];
@@ -676,8 +679,8 @@ namespace kissskia
                     // |                           |
                     // +---------------------------+
                     {
-                        Point point2 = new(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
-                        Point point3 = new(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
+                        Point point2 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
+                        Point point3 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
                         Point point4 = new(point0.X, point1.Y);
 
                         points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point4.ToSKPoint()];
@@ -685,8 +688,8 @@ namespace kissskia
 
                     {
                         Point point5 = new(point1.X, point1.Y + _TextMeasure.Height);
-                        Point point6 = new(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
-                        Point point7 = new(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y);
+                        Point point6 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
+                        Point point7 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y);
                         points = [point1.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
                     }
                 }
@@ -703,11 +706,11 @@ namespace kissskia
                     // 5--------4                  |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
+                    Point point2 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
                     Point point4 = new(point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    Point point5 = new(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, (float)(point1.Y + _TextMeasure.Height));
-                    Point point6 = new(lhsVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, (float)(point1.Y + _TextMeasure.Height));
+                    Point point6 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
                     Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 
                     points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
@@ -804,15 +807,15 @@ namespace kissskia
                         Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
                         Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
 
-                        if ((SelectedOffset + SelectionLength - Offset) / BytesPerColumn % Columns == 0)
+                        if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
                         {
                             // We're selecting the last column so the end point is the data vertical line (effectively)
-                            selectionPoint1.X = dataVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width;
+                            selectionPoint1.X = dataVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
                             selectionPoint1.Y -=  _TextMeasure.Height;
                         }
                         else
                         {
-                            selectionPoint1.X -= CharsBetweenDataColumns * _TextMeasure.Width;
+                            selectionPoint1.X -= _CharsBetweenDataColumns * _TextMeasure.Width;
                         }
 
                         DrawSelectionGeometry(canvas, SelectionBrush, DataPaint, selectionPoint0, selectionPoint1, SelectionArea.Data);
@@ -829,10 +832,10 @@ namespace kissskia
                         Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
                         Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
 
-                        if ((SelectedOffset + SelectionLength - Offset) / BytesPerColumn % Columns == 0)
+                        if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
                         {
                             // We're selecting the last column so the end point is the text vertical line (effectively)
-                            selectionPoint1.X = textVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width;
+                            selectionPoint1.X = textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
                             selectionPoint1.Y -= _TextMeasure.Height;
                         }
 
@@ -847,7 +850,7 @@ namespace kissskia
                 {
                     if (ShowAddress)
                     {
-                        if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                        if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                         {
                             var textToFormat = GetFormattedAddressText(Address + (ulong)DataSource.BaseStream.Position);
 
@@ -857,7 +860,7 @@ namespace kissskia
                             }
                             canvas.DrawText(textToFormat, origin.X, origin.Y, DataPaint);
 
-                            origin.X += (float)((CalculateAddressColumnCharWidth() + CharsBetweenSections) * _TextMeasure.Width);
+                            origin.X += (float)((CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width);
                         }
                     }
 
@@ -865,7 +868,7 @@ namespace kissskia
 
                     if (ShowData)
                     {
-                        origin.X += (float)(CharsBetweenSections * _TextMeasure.Width);
+                        origin.X += (float)(_CharsBetweenSections * _TextMeasure.Width);
 
                         var cachedDataColumnCharWidth = CalculateDataColumnCharWidth();
 
@@ -878,7 +881,7 @@ namespace kissskia
                         // Draw text up until selection start point
                         while (column < Columns)
                         {
-                            if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                            if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                             {
                                 if (DataSource.BaseStream.Position >= SelectedOffset)
                                 {
@@ -890,22 +893,22 @@ namespace kissskia
                                 if (column % 2 == 0)
                                 {
                                     evenColumnBuilder.Append(textToFormat);
-                                    evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                    evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
 
-                                    oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                    oddColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
                                 }
                                 else
                                 {
                                     oddColumnBuilder.Append(textToFormat);
-                                    oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                    oddColumnBuilder.Append(' ', _CharsBetweenDataColumns);
 
-                                    evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                    evenColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
                                 }
                             }
                             else
                             {
-                                evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
+                                oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
                             }
 
                             ++column;
@@ -936,7 +939,7 @@ namespace kissskia
                             // Draw text starting from selection start point
                             while (column < Columns)
                             {
-                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                                 {
                                     if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
                                     {
@@ -946,11 +949,11 @@ namespace kissskia
                                     var textToFormat = ReadFormattedData();
 
                                     evenColumnBuilder.Append(textToFormat);
-                                    evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                    evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
                                 }
                                 else
                                 {
-                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
                                 }
 
                                 ++column;
@@ -974,29 +977,29 @@ namespace kissskia
                                 // Draw text after end of selection
                                 while (column < Columns)
                                 {
-                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                    if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedData();
 
                                         if (column % 2 == 0)
                                         {
                                             evenColumnBuilder.Append(textToFormat);
-                                            evenColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                            evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
 
-                                            oddColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                            oddColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
                                         }
                                         else
                                         {
                                             oddColumnBuilder.Append(textToFormat);
-                                            oddColumnBuilder.Append(' ', CharsBetweenDataColumns);
+                                            oddColumnBuilder.Append(' ', _CharsBetweenDataColumns);
 
-                                            evenColumnBuilder.Append(' ', textToFormat.Length + CharsBetweenDataColumns);
+                                            evenColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
                                         }
                                     }
                                     else
                                     {
-                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
-                                        oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + CharsBetweenDataColumns);
+                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
+                                        oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
                                     }
 
                                     ++column;
@@ -1023,12 +1026,12 @@ namespace kissskia
                         }
 
                         // Compensate for the extra space added at the end of the builder
-                        origin.X += (float)((CharsBetweenSections - CharsBetweenDataColumns) * _TextMeasure.Width);
+                        origin.X += (float)((_CharsBetweenSections - _CharsBetweenDataColumns) * _TextMeasure.Width);
                     }
 
                     if (ShowText)
                     {
-                        origin.X += (float)(CharsBetweenSections * _TextMeasure.Width);
+                        origin.X += (float)(_CharsBetweenSections * _TextMeasure.Width);
 
                         if (ShowData)
                         {
@@ -1043,7 +1046,7 @@ namespace kissskia
                         // Draw text up until selection start point
                         while (column < Columns)
                         {
-                            if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                            if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                             {
                                 if (DataSource.BaseStream.Position >= SelectedOffset)
                                 {
@@ -1074,7 +1077,7 @@ namespace kissskia
                             // Draw text starting from selection start point
                             while (column < Columns)
                             {
-                                if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                                 {
                                     if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
                                     {
@@ -1105,7 +1108,7 @@ namespace kissskia
                                 // Draw text after end of selection
                                 while (column < Columns)
                                 {
-                                    if (DataSource.BaseStream.Position + BytesPerColumn <= DataSource.BaseStream.Length)
+                                    if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedText();
                                         builder.Append(textToFormat);
@@ -1142,18 +1145,18 @@ namespace kissskia
         /// </param>
         public void ScrollToOffset(long offset)
         {
-            long maxBytesDisplayed = BytesPerRow * MaxVisibleRows;
+            long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
 
             if (Offset > offset)
             {
                 // We need to scroll up
-                Offset -= ((Offset - offset - 1) / BytesPerRow + 1) * BytesPerRow;
+                Offset -= ((Offset - offset - 1) / _BytesPerRow + 1) * _BytesPerRow;
             }
 
             if (Offset + maxBytesDisplayed <= offset)
             {
                 // We need to scroll down
-                Offset += ((offset - (Offset + maxBytesDisplayed)) / BytesPerRow + 1) * BytesPerRow;
+                Offset += ((offset - (Offset + maxBytesDisplayed)) / _BytesPerRow + 1) * _BytesPerRow;
             }
         }
 
@@ -1195,15 +1198,15 @@ namespace kissskia
                         {
                             if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionEnd += BytesPerRow;
+                                SelectionEnd += _BytesPerRow;
                             }
                             else
                             {
-                                SelectionStart += BytesPerRow;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionStart += _BytesPerRow;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                             e.Handled = true;
 
@@ -1218,21 +1221,21 @@ namespace kissskia
 
                                 if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                                 {
-                                    SelectionStart = SelectionEnd - BytesPerColumn;
+                                    SelectionStart = SelectionEnd - _BytesPerColumn;
                                 }
 
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
                             else
                             {
-                                SelectionEnd += (Offset - SelectionEnd).Mod(BytesPerRow);
+                                SelectionEnd += (Offset - SelectionEnd).Mod(_BytesPerRow);
 
                                 if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                                 {
-                                    SelectionStart = SelectionEnd - BytesPerColumn;
+                                    SelectionStart = SelectionEnd - _BytesPerColumn;
                                 }
 
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
 
                             e.Handled = true;
@@ -1249,10 +1252,10 @@ namespace kissskia
                                 if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                                 {
                                     SelectionStart = SelectionEnd;
-                                    SelectionEnd = SelectionStart + BytesPerColumn;
+                                    SelectionEnd = SelectionStart + _BytesPerColumn;
                                 }
 
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
                             else
                             {
@@ -1261,15 +1264,15 @@ namespace kissskia
                                 // previous line. As such, when the Shift+End hotkey is used twice consecutively a whole
                                 // new line above the current selection will be selected. This is undesirable behavior
                                 // that deviates from the canonical semantics of Shift+End.
-                                SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(BytesPerRow) + 1;
+                                SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(_BytesPerRow) + 1;
 
                                 if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                                 {
                                     SelectionStart = SelectionEnd;
-                                    SelectionEnd = SelectionStart + BytesPerColumn;
+                                    SelectionEnd = SelectionStart + _BytesPerColumn;
                                 }
 
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
 
                             e.Handled = true;
@@ -1281,15 +1284,15 @@ namespace kissskia
                         {
                             if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionEnd -= BytesPerColumn;
+                                SelectionEnd -= _BytesPerColumn;
                             }
                             else
                             {
-                                SelectionStart -= BytesPerColumn;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionStart -= _BytesPerColumn;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                             e.Handled = true;
 
@@ -1300,20 +1303,20 @@ namespace kissskia
                         {
                             bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
 
-                            SelectionEnd += BytesPerRow * MaxVisibleRows;
+                            SelectionEnd += _BytesPerRow * MaxVisibleRows;
 
                             if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionStart = SelectionEnd - BytesPerColumn;
+                                SelectionStart = SelectionEnd - _BytesPerColumn;
                             }
 
                             if (isOffsetVisibleBeforeSelectionChange)
                             {
-                                ScrollToOffset(Offset + BytesPerRow * MaxVisibleRows * 2 - BytesPerColumn);
+                                ScrollToOffset(Offset + _BytesPerRow * MaxVisibleRows * 2 - _BytesPerColumn);
                             }
                             else
                             {
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
 
                             e.Handled = true;
@@ -1324,21 +1327,21 @@ namespace kissskia
                         {
                             bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
 
-                            SelectionEnd -= BytesPerRow * MaxVisibleRows;
+                            SelectionEnd -= _BytesPerRow * MaxVisibleRows;
 
                             if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionStart = SelectionEnd - BytesPerColumn;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionStart = SelectionEnd - _BytesPerColumn;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
                             }
 
                             if (isOffsetVisibleBeforeSelectionChange)
                             {
-                                ScrollToOffset(Offset - BytesPerRow * MaxVisibleRows);
+                                ScrollToOffset(Offset - _BytesPerRow * MaxVisibleRows);
                             }
                             else
                             {
-                                ScrollToOffset(SelectionEnd - BytesPerColumn);
+                                ScrollToOffset(SelectionEnd - _BytesPerColumn);
                             }
 
                             e.Handled = true;
@@ -1349,15 +1352,15 @@ namespace kissskia
                         {
                             if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionEnd += BytesPerColumn;
+                                SelectionEnd += _BytesPerColumn;
                             }
                             else
                             {
-                                SelectionStart += BytesPerColumn;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionStart += _BytesPerColumn;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                             e.Handled = true;
                             break;
@@ -1367,15 +1370,15 @@ namespace kissskia
                         {
                             if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                             {
-                                SelectionEnd -= BytesPerRow;
+                                SelectionEnd -= _BytesPerRow;
                             }
                             else
                             {
-                                SelectionStart -= BytesPerRow;
-                                SelectionEnd = SelectionStart + BytesPerColumn;
+                                SelectionStart -= _BytesPerRow;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
                             }
 
-                            ScrollToOffset(SelectionEnd - BytesPerColumn);
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                             e.Handled = true;
                             break;
@@ -1385,12 +1388,12 @@ namespace kissskia
         }
         protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
         {
-            Debugger.Log(0, "s", $"OnDoubleTapped {count++}\n");
+            Debugger.Log(0, "s", $"OnDoubleTapped {_count++}\n");
 
             base.OnDoubleTapped(e);
             if (e.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                OnMouseDoubleClick(e.GetPosition(PartCanvas));
+                OnMouseDoubleClick(e.GetPosition(_Canvas));
             }
         }
 
@@ -1398,14 +1401,14 @@ namespace kissskia
         {
             base.OnGotFocus(e);
 
-            Debugger.Log(0, "s", $"OnGotFocus {count++} {e.OriginalSource.ToString()}, {FocusState}\n");
+            Debugger.Log(0, "s", $"OnGotFocus {_count++} {e.OriginalSource.ToString()}, {FocusState}\n");
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
 
-            Debugger.Log(0, "s", $"OnLostFocus {count++} {e.OriginalSource.ToString()}, {FocusState}\n");
+            Debugger.Log(0, "s", $"OnLostFocus {_count++} {e.OriginalSource.ToString()}, {FocusState}\n");
         }
 
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -1415,7 +1418,7 @@ namespace kissskia
                 var res = Focus(FocusState.Programmatic);
                 if (!res)
                 {
-                    Debugger.Log(0, "s", $"Focus not moved {count++}\n");
+                    Debugger.Log(0, "s", $"Focus not moved {_count++}\n");
                 }
             }
 
@@ -1470,18 +1473,18 @@ namespace kissskia
         {
             base.OnPointerMoved(e);
 
-            switch (highlightState)
+            switch (_HighlightState)
             {
                 case SelectionArea.Data:
                 case SelectionArea.Text:
                     {
-                        var position = e.GetCurrentPoint(PartCanvas).Position;
+                        var position = e.GetCurrentPoint(_Canvas).Position;
 
                         var currentMouseOverOffset = ConvertPositionToOffset(position);
 
                         if (currentMouseOverOffset >= SelectionStart)
                         {
-                            SelectionEnd = currentMouseOverOffset + BytesPerColumn;
+                            SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
                         }
                         else
                         {
@@ -1499,18 +1502,18 @@ namespace kissskia
             base.OnPointerWheelChanged(e);
             var Delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
 
-            var value = PartVerticalScrollBar.Value;
+            var value = _ScrollBar.Value;
             if (Delta < 0)
             {
-                PartVerticalScrollBar.Value += ScrollWheelScrollRows;
+                _ScrollBar.Value += _ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(PartVerticalScrollBar, ScrollEventType.SmallIncrement, PartVerticalScrollBar.Value);
+                OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
             }
             else
             {
-                PartVerticalScrollBar.Value -= ScrollWheelScrollRows;
+                _ScrollBar.Value -= _ScrollWheelScrollRows;
 
-                OnVerticalScrollBarScroll(PartVerticalScrollBar, ScrollEventType.SmallDecrement, PartVerticalScrollBar.Value);
+                OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallDecrement, _ScrollBar.Value);
             }
         }
 
@@ -1522,11 +1525,11 @@ namespace kissskia
 
                 if (position.X < addressVerticalLinePoint0.X)
                 {
-                    highlightBegin = SelectionArea.Address;
-                    highlightState = SelectionArea.Address;
+                    _HighlightBegin = SelectionArea.Address;
+                    _HighlightState = SelectionArea.Address;
 
                     SelectionStart = ConvertPositionToOffset(position);
-                    SelectionEnd = SelectionStart + BytesPerRow;
+                    SelectionEnd = SelectionStart + _BytesPerRow;
                 }
             }
         }
@@ -1534,9 +1537,9 @@ namespace kissskia
         /// <inheritdoc/>
         private void OnMouseLeftButtonDown(PointerRoutedEventArgs e)
         {
-            if (highlightState == SelectionArea.None && CapturePointer(e.Pointer))
+            if (_HighlightState == SelectionArea.None && CapturePointer(e.Pointer))
             {
-                Point position = e.GetCurrentPoint(PartCanvas).Position;
+                Point position = e.GetCurrentPoint(_Canvas).Position;
 
                 Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
                 Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
@@ -1544,25 +1547,25 @@ namespace kissskia
 
                 if (position.X < addressVerticalLinePoint0.X)
                 {
-                    highlightBegin = SelectionArea.Address;
-                    highlightState = SelectionArea.Address;
+                    _HighlightBegin = SelectionArea.Address;
+                    _HighlightState = SelectionArea.Address;
                 }
                 else if (position.X < dataVerticalLinePoint0.X)
                 {
-                    highlightBegin = SelectionArea.Data;
-                    highlightState = SelectionArea.Data;
+                    _HighlightBegin = SelectionArea.Data;
+                    _HighlightState = SelectionArea.Data;
                 }
                 else if (position.X < textVerticalLinePoint0.X)
                 {
-                    highlightBegin = SelectionArea.Text;
-                    highlightState = SelectionArea.Text;
+                    _HighlightBegin = SelectionArea.Text;
+                    _HighlightState = SelectionArea.Text;
                 }
 
-                if (highlightState != SelectionArea.None)
+                if (_HighlightState != SelectionArea.None)
                 {
                     SelectionStart = ConvertPositionToOffset(position);
 
-                    SelectionEnd = SelectionStart + BytesPerColumn;
+                    SelectionEnd = SelectionStart + _BytesPerColumn;
                 }
             }
         }
@@ -1570,7 +1573,7 @@ namespace kissskia
         /// <inheritdoc/>
         private void OnMouseLeftButtonUp(PointerRoutedEventArgs e)
         {
-            highlightState = SelectionArea.None;
+            _HighlightState = SelectionArea.None;
 
             ReleasePointerCapture(e.Pointer);
         }
@@ -1624,12 +1627,12 @@ namespace kissskia
 
         private static object CoerceMaxVisibleColumns(DependencyObject d, object value)
         {
-            return Math.Min((int)value, MaxColumns);
+            return Math.Min((int)value, _MaxColumns);
         }
 
         private static object CoerceMaxVisibleRows(DependencyObject d, object value)
         {
-            return Math.Min((int)value, MaxRows);
+            return Math.Min((int)value, _MaxRows);
         }
 
         private static object CoerceSelectionStart(DependencyObject d, object value)
@@ -1641,10 +1644,10 @@ namespace kissskia
                 long selectionStart = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
-                selectionStart -= selectionStart % HexBox.BytesPerColumn;
+                selectionStart -= selectionStart % HexBox._BytesPerColumn;
 
                 // Selection start cannot be at the end of the stream so adjust by data width number of bytes
-                value = selectionStart.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox.BytesPerColumn * HexBox.BytesPerColumn - HexBox.BytesPerColumn);
+                value = selectionStart.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox._BytesPerColumn * HexBox._BytesPerColumn - HexBox._BytesPerColumn);
             }
             else
             {
@@ -1663,10 +1666,10 @@ namespace kissskia
                 long selectionEnd = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
-                selectionEnd -= selectionEnd % HexBox.BytesPerColumn;
+                selectionEnd -= selectionEnd % HexBox._BytesPerColumn;
 
                 // Unlike selection start the selection end can be at the end of the stream
-                value = selectionEnd.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox.BytesPerColumn * HexBox.BytesPerColumn);
+                value = selectionEnd.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox._BytesPerColumn * HexBox._BytesPerColumn);
             }
             else
             {
@@ -1696,7 +1699,7 @@ namespace kissskia
             {
                 long offset = (long)value;
 
-                value = offset.Clamp(0, HexBox.DataSource.BaseStream.Length - 5*MaxColumns);
+                value = offset.Clamp(0, HexBox.DataSource.BaseStream.Length - 5*_MaxColumns);
             }
             else
             {
@@ -1770,9 +1773,9 @@ namespace kissskia
 
         private void Reflush()
         {
-            if (PartCanvas != null)
+            if (_Canvas != null)
             {
-                PartCanvas.Invalidate();
+                _Canvas.Invalidate();
             }
         }
 
@@ -1998,26 +2001,26 @@ namespace kissskia
 
         private void CopyExecuted(object sender)
         {
-            Debugger.Log(0, "s", $"CopyExecuted {count++}");
+            Debugger.Log(0, "s", $"CopyExecuted {_count++}");
             Copy();
         }
 
         private bool CopyCanExecute(object sender)
         {
-            Debugger.Log(0, "s", $"CopyCanExecute {count++}");
+            Debugger.Log(0, "s", $"CopyCanExecute {_count++}");
             return IsSelectionActive;
         }
 
         private void OnVerticalScrollBarValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            lastVerticalScrollValue = e.OldValue;
+            _LastVerticalScrollValue = e.OldValue;
         }
 
         private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
         {
-            long valueDelta = (long)(e.NewValue - lastVerticalScrollValue);
+            long valueDelta = (long)(e.NewValue - _LastVerticalScrollValue);
 
-            long newOffset = Offset + valueDelta * BytesPerRow;
+            long newOffset = Offset + valueDelta * _BytesPerRow;
 
             Offset = newOffset;
 
@@ -2026,9 +2029,9 @@ namespace kissskia
 
         private void OnVerticalScrollBarScroll(object sender, ScrollEventType type, double NewValue)
         {
-            long valueDelta = (long)(NewValue - lastVerticalScrollValue);
+            long valueDelta = (long)(NewValue - _LastVerticalScrollValue);
 
-            long newOffset = Offset + valueDelta * BytesPerRow;
+            long newOffset = Offset + valueDelta * _BytesPerRow;
 
             Offset = newOffset;
 
@@ -2293,7 +2296,7 @@ namespace kissskia
 
             if (ShowAddress)
             {
-                point1.X = (CalculateAddressColumnCharWidth() + CharsBetweenSections) * _TextMeasure.Width;
+                point1.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point1;
@@ -2305,10 +2308,10 @@ namespace kissskia
 
             if (ShowAddress)
             {
-                point2.X = (CalculateAddressColumnCharWidth() + CharsBetweenSections) * _TextMeasure.Width;
+                point2.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = Math.Min((_TextMeasure.Height + 1) * MaxVisibleRows, PartCanvas.ActualHeight);
+            point2.Y = Math.Min((_TextMeasure.Height + 1) * MaxVisibleRows, _Canvas.ActualHeight);
 
             return point2;
         }
@@ -2319,7 +2322,7 @@ namespace kissskia
 
             if (ShowData)
             {
-                point1.X += (CharsBetweenSections + (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * Columns - CharsBetweenDataColumns + CharsBetweenSections) * _TextMeasure.Width;
+                point1.X += (_CharsBetweenSections + (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point1;
@@ -2331,7 +2334,7 @@ namespace kissskia
 
             if (ShowData)
             {
-                point2.X += (CharsBetweenSections + (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * Columns - CharsBetweenDataColumns + CharsBetweenSections) * _TextMeasure.Width;
+                point2.X += (_CharsBetweenSections + (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point2;
@@ -2339,7 +2342,7 @@ namespace kissskia
 
         private int CalculateTextColumnCharWidth()
         {
-            return BytesPerColumn;
+            return _BytesPerColumn;
         }
 
         private Point CalculateTextVerticalLinePoint0()
@@ -2348,7 +2351,7 @@ namespace kissskia
 
             if (ShowText)
             {
-                point1.X += (CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + CharsBetweenSections) * _TextMeasure.Width;
+                point1.X += (_CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point1;
@@ -2360,7 +2363,7 @@ namespace kissskia
 
             if (ShowText)
             {
-                point2.X += (CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + CharsBetweenSections) * _TextMeasure.Width;
+                point2.X += (_CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point2;
@@ -2377,7 +2380,7 @@ namespace kissskia
             int maxVisibleRows = 0;
             int maxVisibleColumns = 0;
 
-            if ((ShowAddress || ShowData || ShowText) && PartCanvas != null)
+            if ((ShowAddress || ShowData || ShowText) && _Canvas != null)
             {
                 using (var paint = new SKPaint()
                 {
@@ -2396,27 +2399,27 @@ namespace kissskia
 
                 _TextMeasure.Bottom = _TextMeasure.Height * _LineSize;
 
-                maxVisibleRows = Math.Max(0, (int)(PartCanvas.ActualHeight / _TextMeasure.Height));
+                maxVisibleRows = Math.Max(0, (int)(_Canvas.ActualHeight / _TextMeasure.Height));
 
                 if (ShowData || ShowText)
                 {
-                    int charsPerRow = (int)(PartCanvas.ActualWidth / _TextMeasure.Width);
+                    int charsPerRow = (int)(_Canvas.ActualWidth / _TextMeasure.Width);
 
                     if (ShowAddress)
                     {
-                        charsPerRow -= CalculateAddressColumnCharWidth() + 2 * CharsBetweenSections;
+                        charsPerRow -= CalculateAddressColumnCharWidth() + 2 * _CharsBetweenSections;
                     }
 
                     if (ShowData && ShowText)
                     {
-                        charsPerRow -= 3 * CharsBetweenSections;
+                        charsPerRow -= 3 * _CharsBetweenSections;
                     }
 
                     int charsPerColumn = 0;
 
                     if (ShowData)
                     {
-                        charsPerColumn += CalculateDataColumnCharWidth() + CharsBetweenDataColumns;
+                        charsPerColumn += CalculateDataColumnCharWidth() + _CharsBetweenDataColumns;
                     }
 
                     if (ShowText)
@@ -2439,32 +2442,32 @@ namespace kissskia
             MaxVisibleColumns = maxVisibleColumns;
 
             // Maximum visible rows has now changed and so we must update the maximum amount we should scroll by
-            PartVerticalScrollBar.LargeChange = maxVisibleRows;
+            _ScrollBar.LargeChange = maxVisibleRows;
         }
 
         private void UpdateScrollBar()
         {
             if ((ShowAddress || ShowData || ShowText) && DataSource != null && Columns > 0 && MaxVisibleRows > 0)
             {
-                long q = DataSource.BaseStream.Length / BytesPerRow;
-                long r = DataSource.BaseStream.Length % BytesPerRow;
+                long q = DataSource.BaseStream.Length / _BytesPerRow;
+                long r = DataSource.BaseStream.Length % _BytesPerRow;
 
                 // Each scroll value represents a single drawn row
-                PartVerticalScrollBar.Maximum = q + (r > 0 ? 1 : 0) - MaxVisibleRows;
+                _ScrollBar.Maximum = q + (r > 0 ? 1 : 0) - MaxVisibleRows;
 
                 // Adjust the scroll value based on the current offset
-                PartVerticalScrollBar.Value = Offset / BytesPerRow;
+                _ScrollBar.Value = Offset / _BytesPerRow;
 
                 // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
                 // and the current offset is less than the number of bytes we can display per row
-                if (PartVerticalScrollBar.Value == 0 && Offset > 0)
+                if (_ScrollBar.Value == 0 && Offset > 0)
                 {
-                    ++PartVerticalScrollBar.Value;
+                    ++_ScrollBar.Value;
                 }
             }
             else
             {
-                PartVerticalScrollBar.Maximum = 0;
+                _ScrollBar.Maximum = 0;
             }
         }
 
@@ -2472,7 +2475,7 @@ namespace kissskia
         {
             long offset = Offset;
 
-            switch (highlightBegin)
+            switch (_HighlightBegin)
             {
                 case SelectionArea.Address:
                     {
@@ -2491,7 +2494,7 @@ namespace kissskia
                             --position.Y;
                         }
 
-                        offset += BytesPerRow * (long)position.Y;
+                        offset += _BytesPerRow * (long)position.Y;
                     }
 
                     break;
@@ -2504,13 +2507,13 @@ namespace kissskia
                         Point dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
 
                         // Clamp the X coordinate to within the data region
-                        position.X = position.X.Clamp(addressVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width, dataVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width);
+                        position.X = position.X.Clamp(addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width, dataVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width);
 
                         // Normalize with respect to the data region
-                        position.X -= addressVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width;
+                        position.X -= addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
 
                         // Convert the X coordinate to the column number
-                        position.X /= (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * _TextMeasure.Width;
+                        position.X /= (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
 
                         if (position.X >= Columns)
                         {
@@ -2530,7 +2533,7 @@ namespace kissskia
                             --position.Y;
                         }
 
-                        offset += ((long)position.Y * Columns + (long)position.X) * BytesPerColumn;
+                        offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
                     }
 
                     break;
@@ -2543,10 +2546,10 @@ namespace kissskia
                         Point textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
 
                         // Clamp the X coordinate to within the text region
-                        position.X = position.X.Clamp((float)(dataVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width), (float)(textVerticalLinePoint0.X - CharsBetweenSections * _TextMeasure.Width));
+                        position.X = position.X.Clamp((float)(dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width), (float)(textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width));
 
                         // Normalize with respect to the text region
-                        position.X -= (float)(dataVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width);
+                        position.X -= (float)(dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width);
 
                         // Convert the X coordinate to the column number
                         position.X /= (float)(CalculateTextColumnCharWidth() * _TextMeasure.Width);
@@ -2570,14 +2573,14 @@ namespace kissskia
                             --position.Y;
                         }
 
-                        offset += ((long)position.Y * Columns + (long)position.X) * BytesPerColumn;
+                        offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
                     }
 
                     break;
 
                 default:
                     {
-                        throw new InvalidOperationException($"Invalid highlight state ${highlightState}");
+                        throw new InvalidOperationException($"Invalid highlight state ${_HighlightState}");
                     }
             }
 
@@ -2594,13 +2597,13 @@ namespace kissskia
                     {
                         Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
 
-                        position.X = addressVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width;
+                        position.X = addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
                         position.Y = addressVerticalLinePoint0.Y;
 
                         // Normalize requested offset to a zero based column
-                        long normalizedColumn = (offset - Offset) / BytesPerColumn;
+                        long normalizedColumn = (offset - Offset) / _BytesPerColumn;
 
-                        position.X += (normalizedColumn % Columns + Columns) % Columns * (CalculateDataColumnCharWidth() + CharsBetweenDataColumns) * _TextMeasure.Width;
+                        position.X += (normalizedColumn % Columns + Columns) % Columns * (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
 
                         if (normalizedColumn < 0)
                         {
@@ -2620,11 +2623,11 @@ namespace kissskia
                     {
                         Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
 
-                        position.X = dataVerticalLinePoint0.X + CharsBetweenSections * _TextMeasure.Width;
+                        position.X = dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
                         position.Y = dataVerticalLinePoint0.Y;
 
                         // Normalize requested offset to a zero based column
-                        long normalizedColumn = (offset - Offset) / BytesPerColumn;
+                        long normalizedColumn = (offset - Offset) / _BytesPerColumn;
 
                         position.X += (normalizedColumn % Columns + Columns) % Columns * CalculateTextColumnCharWidth() * _TextMeasure.Width;
 
@@ -2653,7 +2656,7 @@ namespace kissskia
 
         private bool IsOffsetVisible(long offset)
         {
-            long maxBytesDisplayed = BytesPerRow * MaxVisibleRows;
+            long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
 
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
         }

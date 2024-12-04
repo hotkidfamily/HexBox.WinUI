@@ -12,6 +12,28 @@
     <Grid VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
           Name="Root">
+        <Grid.Resources>
+            <MenuFlyout x:Key="DataMenuFlyout">
+                <ToggleMenuFlyoutItem Text="No Data"
+                                      IsChecked="False" />
+                <ToggleMenuFlyoutItem Text="1 Byte-Integer"
+                                      IsChecked="True" />
+                <ToggleMenuFlyoutItem Text="2 Byte-Integer"
+                                      IsChecked="False" />
+                <ToggleMenuFlyoutItem Text="4 Byte-Integer"
+                                      IsChecked="False" />
+                <ToggleMenuFlyoutItem Text="8 Byte-Integer"
+                                      IsChecked="False" />
+                <ToggleMenuFlyoutItem Text="32-bit Floating Point"
+                                      IsChecked="False" />
+                <ToggleMenuFlyoutItem Text="64-bit Floating Point"
+                                      IsChecked="False" />
+                <MenuFlyoutSeparator />
+                <MenuFlyoutItem Text="Copy"
+                                Icon="Copy"
+                                Command="{x:Bind CopyCommand}" />
+            </MenuFlyout>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
@@ -29,6 +51,14 @@
                            Margin="8,0,0,0">KissSkia</TextBlock>
             </StackPanel>
         </Border>
+        <!--<Canvas Grid.Row="1"
+                x:Name="HexViewer"
+                Margin="4"
+                Width="600"
+                Height="600"
+                Background="Red"
+                ContextFlyout="{StaticResource DataMenuFlyout}">
+        </Canvas>-->
         <local:HexBox  Grid.Row="1"
                        x:Name="HexViewer"
                        DataSource="{x:Bind Reader}"
@@ -36,7 +66,8 @@
                        Background="Transparent"
                        Margin="4"
                        BorderBrush="Blue"
-                       BorderThickness="1">
+                       BorderThickness="1"
+                       FontFamily="Monaco">
         </local:HexBox>
     </Grid>
 </WinEx:WindowEx>

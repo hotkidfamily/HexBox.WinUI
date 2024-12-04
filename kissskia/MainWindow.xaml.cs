@@ -1,8 +1,10 @@
 ﻿using Microsoft.UI.Xaml;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -19,6 +21,8 @@ namespace kissskia
         private CancellationToken _taskToken;
 
         private BinaryReader _reader;
+
+        public ICommand CopyCommand{ get; set; }
 
         public BinaryReader Reader
         {
@@ -49,6 +53,18 @@ namespace kissskia
             //Reader = new BinaryReader(new MemoryStream(bytes));
             Reader = new BinaryReader(fs);
             Root.RequestedTheme = ElementTheme.Light;
+
+            CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
+        }
+
+        private void CopyExecuted(object sender)
+        {
+            Debugger.Log(0, "s", $"CopyExecuted\n");
+        }
+        private bool CopyCanExecute(object sender)
+        {
+            Debugger.Log(0, "s", $"CopyCanExecute\n");
+            return true;
         }
 
         private async void FreshCaret(CancellationToken token)

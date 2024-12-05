@@ -1593,6 +1593,8 @@ namespace kissskia
         {
             var HexBox = (HexBox)d;
 
+            Debugger.Log(0, "s", $"value {e.Property.GetType().ToString()} {e.NewValue}\n");
+
             HexBox.Reflush();
         }
 

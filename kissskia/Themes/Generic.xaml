@@ -16,9 +16,11 @@
                           IsTabStop="False">
 
                         <Grid.Resources>
+                            <local:BoolNegationConverter x:Key="BoolNegationConverter" />
+                            <local:BigEndianConverter x:Key="BigEndianConverter" />
                             <MenuFlyout x:Key="DataMenuFlyout">
                                 <ToggleMenuFlyoutItem Text="No Data"
-                                                      IsChecked="False" />
+                                                      IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                 <ToggleMenuFlyoutItem Text="1 Byte-Integer"
                                                       IsChecked="True" />
                                 <ToggleMenuFlyoutItem Text="2 Byte-Integer"
@@ -42,12 +44,12 @@
                                                       IsChecked="True" />
                                 <MenuFlyoutSeparator />
                                 <ToggleMenuFlyoutItem Text="Big-Endian"
-                                                      IsChecked="False" />
+                                                      IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=Big}" />
                                 <ToggleMenuFlyoutItem Text="Little-Endian"
-                                                      IsChecked="True" />
+                                                      IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=Little}" />
                                 <MenuFlyoutSeparator />
                                 <ToggleMenuFlyoutItem Text="No Text"
-                                                      IsChecked="False" />
+                                                      IsChecked="{Binding ShowText,RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                 <ToggleMenuFlyoutItem Text="ASCII"
                                                       IsChecked="True" />
                                 <MenuFlyoutSeparator />

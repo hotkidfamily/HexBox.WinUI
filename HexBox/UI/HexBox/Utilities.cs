@@ -1,4 +1,4 @@
-﻿namespace kissskia
+﻿namespace HexBox
 {
     using System;
 

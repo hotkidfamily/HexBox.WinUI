@@ -1,4 +1,4 @@
-﻿namespace kissskia
+﻿namespace HexBox
 {
     /// <summary>
     /// Enumerates the address column formatting options.

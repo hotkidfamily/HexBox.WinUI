@@ -1,4 +1,4 @@
-using kissskia.Library.EndianConvert;
+using HexBox.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -23,10 +23,10 @@ using Windows.UI.Core;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace kissskia
+namespace HexBox
 {
-    [TemplatePart(Name = "PartCanvas", Type = typeof(SKXamlCanvas))]
-    [TemplatePart(Name = "PartVerticalScrollBar", Type = typeof(ScrollBar))]
+    [TemplatePart(Name = "ElementCanvas", Type = typeof(SKXamlCanvas))]
+    [TemplatePart(Name = "ElementScrollBar", Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -41,49 +41,49 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty AddressBrushProperty =
             DependencyProperty.Register(nameof(AddressBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(new SolidColorBrush(Colors.CornflowerBlue), OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.CornflowerBlue), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the width of the addresses displayed in the address section of the control.
         /// </summary>
         public static readonly DependencyProperty AddressFormatProperty =
             DependencyProperty.Register(nameof(AddressFormat), typeof(AddressFormat), typeof(HexBox),
-                new PropertyMetadata(AddressFormat.Address32, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(AddressFormat.Address32, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         ///  Defines the brush used for alternating for text in alternating (odd numbered) columns in the data section of the control.
         /// </summary>
         public static readonly DependencyProperty AlternatingDataColumnTextBrushProperty =
             DependencyProperty.Register(nameof(AlternatingDataColumnTextBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(new SolidColorBrush(Colors.Gray), OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.Gray), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the number of columns to display.
         /// </summary>
         public static readonly DependencyProperty ColumnsProperty =
             DependencyProperty.Register(nameof(Columns), typeof(int), typeof(HexBox),
-                new PropertyMetadata(16, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(16, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the endianness used to interpret the data.
         /// </summary>
         public static readonly DependencyProperty EndiannessProperty =
             DependencyProperty.Register(nameof(Endianness), typeof(Endianness), typeof(HexBox),
-                new PropertyMetadata(Endianness.BigEndian, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(Endianness.BigEndian, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the format of the data to display.
         /// </summary>
         public static readonly DependencyProperty DataFormatProperty =
             DependencyProperty.Register(nameof(DataFormat), typeof(DataFormat), typeof(HexBox),
-                new PropertyMetadata(DataFormat.Hexadecimal, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(DataFormat.Hexadecimal, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the signedness of the data to display.
         /// </summary>
         public static readonly DependencyProperty DataSignednessProperty =
             DependencyProperty.Register(nameof(DataSignedness), typeof(DataSignedness), typeof(HexBox),
-                new PropertyMetadata(DataSignedness.Unsigned, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(DataSignedness.Unsigned, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the data source which is used to read the data to display within this control.
@@ -93,32 +93,18 @@ namespace kissskia
                 new PropertyMetadata(null, OnDataSourceChanged));
 
         /// <summary>
-        /// Defines the type of the data to display.
-        /// </summary>
-        public static readonly DependencyProperty DataTypeProperty =
-            DependencyProperty.Register(nameof(DataType), typeof(DataType), typeof(HexBox),
-                new PropertyMetadata(DataType.Integer, OnDataTypeChanged));
-
-        /// <summary>
-        /// Defines the width of the data to display.
-        /// </summary>
-        public static readonly DependencyProperty DataWidthProperty =
-            DependencyProperty.Register(nameof(DataWidth), typeof(int), typeof(HexBox),
-                new PropertyMetadata(1, OnDataWidthChanged));
-
-        /// <summary>
         /// Defines the offset from the <see cref="DataSourceProperty"/> of the first visible data element being displayed.
         /// </summary>
         public static readonly DependencyProperty OffsetProperty =
             DependencyProperty.Register(nameof(Offset), typeof(long), typeof(HexBox),
-                new PropertyMetadata(0L, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(0L, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the maximum number of columns, based on the size of the control, which can be displayed.
         /// </summary>
         public static readonly DependencyProperty MaxVisibleColumnsProperty =
             DependencyProperty.Register(nameof(MaxVisibleColumns), typeof(int), typeof(HexBox),
-                new PropertyMetadata(int.MaxValue, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(int.MaxValue, OnPropertyChangedInvalidateVisual));
 
 
         /// <summary>
@@ -126,21 +112,21 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty MaxVisibleRowsProperty =
             DependencyProperty.Register(nameof(MaxVisibleRows), typeof(int), typeof(HexBox),
-                new PropertyMetadata(int.MaxValue, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(int.MaxValue, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the brush used for selection fill.
         /// </summary>
         public static readonly DependencyProperty SelectionBrushProperty =
             DependencyProperty.Register(nameof(SelectionBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(new SolidColorBrush(Colors.LightPink), OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.LightPink), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the brush used for selected text.
         /// </summary>
         public static readonly DependencyProperty SelectionTextBrushProperty =
             DependencyProperty.Register(nameof(SelectionTextBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the offset from <see cref="DataSourceProperty"/> of where the user selection has ended.
@@ -161,28 +147,28 @@ namespace kissskia
         /// </summary>
         public static readonly DependencyProperty ShowAddressProperty =
             DependencyProperty.Register(nameof(ShowAddress), typeof(bool), typeof(HexBox),
-                new PropertyMetadata(true, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Determines whether to show the data section of the control.
         /// </summary>
         public static readonly DependencyProperty ShowDataProperty =
             DependencyProperty.Register(nameof(ShowData), typeof(bool), typeof(HexBox),
-                new PropertyMetadata(true, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Determines whether to show the text section of the control.
         /// </summary>
         public static readonly DependencyProperty ShowTextProperty =
             DependencyProperty.Register(nameof(ShowText), typeof(bool), typeof(HexBox),
-                new PropertyMetadata(true, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the format of the text to display in the text section.
         /// </summary>
         public static readonly DependencyProperty TextFormatProperty =
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
-                new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateMeasure));
+                new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Gets the <see cref="Copy"/> command.
@@ -205,12 +191,17 @@ namespace kissskia
         private const int _CharsBetweenDataColumns = 1;
         private const int _ScrollWheelScrollRows = 3;
 
+        private Rect _AddressRect;
+        private Rect _DataRect;
+        private Rect _TextRect;
+
+        private SKPaint _TextPaint;
+        private SKPaint _LinePaint;
         private SKRect _TextMeasure;
         private SKTypeface _TextTypeFace;
-        private float _LineSize = 1.0f;
 
         private SKXamlCanvas _Canvas;
-        private string _CanvasName = "PartCanvas";
+        private string _CanvasName = "ElementCanvas";
 
         private SelectionArea _HighlightBegin = SelectionArea.None;
         private SelectionArea _HighlightState = SelectionArea.None;
@@ -218,7 +209,7 @@ namespace kissskia
         private double _LastVerticalScrollValue = 0;
 
         private ScrollBar _ScrollBar;
-        private string _ScrollBarName = "PartVerticalScrollBar";
+        private string _ScrollBarName = "ElementScrollBar";
 
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -312,30 +303,22 @@ namespace kissskia
         }
 
         /// <summary>
-        /// Gets or sets the type of the data to display.
+        /// Gets or sets the data type which is used to display within this control.
         /// </summary>
         public DataType DataType
         {
-            get => (DataType)GetValue(DataTypeProperty);
-
+            get { return (DataType)GetValue(DataTypeProperty); }
             set => SetValue(DataTypeProperty, value);
         }
+
+        // Using a DependencyProperty as the backing store for DataType.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty DataTypeProperty =
+            DependencyProperty.Register("DataType", typeof(DataType), typeof(HexBox), new PropertyMetadata(DataType.Int_1, OnDataTypeChanged));
 
         /// <summary>
         /// Gets or sets the width of the data to display.
         /// </summary>
-        public int DataWidth
-        {
-            get => (int)GetValue(DataWidthProperty);
-
-            set
-            {
-                if (ValidateDataWidth(value))
-                    SetValue(DataWidthProperty, CoerceDataWidth(this, value));
-                else
-                    throw new ArgumentOutOfRangeException(nameof(value), "Value must be 1,2,4,8.");
-            }
-        }
+        private int DataWidth = 1;
 
         /// <summary>
         /// Gets a value indicating whether the user has made any selection within the control.
@@ -502,10 +485,6 @@ namespace kissskia
 
         private int _BytesPerRow => DataWidth * Columns;
 
-        private const int _WidthIncludingTrailingWhitespace = 0;
-
-        private int _count = 0;
-
         /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
         /// </summary>
@@ -543,7 +522,7 @@ namespace kissskia
             if (_Canvas != null)
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
-                _Canvas.PaintSurface += PartCanvas_PaintSurface;
+                _Canvas.PaintSurface += Canvas_PaintSurface;
             }
             else
             {
@@ -574,7 +553,6 @@ namespace kissskia
             
         }
 
-
         private void DrawSelectionGeometry(SKCanvas Canvas,
                                             Brush brush,
                                             SKPaint pen,
@@ -597,8 +575,8 @@ namespace kissskia
             {
                 case SelectionArea.Data:
                     {
-                        lhsVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                        rhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
+                        lhsVerticalLinePoint0 = new Point(_AddressRect.Left, _AddressRect.Top);
+                        rhsVerticalLinePoint0 = new Point(_DataRect.Left, _DataRect.Top);
 
                         selectionBoxXPadding = _SelectionBoxDataXPadding;
                         selectionBoxYPadding = _SelectionBoxDataYPadding;
@@ -608,8 +586,8 @@ namespace kissskia
 
                 case SelectionArea.Text:
                     {
-                        lhsVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                        rhsVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
+                        lhsVerticalLinePoint0 = new Point(_DataRect.Left, _DataRect.Top);
+                        rhsVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
 
                         selectionBoxXPadding = _SelectionBoxTextXPadding;
                         selectionBoxYPadding = _SelectionBoxTextYPadding;
@@ -627,6 +605,8 @@ namespace kissskia
             point1.X +=  selectionBoxXPadding;
             point0.Y -=  selectionBoxYPadding;
             point1.Y +=  selectionBoxYPadding;
+
+            var ps_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
 
             SKPath path = new();
             SKPoint[] points;
@@ -646,11 +626,11 @@ namespace kissskia
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point0.Y);
-                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding), (float)point1.Y);
+                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding), (float)point0.Y);
+                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding), (float)point1.Y);
                     SKPoint point4 = new((float)point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding), (float)(point0.Y + _TextMeasure.Height));
+                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding), (float)(point1.Y + _TextMeasure.Height));
+                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding), (float)(point0.Y + _TextMeasure.Height));
                     SKPoint point7 = new((float)point0.X, (float)(point0.Y + _TextMeasure.Height));
 
                     points = [point0.ToSKPoint(), point2, point3, point1.ToSKPoint(), point4, point5, point6, point7];
@@ -690,8 +670,8 @@ namespace kissskia
                     // |                           |
                     // +---------------------------+
                     {
-                        Point point2 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
-                        Point point3 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
+                        Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
+                        Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
                         Point point4 = new(point0.X, point1.Y);
 
                         points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point4.ToSKPoint()];
@@ -699,8 +679,8 @@ namespace kissskia
 
                     {
                         Point point5 = new(point1.X, point1.Y + _TextMeasure.Height);
-                        Point point6 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
-                        Point point7 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point1.Y);
+                        Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
+                        Point point7 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y);
                         points = [point1.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
                     }
                 }
@@ -717,11 +697,11 @@ namespace kissskia
                     // 5--------4                  |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width + selectionBoxXPadding, point1.Y);
+                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
                     Point point4 = new(point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    Point point5 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, (float)(point1.Y + _TextMeasure.Height));
-                    Point point6 = new(lhsVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, (float)(point1.Y + _TextMeasure.Height));
+                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
                     Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 
                     points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
@@ -734,34 +714,50 @@ namespace kissskia
             Canvas.DrawPath(path, pen);
         }
 
-        private void PartCanvas_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
+        private void DrawTextAccuracy(SKCanvas Canvas, SKPaint paint, SKPoint pt, string text)
+        {
+            //Canvas.DrawText(text, pt, paint);
+            int index = 0;
+            foreach (var c in text)
+            {
+                Canvas.DrawText(c.ToString(), pt.X + index * _TextMeasure.Width, pt.Y, paint);
+                index++;
+            }
+        }
+
+        private void Canvas_PaintSurface(object sender, SKPaintSurfaceEventArgs e)
         {
             var view = sender as SKXamlCanvas;
             var canvas = e.Surface.Canvas;
 
-            UpdateState();
-
-            if (false)
+            if (_LinePaint == null)
             {
-                var pint = new SKPaint()
+                _LinePaint = new()
                 {
-                    Color=Colors.Red.ToSKColor(),
-                    StrokeWidth = 2,
-                    Style = SKPaintStyle.Stroke,
+                    Color = SKColors.Black,
+                    IsStroke = true,
+                    IsAntialias = true,
+                    StrokeWidth = 1,
+                    TextSize = (float)FontSize,
+                    Typeface = _TextTypeFace,
+                    TextAlign = SKTextAlign.Left,
                 };
-                SKRect rect = new(0, 0, (float)view.ActualWidth, (float)view.ActualHeight);
-                //canvas.DrawRect(rect, pint);
-
-                //SKPoint p0 = new(0, 0), p1 = new (rect.Width, 0), p2 = new (rect.Width, rect.Height), p3 = new(0, rect.Height);
-                //canvas.DrawLine(p0, p1, pint);
-                //canvas.DrawLine(p1, p2, pint);
-                //canvas.DrawLine(p2, p3, pint);
-                //canvas.DrawLine(p3, p0, pint);
-
-                SKPath path = new();
-                path.AddRect(rect);
-                canvas.DrawPath(path, pint);
             }
+
+            if (_TextPaint == null)
+            {
+                _TextPaint = new()
+                {
+                    TextSize = (float)FontSize,
+                    Typeface = _TextTypeFace,
+                    TextScaleX = 1f,
+                    IsAntialias = true,
+                    TextAlign = SKTextAlign.Left,
+                    HintingLevel = SKPaintHinting.Normal,
+                };
+            }
+
+            UpdateState();
 
             if (DataSource != null)
             {
@@ -770,48 +766,19 @@ namespace kissskia
 
                 DataSource.BaseStream.Position = Offset;
 
-                using SKPaint SplitLinePaint = new()
-                {
-                    Color = SKColors.Black,
-                    IsStroke = true,
-                    IsAntialias = true,
-                    StrokeWidth = 1,
-                    TextSize = (float)FontSize,
-                    Typeface = _TextTypeFace,
-                    TextScaleX = 1f,
-                    TextAlign = SKTextAlign.Center,
-                    IsDither = true
-                };
-
-                using SKPaint DataPaint = new()
-                {
-                    TextSize = (float)FontSize,
-                    Typeface = _TextTypeFace,
-                    TextScaleX = 1f,
-                    IsAntialias = true,
-                    IsDither = true,
-                    TextAlign = SKTextAlign.Left,
-                };
-
                 if (ShowAddress)
                 {
-                    var addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                    var addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
+                    var p0 = new Point(_AddressRect.Left, _AddressRect.Top).ToSKPoint();
+                    var p1 = new Point(_AddressRect.Right, _AddressRect.Bottom).ToSKPoint();
 
-                    var p0 = addressVerticalLinePoint0.ToSKPoint();
-                    var p1 = addressVerticalLinePoint1.ToSKPoint();
-
-                    canvas.DrawLine(p0, p1, SplitLinePaint);
+                    canvas.DrawLine(p0, p1, _LinePaint);
                 }
 
                 if (ShowData)
                 {
-                    var dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                    var dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
-
-                    var p0 = dataVerticalLinePoint0.ToSKPoint();
-                    var p1 = dataVerticalLinePoint1.ToSKPoint();
-                    canvas.DrawLine(p0, p1, SplitLinePaint);
+                    var p0 = new Point(_DataRect.Left, _DataRect.Top).ToSKPoint();
+                    var p1 = new Point(_DataRect.Right, _DataRect.Bottom).ToSKPoint();
+                    canvas.DrawLine(p0, p1, _LinePaint);
 
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
@@ -821,7 +788,7 @@ namespace kissskia
                         if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
                         {
                             // We're selecting the last column so the end point is the data vertical line (effectively)
-                            selectionPoint1.X = dataVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
+                            selectionPoint1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
                             selectionPoint1.Y -=  _TextMeasure.Height;
                         }
                         else
@@ -829,14 +796,14 @@ namespace kissskia
                             selectionPoint1.X -= _CharsBetweenDataColumns * _TextMeasure.Width;
                         }
 
-                        DrawSelectionGeometry(canvas, SelectionBrush, DataPaint, selectionPoint0, selectionPoint1, SelectionArea.Data);
+                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, selectionPoint0, selectionPoint1, SelectionArea.Data);
                     }
                 }
 
                 if (ShowText)
                 {
-                    var textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
-                    var textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
+                    var textVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
+                    var textVerticalLinePoint1 = new Point(_TextRect.Right, _TextRect.Bottom);
 
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
@@ -850,12 +817,12 @@ namespace kissskia
                             selectionPoint1.Y -= _TextMeasure.Height;
                         }
 
-                        DrawSelectionGeometry(canvas, SelectionBrush, DataPaint, selectionPoint0, selectionPoint1, SelectionArea.Text);
+                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, selectionPoint0, selectionPoint1, SelectionArea.Text);
                     }
                 }
 
                 SKPoint origin = default;
-                origin.Y = _TextMeasure.Height; // left bottom to right top
+                origin.Y = _TextMeasure.Height; /* left bottom to right top */
 
                 for (var row = 0; row < MaxVisibleRows; ++row)
                 {
@@ -867,9 +834,9 @@ namespace kissskia
 
                             if (AddressBrush is SolidColorBrush s)
                             {
-                                DataPaint.Color = s.Color.ToSKColor();
+                                _TextPaint.Color = s.Color.ToSKColor();
                             }
-                            canvas.DrawText(textToFormat, origin.X, origin.Y, DataPaint);
+                            canvas.DrawText(textToFormat, origin.X, origin.Y, _TextPaint);
 
                             origin.X += (float)((CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width);
                         }
@@ -928,17 +895,17 @@ namespace kissskia
                         {
                             if (Foreground is SolidColorBrush s)
                             {
-                                DataPaint.Color = s.Color.ToSKColor();
+                                _TextPaint.Color = s.Color.ToSKColor();
                             }
-                            canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, DataPaint);
+                            DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
                         }
 
                         {
                             if (AlternatingDataColumnTextBrush is SolidColorBrush s)
                             {
-                                DataPaint.Color = s.Color.ToSKColor();
+                                _TextPaint.Color = s.Color.ToSKColor();
                             }
-                            canvas.DrawText(oddColumnBuilder.ToString(), origin.X, origin.Y, DataPaint);
+                            DrawTextAccuracy(canvas, _TextPaint, origin, oddColumnBuilder.ToString());
                         }
                         origin.X += evenColumnBuilder.Length * _TextMeasure.Width;
 
@@ -973,9 +940,9 @@ namespace kissskia
                             {
                                 if (SelectionTextBrush is SolidColorBrush s)
                                 {
-                                    DataPaint.Color = s.Color.ToSKColor();
+                                    _TextPaint.Color = s.Color.ToSKColor();
                                 }
-                                canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, DataPaint);
+                                DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
                             }
 
                             origin.X += evenColumnBuilder.Length * _TextMeasure.Width;
@@ -991,7 +958,6 @@ namespace kissskia
                                     if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedData();
-
                                         if (column % 2 == 0)
                                         {
                                             evenColumnBuilder.Append(textToFormat);
@@ -1019,17 +985,17 @@ namespace kissskia
                                 {
                                     if (Foreground is SolidColorBrush s)
                                     {
-                                        DataPaint.Color = s.Color.ToSKColor();
+                                        _TextPaint.Color = s.Color.ToSKColor();
                                     }
-                                    canvas.DrawText(evenColumnBuilder.ToString(), origin.X, origin.Y, DataPaint);
+                                    DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
                                 }
 
                                 {
                                     if (AlternatingDataColumnTextBrush is SolidColorBrush s)
                                     {
-                                        DataPaint.Color = s.Color.ToSKColor();
+                                        _TextPaint.Color = s.Color.ToSKColor();
                                     }
-                                    canvas.DrawText(oddColumnBuilder.ToString(), origin.X, origin.Y, DataPaint);
+                                    DrawTextAccuracy(canvas, _TextPaint, origin, oddColumnBuilder.ToString());
                                 }
 
                                 origin.X += oddColumnBuilder.Length * _TextMeasure.Width;
@@ -1074,9 +1040,9 @@ namespace kissskia
                         {
                             if (Foreground is SolidColorBrush s)
                             {
-                                DataPaint.Color = s.Color.ToSKColor();
+                                _TextPaint.Color = s.Color.ToSKColor();
                             }
-                            canvas.DrawText(builder.ToString(), origin.X, origin.Y, DataPaint);
+                            DrawTextAccuracy(canvas, _TextPaint, origin, builder.ToString());
                         }
 
                         if (column < Columns)
@@ -1105,9 +1071,10 @@ namespace kissskia
                             {
                                 if (SelectionTextBrush is SolidColorBrush s)
                                 {
-                                    DataPaint.Color = s.Color.ToSKColor();
+                                    _TextPaint.Color = s.Color.ToSKColor();
                                 }
-                                canvas.DrawText(builder.ToString(), origin.X, origin.Y, DataPaint);
+
+                                DrawTextAccuracy(canvas, _TextPaint, origin, builder.ToString());
                             }
 
                             if (column < Columns)
@@ -1131,9 +1098,10 @@ namespace kissskia
                                 {
                                     if (Foreground is SolidColorBrush s)
                                     {
-                                        DataPaint.Color = s.Color.ToSKColor();
+                                        _TextPaint.Color = s.Color.ToSKColor();
                                     }
-                                    canvas.DrawText(builder.ToString(), origin.X, origin.Y, DataPaint);
+
+                                    DrawTextAccuracy(canvas, _TextPaint, origin, builder.ToString());
                                 }
                             }
                         }
@@ -1399,8 +1367,6 @@ namespace kissskia
         }
         protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
         {
-            Debugger.Log(0, "s", $"OnDoubleTapped {_count++}\n");
-
             base.OnDoubleTapped(e);
             if (e.PointerDeviceType == PointerDeviceType.Mouse)
             {
@@ -1411,15 +1377,11 @@ namespace kissskia
         protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
-
-            Debugger.Log(0, "s", $"OnGotFocus {_count++} {e.OriginalSource.ToString()}, {FocusState}\n");
         }
 
         protected override void OnLostFocus(RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-
-            Debugger.Log(0, "s", $"OnLostFocus {_count++} {e.OriginalSource.ToString()}, {FocusState}\n");
         }
 
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
@@ -1429,7 +1391,7 @@ namespace kissskia
                 var res = Focus(FocusState.Programmatic);
                 if (!res)
                 {
-                    Debugger.Log(0, "s", $"Focus not moved {_count++}\n");
+                    Debugger.Log(0, "s", $"Focus not moved\n");
                 }
             }
 
@@ -1467,18 +1429,22 @@ namespace kissskia
                 }
             }
         }
+
         protected override void OnPointerCaptureLost(PointerRoutedEventArgs e)
         {
             base.OnPointerCaptureLost(e);
         }
+
         protected override void OnPointerExited(PointerRoutedEventArgs e)
         {
             base.OnPointerExited(e);
         }
+
         protected override void OnPointerEntered(PointerRoutedEventArgs e)
         {
             base.OnPointerEntered(e);
         }
+
         /// <inheritdoc/>
         protected override void OnPointerMoved(PointerRoutedEventArgs e)
         {
@@ -1589,11 +1555,9 @@ namespace kissskia
             ReleasePointerCapture(e.Pointer);
         }
 
-        private static void OnPropertyChangedInvalidateMeasure(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void OnPropertyChangedInvalidateVisual(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var HexBox = (HexBox)d;
-
-            Debugger.Log(0, "s", $"value {e.Property.GetType().ToString()} {e.NewValue}\n");
 
             HexBox.Reflush();
         }
@@ -1692,18 +1656,6 @@ namespace kissskia
             return value;
         }
 
-        private static object CoerceDataWidth(DependencyObject d, object value)
-        {
-            var HexBox = (HexBox)d;
-
-            if (HexBox.DataType == DataType.FloatingPoint && (int)value < 4)
-            {
-                value = 4;
-            }
-
-            return value;
-        }
-
         private static object CoerceOffset(DependencyObject d, object value)
         {
             var HexBox = (HexBox)d;
@@ -1720,25 +1672,6 @@ namespace kissskia
             }
 
             return value;
-        }
-
-        private static bool ValidateDataWidth(object value)
-        {
-            bool result = false;
-
-            switch ((int)value)
-            {
-                case 1:
-                case 2:
-                case 4:
-                case 8:
-                    {
-                        result = true;
-                        break;
-                    }
-            }
-
-            return result;
         }
 
         private static void OnAddressChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -1758,7 +1691,26 @@ namespace kissskia
         {
             var HexBox = (HexBox)d;
 
-            HexBox.DataWidth = (int)e.NewValue;
+            switch (HexBox.DataType) {
+                case DataType.Int_1:
+                    HexBox.DataWidth = 1;
+                    break;
+                case DataType.Int_2:
+                    HexBox.DataWidth = 2;
+                    break;
+                case DataType.Int_4:
+                    HexBox.DataWidth = 4;
+                    break;
+                case DataType.Int_8:
+                    HexBox.DataWidth = 8;
+                    break;
+                case DataType.Float_32:
+                    HexBox.DataWidth = 4;
+                    break;
+                case DataType.Float_64:
+                    HexBox.DataWidth = 8;
+                    break;
+            }
 
             HexBox.Reflush();
         }
@@ -1768,16 +1720,6 @@ namespace kissskia
             var HexBox = (HexBox)d;
 
             HexBox.Offset = 0;
-            HexBox.SelectionStart = 0;
-            HexBox.SelectionEnd = 0;
-
-            HexBox.Reflush();
-        }
-
-        private static void OnDataWidthChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            var HexBox = (HexBox)d;
-
             HexBox.SelectionStart = 0;
             HexBox.SelectionEnd = 0;
 
@@ -1835,178 +1777,155 @@ namespace kissskia
         {
             string result;
 
-            switch (DataType)
+            if(DataType < DataType.Float_32)
             {
-                case DataType.Integer:
+                switch (DataFormat)
+                {
+                    case DataFormat.Decimal:
                     {
-                        switch (DataFormat)
+                        if(DataSignedness == DataSignedness.Signed)
                         {
-                            case DataFormat.Decimal:
+                            switch (DataType)
+                            {
+                                case DataType.Int_1:
                                 {
-                                    switch (DataSignedness)
-                                    {
-                                        case DataSignedness.Signed:
-                                            {
-                                                switch (DataWidth)
-                                                {
-                                                    case 1:
-                                                        {
-                                                            result = $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(4);
-                                                            break;
-                                                        }
-
-                                                    case 2:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(6);
-                                                            break;
-                                                        }
-
-                                                    case 4:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(11);
-                                                            break;
-                                                        }
-
-                                                    case 8:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(21);
-                                                            break;
-                                                        }
-
-                                                    default:
-                                                        {
-                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                                        }
-                                                }
-
-                                                break;
-                                            }
-
-                                        case DataSignedness.Unsigned:
-                                            {
-                                                switch (DataWidth)
-                                                {
-                                                    case 1:
-                                                        {
-                                                            result = $"{DataSource.ReadByte()}".PadLeft(3);
-                                                            break;
-                                                        }
-
-                                                    case 2:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(5);
-                                                            break;
-                                                        }
-
-                                                    case 4:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(10);
-                                                            break;
-                                                        }
-
-                                                    case 8:
-                                                        {
-                                                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(20);
-                                                            break;
-                                                        }
-
-                                                    default:
-                                                        {
-                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                                        }
-                                                }
-
-                                                break;
-                                            }
-
-                                        default:
-                                            {
-                                                throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                                            }
-                                    }
-
+                                    result = $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(4);
                                     break;
                                 }
 
-                            case DataFormat.Hexadecimal:
+                                case DataType.Int_2:
                                 {
-                                    switch (DataWidth)
-                                    {
-                                        case 1:
-                                            {
-                                                result = $"{DataSource.ReadByte(),0:X2}";
-                                                break;
-                                            }
-
-                                        case 2:
-                                            {
-                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness),0:X4}";
-                                                break;
-                                            }
-
-                                        case 4:
-                                            {
-                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness),0:X8}";
-                                                break;
-                                            }
-
-                                        case 8:
-                                            {
-                                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness),0:X16}";
-                                                break;
-                                            }
-
-                                        default:
-                                            {
-                                                throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                            }
-                                    }
-
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(6);
                                     break;
                                 }
 
-                            default:
+                                case DataType.Int_4:
                                 {
-                                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
-                                }
-                        }
-
-                        break;
-                    }
-
-                case DataType.FloatingPoint:
-                    {
-                        switch (DataWidth)
-                        {
-                            case 4:
-                                {
-                                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness));
-                                    var value = BitConverter.ToSingle(bytes, 0);
-                                    result = $"{value:E08}".PadLeft(16);
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(11);
                                     break;
                                 }
 
-                            case 8:
+                                case DataType.Int_8:
                                 {
-                                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness));
-                                    var value = BitConverter.ToSingle(bytes, 0);
-                                    result = $"{value:E16}".PadLeft(24);
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(21);
                                     break;
                                 }
 
-                            default:
+                                default:
                                 {
                                     throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
                                 }
+                            }
+                        }
+                        else if(DataSignedness == DataSignedness.Unsigned)
+                        {
+                            switch (DataType)
+                            {
+                                case DataType.Int_1:
+                                {
+                                    result = $"{DataSource.ReadByte()}".PadLeft(3);
+                                    break;
+                                }
+
+                                case DataType.Int_2:
+                                {
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(5);
+                                    break;
+                                }
+
+                                case DataType.Int_4:
+                                {
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(10);
+                                    break;
+                                }
+
+                                case DataType.Int_8:
+                                {
+                                    result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(20);
+                                    break;
+                                }
+
+                                default:
+                                {
+                                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                        }
+                    }
+                    break;
+
+                    case DataFormat.Hexadecimal:
+                    {
+                        switch (DataType)
+                        {
+                            case DataType.Int_1:
+                            {
+                                result = $"{DataSource.ReadByte(),0:X2}";
+                                break;
+                            }
+
+                            case DataType.Int_2:
+                            {
+                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness),0:X4}";
+                                break;
+                            }
+
+                            case DataType.Int_4:
+                            {
+                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness),0:X8}";
+                                break;
+                            }
+
+                            case DataType.Int_8:
+                            {
+                                result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness),0:X16}";
+                                break;
+                            }
+
+                            default:
+                            {
+                                throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                            }
                         }
 
                         break;
                     }
 
-                default:
+                    default:
                     {
-                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                        throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
                     }
+                }
+            }
+            else
+            {
+                switch (DataType)
+                {
+                    case DataType.Float_32:
+                    {
+                        var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness));
+                        var value = BitConverter.ToSingle(bytes, 0);
+                        result = $"{value:E08}".PadLeft(16);
+                        break;
+                    }
+
+                    case DataType.Float_64:
+                    {
+                        var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness));
+                        var value = BitConverter.ToSingle(bytes, 0);
+                        result = $"{value:E16}".PadLeft(24);
+                        break;
+                    }
+
+                    default:
+                    {
+                        throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                    }
+                }
             }
 
             return result;
@@ -2143,161 +2062,147 @@ namespace kissskia
         {
             int dataColumnCharWidth;
 
-            switch (DataType)
+            if(DataType < DataType.Float_32)
             {
-                case DataType.Integer:
-                    {
-                        switch (DataFormat)
+                switch (DataFormat)
+                {
+                    case DataFormat.Decimal:
                         {
-                            case DataFormat.Decimal:
-                                {
-                                    switch (DataSignedness)
+                            switch (DataSignedness)
+                            {
+                                case DataSignedness.Signed:
                                     {
-                                        case DataSignedness.Signed:
-                                            {
-                                                switch (DataWidth)
+                                        switch (DataType)
+                                        {
+                                            case DataType.Int_1:
                                                 {
-                                                    case 1:
-                                                        {
-                                                            dataColumnCharWidth = 4;
-                                                            break;
-                                                        }
-
-                                                    case 2:
-                                                        {
-                                                            dataColumnCharWidth = 6;
-                                                            break;
-                                                        }
-
-                                                    case 4:
-                                                        {
-                                                            dataColumnCharWidth = 11;
-                                                            break;
-                                                        }
-
-                                                    case 8:
-                                                        {
-                                                            dataColumnCharWidth = 21;
-                                                            break;
-                                                        }
-
-                                                    default:
-                                                        {
-                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                                        }
+                                                    dataColumnCharWidth = 4;
+                                                    break;
                                                 }
-                                            }
 
-                                            break;
-
-                                        case DataSignedness.Unsigned:
-                                            {
-                                                switch (DataWidth)
+                                            case DataType.Int_2:
                                                 {
-                                                    case 1:
-                                                        {
-                                                            dataColumnCharWidth = 3;
-                                                            break;
-                                                        }
-
-                                                    case 2:
-                                                        {
-                                                            dataColumnCharWidth = 5;
-                                                            break;
-                                                        }
-
-                                                    case 4:
-                                                        {
-                                                            dataColumnCharWidth = 10;
-                                                            break;
-                                                        }
-
-                                                    case 8:
-                                                        {
-                                                            dataColumnCharWidth = 20;
-                                                            break;
-                                                        }
-
-                                                    default:
-                                                        {
-                                                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                                        }
+                                                    dataColumnCharWidth = 6;
+                                                    break;
                                                 }
-                                            }
 
-                                            break;
+                                            case DataType.Int_4:
+                                                {
+                                                    dataColumnCharWidth = 11;
+                                                    break;
+                                                }
 
-                                        default:
-                                            {
-                                                throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                                            }
-                                    }
-                                }
+                                            case DataType.Int_8:
+                                                {
+                                                    dataColumnCharWidth = 21;
+                                                    break;
+                                                }
 
-                                break;
-
-                            case DataFormat.Hexadecimal:
-                                {
-                                    switch (DataWidth)
-                                    {
-                                        case 1:
-                                        case 2:
-                                        case 4:
-                                        case 8:
-                                            {
-                                                dataColumnCharWidth = 2 * DataWidth;
-                                                break;
-                                            }
-
-                                        default:
-                                            {
-                                                throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                            }
+                                            default:
+                                                {
+                                                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                }
+                                        }
                                     }
 
                                     break;
-                                }
 
-                            default:
-                                {
-                                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
-                                }
+                                case DataSignedness.Unsigned:
+                                    {
+                                        switch (DataType)
+                                        {
+                                            case DataType.Int_1:
+                                                {
+                                                    dataColumnCharWidth = 3;
+                                                    break;
+                                                }
+
+                                            case DataType.Int_2:
+                                                {
+                                                    dataColumnCharWidth = 5;
+                                                    break;
+                                                }
+
+                                            case DataType.Int_4:
+                                                {
+                                                    dataColumnCharWidth = 10;
+                                                    break;
+                                                }
+
+                                            case DataType.Int_8:
+                                                {
+                                                    dataColumnCharWidth = 20;
+                                                    break;
+                                                }
+
+                                            default:
+                                                {
+                                                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                                }
+                                        }
+                                    }
+
+                                    break;
+
+                                default:
+                                    {
+                                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
+                                    }
+                            }
                         }
-                    }
 
-                    break;
+                        break;
 
-                case DataType.FloatingPoint:
-                    {
-                        switch (DataWidth)
+                    case DataFormat.Hexadecimal:
                         {
-                            case 4:
-                                {
-                                    dataColumnCharWidth = 16;
-                                    break;
-                                }
+                            switch (DataWidth)
+                            {
+                                case 1:
+                                case 2:
+                                case 4:
+                                case 8:
+                                    {
+                                        dataColumnCharWidth = 2 * DataWidth;
+                                        break;
+                                    }
 
-                            case 8:
-                                {
-                                    dataColumnCharWidth = 24;
-                                    break;
-                                }
+                                default:
+                                    {
+                                        throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                                    }
+                            }
 
-                            default:
-                                {
-                                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                                }
+                            break;
                         }
-                    }
 
-                    break;
-
-                default:
-                    {
-                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                    }
+                    default:
+                        {
+                            throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
+                        }
+                }
             }
+            else
+            {
+                switch (DataType)
+                {
+                    case DataType.Float_32:
+                        {
+                            dataColumnCharWidth = 16;
+                            break;
+                        }
 
+                    case DataType.Float_64:
+                        {
+                            dataColumnCharWidth = 24;
+                            break;
+                        }
+
+                    default:
+                        {
+                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
+                        }
+                }
+            }
             return dataColumnCharWidth;
         }
 
@@ -2384,6 +2289,22 @@ namespace kissskia
         {
             UpdateMaxVisibleRowsAndColumns();
             UpdateScrollBar();
+            UpdateColumnsLayout();
+        }
+
+        private void UpdateColumnsLayout()
+        {
+            var p0 = CalculateAddressVerticalLinePoint0();
+            var p1 = CalculateAddressVerticalLinePoint1();
+            _AddressRect = new( p0, p1 );
+
+            p0 = CalculateDataVerticalLinePoint0();
+            p1 = CalculateDataVerticalLinePoint1();
+            _DataRect = new( p0, p1 );
+
+            p0 = CalculateTextVerticalLinePoint0();
+            p1 = CalculateTextVerticalLinePoint1();
+            _TextRect = new(p0, p1);
         }
 
         private void UpdateMaxVisibleRowsAndColumns()
@@ -2393,22 +2314,23 @@ namespace kissskia
 
             if ((ShowAddress || ShowData || ShowText) && _Canvas != null)
             {
-                using (var paint = new SKPaint()
                 {
-                    TextSize = (float)FontSize,
-                    Typeface = _TextTypeFace,
-                    TextScaleX = 1f,
-                    IsAntialias = true,
-                    IsDither = true,
-                    HintingLevel = SKPaintHinting.Normal,
-                    TextAlign = SKTextAlign.Center,
-                    FakeBoldText = true
-                })
-                {
-                    paint.MeasureText("X", ref _TextMeasure);
+                    SKRect cellSize = new();
+                    string bigChars = "0123456789abcdef ABCDEF";
+                    for (int i = 0; i < bigChars.Length; i++)
+                    {
+                        var s = bigChars.Substring(i, 1);
+                        if (_TextPaint.ContainsGlyphs(s))    // if the font does not contain the glyph, then skip it
+                        {
+                            var rect = new SKRect();
+                            _TextPaint.MeasureText(s, ref rect);
+                            cellSize.Union(rect);
+                        }
+                    }
+                    _TextMeasure = cellSize;
                 }
 
-                _TextMeasure.Bottom = _TextMeasure.Height * _LineSize;
+                _TextMeasure.Bottom = _TextMeasure.Height; /* 2 * line font height */
 
                 maxVisibleRows = Math.Max(0, (int)(_Canvas.ActualHeight / _TextMeasure.Height));
 
@@ -2489,110 +2411,101 @@ namespace kissskia
             switch (_HighlightBegin)
             {
                 case SelectionArea.Address:
+                {
+                    // Clamp the Y coordinate to within the address region
+                    position.Y = position.Y.Clamp(_AddressRect.Top, _AddressRect.Bottom);
+
+                    // Convert the Y coordinate to the row number
+                    position.Y /= _TextMeasure.Height;
+
+                    if (position.Y >= MaxVisibleRows)
                     {
-                        Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-                        Point addressVerticalLinePoint1 = CalculateAddressVerticalLinePoint1();
-
-                        // Clamp the Y coordinate to within the address region
-                        position.Y = position.Y.Clamp(addressVerticalLinePoint0.Y, addressVerticalLinePoint1.Y);
-
-                        // Convert the Y coordinate to the row number
-                        position.Y /= _TextMeasure.Height;
-
-                        if (position.Y >= MaxVisibleRows)
-                        {
-                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                            --position.Y;
-                        }
-
-                        offset += _BytesPerRow * (long)position.Y;
+                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                        --position.Y;
                     }
 
-                    break;
+                    offset += _BytesPerRow * (long)position.Y;
+                }
+
+                break;
 
                 case SelectionArea.Data:
+                {
+                    var pix_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
+
+                    // Clamp the X coordinate to within the data region
+                    position.X = position.X.Clamp(_AddressRect.Left + pix_CharsBetweenSections, _DataRect.Left - pix_CharsBetweenSections);
+
+                    // Normalize with respect to the data region
+                    position.X -= _AddressRect.Left + pix_CharsBetweenSections;
+
+                    // Convert the X coordinate to the column number
+                    position.X /= (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
+
+                    if (position.X >= Columns)
                     {
-                        Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-
-                        Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-                        Point dataVerticalLinePoint1 = CalculateDataVerticalLinePoint1();
-
-                        // Clamp the X coordinate to within the data region
-                        position.X = position.X.Clamp(addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width, dataVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width);
-
-                        // Normalize with respect to the data region
-                        position.X -= addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
-
-                        // Convert the X coordinate to the column number
-                        position.X /= (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
-
-                        if (position.X >= Columns)
-                        {
-                            // Due to floating point rounding we may end up with exactly the maximum number of columns, so adjust to compensate
-                            --position.X;
-                        }
-
-                        // Clamp the Y coordinate to within the data region
-                        position.Y = position.Y.Clamp(dataVerticalLinePoint0.Y, dataVerticalLinePoint1.Y);
-
-                        // Convert the Y coordinate to the row number
-                        position.Y /= _TextMeasure.Height;
-
-                        if (position.Y >= MaxVisibleRows)
-                        {
-                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                            --position.Y;
-                        }
-
-                        offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                        // Due to floating point rounding we may end up with exactly the maximum number of columns, so adjust to compensate
+                        --position.X;
                     }
 
-                    break;
+                    // Clamp the Y coordinate to within the data region
+                    position.Y = position.Y.Clamp(_DataRect.Top, _DataRect.Bottom);
+
+                    // Convert the Y coordinate to the row number
+                    position.Y /= _TextMeasure.Height;
+
+                    if (position.Y >= MaxVisibleRows)
+                    {
+                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                        --position.Y;
+                    }
+
+                    offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                }
+
+                break;
 
                 case SelectionArea.Text:
+                {
+                    var pix_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
+
+                    // Clamp the X coordinate to within the text region
+                    position.X = position.X.Clamp(_DataRect.Left + pix_CharsBetweenSections, _TextRect.Left - pix_CharsBetweenSections);
+
+                    // Normalize with respect to the text region
+                    position.X -= _DataRect.Left + pix_CharsBetweenSections;
+
+                    // Convert the X coordinate to the column number
+                    position.X /= CalculateTextColumnCharWidth() * _TextMeasure.Width;
+
+                    if (position.X >= Columns)
                     {
-                        Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-
-                        Point textVerticalLinePoint0 = CalculateTextVerticalLinePoint0();
-                        Point textVerticalLinePoint1 = CalculateTextVerticalLinePoint1();
-
-                        // Clamp the X coordinate to within the text region
-                        position.X = position.X.Clamp((float)(dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width), (float)(textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width));
-
-                        // Normalize with respect to the text region
-                        position.X -= (float)(dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width);
-
-                        // Convert the X coordinate to the column number
-                        position.X /= (float)(CalculateTextColumnCharWidth() * _TextMeasure.Width);
-
-                        if (position.X >= Columns)
-                        {
-                            // Due to floating point rounding we may end up with exactly the maximum number of columns, so
-                            // adjust to compensate
-                            --position.X;
-                        }
-
-                        // Clamp the Y coordinate to within the text region
-                        position.Y = position.Y.Clamp(textVerticalLinePoint0.Y, textVerticalLinePoint1.Y);
-
-                        // Convert the Y coordinate to the row number
-                        position.Y /= _TextMeasure.Height;
-
-                        if (position.Y >= MaxVisibleRows)
-                        {
-                            // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
-                            --position.Y;
-                        }
-
-                        offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                        // Due to floating point rounding we may end up with exactly the maximum number of columns, so
+                        // adjust to compensate
+                        --position.X;
                     }
 
-                    break;
+                    // Clamp the Y coordinate to within the text region
+                    position.Y = position.Y.Clamp(_TextRect.Top, _TextRect.Bottom);
+
+                    // Convert the Y coordinate to the row number
+                    position.Y /= _TextMeasure.Height;
+
+                    if (position.Y >= MaxVisibleRows)
+                    {
+                        // Due to floating point rounding we may end up with exactly the maximum number of rows, so adjust to compensate
+                        --position.Y;
+                    }
+
+                    offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                }
+
+                break;
 
                 default:
-                    {
-                        throw new InvalidOperationException($"Invalid highlight state ${_HighlightState}");
-                    }
+                {
+                    throw new InvalidOperationException($"Invalid highlight state ${_HighlightState}");
+                }
             }
 
             return offset;
@@ -2606,10 +2519,8 @@ namespace kissskia
             {
                 case SelectionArea.Data:
                     {
-                        Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
-
-                        position.X = addressVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
-                        position.Y = addressVerticalLinePoint0.Y;
+                        position.X = _AddressRect.Left + _CharsBetweenSections * _TextMeasure.Width;
+                        position.Y = _AddressRect.Top;
 
                         // Normalize requested offset to a zero based column
                         long normalizedColumn = (offset - Offset) / _BytesPerColumn;
@@ -2620,11 +2531,11 @@ namespace kissskia
                         {
                             // Negative normalized offset means the Y position is above the current offset. Because division
                             // rounds toward zero we need to compensate here.
-                            position.Y += (float)(((normalizedColumn + 1) / Columns - 1) * _TextMeasure.Height);
+                            position.Y += ((normalizedColumn + 1) / Columns - 1) * _TextMeasure.Height;
                         }
                         else
                         {
-                            position.Y += (float)(normalizedColumn / Columns * _TextMeasure.Height);
+                            position.Y += normalizedColumn / Columns * _TextMeasure.Height;
                         }
                     }
 
@@ -2632,10 +2543,8 @@ namespace kissskia
 
                 case SelectionArea.Text:
                     {
-                        Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
-
-                        position.X = dataVerticalLinePoint0.X + _CharsBetweenSections * _TextMeasure.Width;
-                        position.Y = dataVerticalLinePoint0.Y;
+                        position.X = _DataRect.Left + _CharsBetweenSections * _TextMeasure.Width;
+                        position.Y = _DataRect.Top;
 
                         // Normalize requested offset to a zero based column
                         long normalizedColumn = (offset - Offset) / _BytesPerColumn;

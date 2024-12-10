@@ -1,4 +1,0 @@
-CreateCaret
-ShowCaret
-DestroyCaret
-SetCaretPos

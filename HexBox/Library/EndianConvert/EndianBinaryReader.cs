@@ -1,4 +1,4 @@
-﻿namespace kissskia.Library.EndianConvert
+﻿namespace HexBox.Library.EndianConvert
 {
     using System;
     using System.IO;

@@ -10,7 +10,7 @@ using WinUIEx;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
-namespace kissskia
+namespace HexBox
 {
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
@@ -49,7 +49,7 @@ namespace kissskia
             var bytes = new byte[1 * 1024 * 1024];
             rand.NextBytes(bytes);
 
-            var fs = new FileStream("D:/temp/测试🌼/avrecoder-x64.mp4", FileMode.Open, FileAccess.Read);
+            var fs = new FileStream("D:\\视频素材仓库\\fragment-mp4-form-obs.mp4", FileMode.Open, FileAccess.Read);
             //Reader = new BinaryReader(new MemoryStream(bytes));
             Reader = new BinaryReader(fs);
             Root.RequestedTheme = ElementTheme.Light;

@@ -1,4 +1,4 @@
-﻿namespace kissskia
+﻿namespace HexBox
 {
     /// <summary>
     /// Enumerates the text section encodings/formats that the control is able to display.

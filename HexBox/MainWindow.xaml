@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WinEx:WindowEx x:Class="kissskia.MainWindow"
+<WinEx:WindowEx x:Class="HexBox.MainWindow"
                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:WinEx="using:WinUIEx"
-                xmlns:local="using:kissskia"
+                xmlns:local="using:HexBox"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 xmlns:skia="using:SkiaSharp.Views.Windows"
@@ -67,7 +67,8 @@
                        Margin="4"
                        BorderBrush="Blue"
                        BorderThickness="1"
-                       FontFamily="Monaco">
+                       FontFamily="Monaco"
+                       FontSize="14">
         </local:HexBox>
     </Grid>
 </WinEx:WindowEx>

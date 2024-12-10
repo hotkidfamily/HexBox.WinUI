@@ -1,4 +1,4 @@
-﻿namespace kissskia
+﻿namespace HexBox
 {
     /// <summary>
     /// Enumerates the signedness of the data to display.

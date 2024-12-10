@@ -1,4 +1,4 @@
-﻿namespace kissskia.Library.EndianConvert
+﻿namespace HexBox.Library.EndianConvert
 {
     /// <summary>
     /// Represents the endianness of a value in a computer architecture.

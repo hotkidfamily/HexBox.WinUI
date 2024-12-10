@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace kissskia
+namespace HexBox
 {
     public class RelayCommand : ICommand
     {

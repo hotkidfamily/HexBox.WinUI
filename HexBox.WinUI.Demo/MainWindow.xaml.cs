@@ -1,20 +1,9 @@
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
-using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Threading;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Runtime.CompilerServices;
+using Windows.Storage.Pickers;
 using WinUIEx;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -25,16 +14,27 @@ namespace HexBox.WinUI.Demo
     /// <summary>
     /// An empty window that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainWindow : WindowEx
+    public sealed partial class MainWindow : WindowEx, INotifyPropertyChanged
     {
-        private Task _caretTask = null;
-        private CancellationToken _taskToken;
+        //private Task _caretTask = null;
+        //private CancellationToken _taskToken;
 
         private BinaryReader _reader;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public BinaryReader Reader
         {
             get { return _reader; }
-            set { _reader = value; }
+            set {
+                _reader = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
         public MainWindow()
@@ -47,24 +47,32 @@ namespace HexBox.WinUI.Demo
             this.SetTitleBar(AppTitleBar);
             this.Width = 1280;
             this.Height = 720;
-            _taskToken = new CancellationToken();
 
-            var rand = new Random();
-
-            // 10 MB of random data
-            var bytes = new byte[1 * 1024 * 1024];
-            rand.NextBytes(bytes);
-
-            var fs = new FileStream("D:\\ÊÓÆµËØ²Ä²Ö¿â\\fragment-mp4-form-obs.mp4", FileMode.Open, FileAccess.Read);
-            //var fs = new FileStream(@"C:\Users\admin\Desktop\crash\short-binary.dat", FileMode.Open, FileAccess.Read);
-            //Reader = new BinaryReader(new MemoryStream(bytes));
-            Reader = new BinaryReader(fs);
             Root.RequestedTheme = ElementTheme.Light;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
+            FileOpenPicker filePicker = new() 
+            { 
 
+            };
+            IntPtr hwnd = this.GetWindowHandle();
+
+            filePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            filePicker.FileTypeFilter.Add("*");
+            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, hwnd);
+
+            var file = await filePicker.PickSingleFileAsync();
+
+            if (file == null)
+                return;
+            else
+            {
+                var fs = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
+                Reader = new BinaryReader(fs);
+                HexViewer.DataSource = Reader;
+            }
         }
     }
 }

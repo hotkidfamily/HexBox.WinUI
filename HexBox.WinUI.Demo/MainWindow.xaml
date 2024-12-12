@@ -36,7 +36,6 @@
         </StackPanel>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
-                    DataSource="{x:Bind Reader}"
                     Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
                     Background="Transparent"
                     Margin="4"

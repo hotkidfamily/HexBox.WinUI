@@ -822,7 +822,7 @@ namespace HexBox
                 }
 
                 SKPoint origin = default;
-                origin.Y = _TextMeasure.Height; /* left bottom to right top */
+                origin.Y = _TextMeasure.Height * 3 / 4; /* left bottom to right top */
 
                 for (var row = 0; row < MaxVisibleRows; ++row)
                 {

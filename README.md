@@ -14,6 +14,7 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 * Able to adaptively display columns upon resizing the control
 * Built in context menu for controlling display of data
 * Supports template styling of the control
+* Monospaced Font is not required.
 
 ## Preview
 ![demo](docs/operations.gif)

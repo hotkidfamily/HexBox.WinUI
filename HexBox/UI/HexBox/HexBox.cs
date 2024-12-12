@@ -1666,7 +1666,7 @@ namespace HexBox
             {
                 long offset = (long)value;
 
-                value = offset.Clamp(0, HexBox.DataSource.BaseStream.Length - 5*_MaxColumns);
+                value = offset.Clamp(0, HexBox.DataSource.BaseStream.Length);
             }
             else
             {

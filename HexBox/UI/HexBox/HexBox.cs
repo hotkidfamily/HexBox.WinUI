@@ -805,6 +805,8 @@ namespace HexBox
                     var textVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
                     var textVerticalLinePoint1 = new Point(_TextRect.Right, _TextRect.Bottom);
 
+                    canvas.DrawLine(textVerticalLinePoint0.ToSKPoint(), textVerticalLinePoint1.ToSKPoint(), _LinePaint);
+
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
                         Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);

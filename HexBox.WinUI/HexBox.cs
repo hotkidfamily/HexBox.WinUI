@@ -1292,14 +1292,9 @@ namespace HexBox.WinUI
                         SelectionStart = SelectionEnd - _BytesPerColumn;
                     }
 
-                    if (isOffsetVisibleBeforeSelectionChange)
-                    {
-                        ScrollToOffset(Offset + _BytesPerRow * MaxVisibleRows * 2 - _BytesPerColumn);
-                    }
-                    else
-                    {
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
-                    }
+                    _ScrollBar.Value += MaxVisibleRows;
+
+                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
 
                     e.Handled = true;
                     break;
@@ -1317,14 +1312,9 @@ namespace HexBox.WinUI
                         SelectionEnd = SelectionStart + _BytesPerColumn;
                     }
 
-                    if (isOffsetVisibleBeforeSelectionChange)
-                    {
-                        ScrollToOffset(Offset - _BytesPerRow * MaxVisibleRows);
-                    }
-                    else
-                    {
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
-                    }
+                    _ScrollBar.Value -= MaxVisibleRows;
+
+                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
 
                     e.Handled = true;
                     break;

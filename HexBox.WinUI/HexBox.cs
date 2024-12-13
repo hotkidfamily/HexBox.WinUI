@@ -10,6 +10,7 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -1937,24 +1938,16 @@ namespace HexBox.WinUI
 
         private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
         {
-            long valueDelta = (long)(e.NewValue - _LastVerticalScrollValue);
-
-            long newOffset = Offset + valueDelta * _BytesPerRow;
+            long newOffset = (long)e.NewValue * _BytesPerRow;
 
             Offset = newOffset;
-
-            Reflush();
         }
 
         private void OnVerticalScrollBarScroll(object sender, ScrollEventType type, double NewValue)
         {
-            long valueDelta = (long)(NewValue - _LastVerticalScrollValue);
-
-            long newOffset = Offset + valueDelta * _BytesPerRow;
+            long newOffset = (long)NewValue * _BytesPerRow;
 
             Offset = newOffset;
-
-            Reflush();
         }
 
         private string GetFormattedAddressText(ulong address)

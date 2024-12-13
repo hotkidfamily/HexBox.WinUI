@@ -624,14 +624,14 @@ namespace HexBox.WinUI
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    SKPoint point2 = new((float)(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding), (float)point0.Y);
-                    SKPoint point3 = new((float)(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding), (float)point1.Y);
-                    SKPoint point4 = new((float)point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point5 = new((float)(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding), (float)(point1.Y + _TextMeasure.Height));
-                    SKPoint point6 = new((float)(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding), (float)(point0.Y + _TextMeasure.Height));
-                    SKPoint point7 = new((float)point0.X, (float)(point0.Y + _TextMeasure.Height));
+                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
+                    Point point4 = new(point1.X, point1.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
+                    Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 
-                    points = [point0.ToSKPoint(), point2, point3, point1.ToSKPoint(), point4, point5, point6, point7];
+                    points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
                 }
                 else
                 {
@@ -646,8 +646,8 @@ namespace HexBox.WinUI
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new(point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    Point point3 = new(point0.X, (float)(point0.Y + _TextMeasure.Height));
+                    Point point2 = new(point1.X, point1.Y + _TextMeasure.Height);
+                    Point point3 = new(point0.X, point0.Y + _TextMeasure.Height);
 
                     points = [point0.ToSKPoint(), point1.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint()];
                 }
@@ -675,6 +675,8 @@ namespace HexBox.WinUI
                         points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point4.ToSKPoint()];
                     }
 
+                    path.AddPoly(points);
+
                     {
                         Point point5 = new(point1.X, point1.Y + _TextMeasure.Height);
                         Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
@@ -697,8 +699,8 @@ namespace HexBox.WinUI
                     // +---------------------------+
                     Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
                     Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
-                    Point point4 = new(point1.X, (float)(point1.Y + _TextMeasure.Height));
-                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, (float)(point1.Y + _TextMeasure.Height));
+                    Point point4 = new(point1.X, point1.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
                     Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
                     Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 

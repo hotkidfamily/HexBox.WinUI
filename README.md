@@ -17,7 +17,7 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 * Monospaced Font is not required.
 
 ## Preview
-![demo](docs/operations.gif)
+![demo](docs/HexBox.WinUI.Demo.gif)
 
 ## Thanks
 Fork from [HexView.Wpf](https://github.com/fjeremic/HexView.Wpf.git)

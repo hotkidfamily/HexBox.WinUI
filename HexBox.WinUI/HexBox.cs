@@ -10,7 +10,6 @@ using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;

@@ -1,6 +1,6 @@
 # Hex Viewer On WinUI3
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/fjeremic/HexView.Wpf/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/hotkidfamily/HexBox.WinUI/blob/master/LICENSE)
 
 A WinUI3 control for displaying binary data in a traditional hex view.
 

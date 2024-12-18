@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml.Media;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -484,6 +485,41 @@ namespace HexBox.WinUI
 
         private int _BytesPerRow => DataWidth * Columns;
 
+        public class HighlightedRegion
+        {
+            public int Start;
+            public int Length;
+            public int End { get { return Start + Length; } }
+            public Brush Color;
+
+            public HighlightedRegion()
+            {
+
+            }
+
+            public HighlightedRegion(int Start, int Length, Brush Color)
+            {
+                this.Start = Start;
+                this.Length = Length;
+                this.Color = Color;
+            }
+
+            public bool IsByteSelected(long BytePos)
+            {
+                return BytePos >= Start && BytePos <= End;
+            }
+        }
+
+        private List<HighlightedRegion> _highlightedRegions = [];
+
+        public List<HighlightedRegion> HighlightedRegions
+        {
+            get
+            {
+                return _highlightedRegions;
+            }
+        }
+
         /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
         /// </summary>
@@ -778,8 +814,67 @@ namespace HexBox.WinUI
                 {
                     var p0 = new Point(_DataRect.Left, _DataRect.Top).ToSKPoint();
                     var p1 = new Point(_DataRect.Right, _DataRect.Bottom).ToSKPoint();
+
                     canvas.DrawLine(p0, p1, _LinePaint);
 
+                    if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
+                    {
+                        foreach (var hlSection in HighlightedRegions)
+                        {
+                            if (hlSection.End < Offset) continue;
+
+                            Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Data);
+                            Point hiSectionPoint1 = ConvertOffsetToPosition(hlSection.End, SelectionArea.Data);
+
+                            if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
+                            {
+                                hiSectionPoint1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
+                                hiSectionPoint1.Y -=  _TextMeasure.Height;
+                            }
+                            else
+                            {
+                                hiSectionPoint1.X -= _CharsBetweenDataColumns * _TextMeasure.Width;
+                            }
+
+                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hiSectionPoint0, hiSectionPoint1, SelectionArea.Data);
+                        }
+                    }
+                }
+
+                if (ShowText)
+                {
+                    var textVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
+                    var textVerticalLinePoint1 = new Point(_TextRect.Right, _TextRect.Bottom);
+
+                    canvas.DrawLine(textVerticalLinePoint0.ToSKPoint(), textVerticalLinePoint1.ToSKPoint(), _LinePaint);
+
+                    if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
+                    {
+                        foreach (var hlSection in HighlightedRegions)
+                        {
+                            if (hlSection.End < Offset) continue;
+
+                            Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Text);
+                            Point hiSectionPoint1 = ConvertOffsetToPosition(hlSection.End, SelectionArea.Text);
+
+                            if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
+                            {
+                                // We're selecting the last column so the end point is the text vertical line (effectively)
+                                hiSectionPoint1.X = textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
+                                hiSectionPoint1.Y -= _TextMeasure.Height;
+                            }
+                            var sectionPaint = _TextPaint.Clone();
+                            if (hlSection.Color is SolidColorBrush b)
+                            {
+                                sectionPaint.Color = b.Color.ToSKColor();
+                            }
+                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hiSectionPoint0, hiSectionPoint1, SelectionArea.Text);
+                        }
+                    }
+                }
+
+                if (ShowData)
+                {
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
                         Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
@@ -787,7 +882,6 @@ namespace HexBox.WinUI
 
                         if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
                         {
-                            // We're selecting the last column so the end point is the data vertical line (effectively)
                             selectionPoint1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
                             selectionPoint1.Y -=  _TextMeasure.Height;
                         }
@@ -802,11 +896,6 @@ namespace HexBox.WinUI
 
                 if (ShowText)
                 {
-                    var textVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
-                    var textVerticalLinePoint1 = new Point(_TextRect.Right, _TextRect.Bottom);
-
-                    canvas.DrawLine(textVerticalLinePoint0.ToSKPoint(), textVerticalLinePoint1.ToSKPoint(), _LinePaint);
-
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
                         Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
@@ -815,7 +904,7 @@ namespace HexBox.WinUI
                         if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
                         {
                             // We're selecting the last column so the end point is the text vertical line (effectively)
-                            selectionPoint1.X = textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
+                            selectionPoint1.X = _TextRect.Left - _CharsBetweenSections * _TextMeasure.Width;
                             selectionPoint1.Y -= _TextMeasure.Height;
                         }
 

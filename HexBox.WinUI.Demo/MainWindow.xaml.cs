@@ -2,12 +2,14 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinUIEx;
+using static HexBox.WinUI.HexBox;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -75,18 +77,22 @@ namespace HexBox.WinUI.Demo
                 var fs = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
                 Reader = new BinaryReader(fs);
                 HexViewer.DataSource = Reader;
+                HexViewer.HighlightedRegions.Clear();
+                List<HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
                 int offset = 0x256;
                 for(int i = 0; i < 3 ; i++)
                 {
-                    HexBox.HighlightedRegion r = new();
-                    r.Start = offset+i*16;
-                    r.Length = 16;
-                    r.Color = new SolidColorBrush() { Color = cols[i] };
-                    HexViewer.HighlightedRegions.Add(r);
+                    HexBox.HighlightedRegion r = new()
+                    {
+                        Start = offset+i*16,
+                        Length = 16,
+                        Color = new SolidColorBrush() { Color = cols[i] }
+                    };
+                    HighlightedRegions.Add(r);
                 }
-
-                HexViewer.Offset = offset;
+                HexViewer.HighlightedRegions = HighlightedRegions;
+                HexViewer.ScrollToOffset(offset);
             }
         }
     }

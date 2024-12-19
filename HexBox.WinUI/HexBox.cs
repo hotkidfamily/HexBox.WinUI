@@ -487,9 +487,9 @@ namespace HexBox.WinUI
 
         public class HighlightedRegion
         {
-            public int Start;
-            public int Length;
-            public int End { get { return Start + Length; } }
+            public long Start;
+            public long Length;
+            public long End { get { return Start + Length; } }
             public Brush Color;
 
             public HighlightedRegion()
@@ -510,15 +510,17 @@ namespace HexBox.WinUI
             }
         }
 
-        private List<HighlightedRegion> _highlightedRegions = [];
-
         public List<HighlightedRegion> HighlightedRegions
         {
-            get
-            {
-                return _highlightedRegions;
-            }
+            get { return (List<HighlightedRegion>)GetValue(HighlightedRegionsProperty); }
+            set { SetValue(HighlightedRegionsProperty, value); }
         }
+
+        // Using a DependencyProperty as the backing store for HighlightedRegions.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty HighlightedRegionsProperty =
+            DependencyProperty.Register("HighlightedRegions", typeof(List<HighlightedRegion>), typeof(HexBox), new PropertyMetadata(new List<HighlightedRegion>(), OnPropertyChangedInvalidateVisual));
+
+
 
         /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
@@ -819,12 +821,14 @@ namespace HexBox.WinUI
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
+                        var viewLimited = Offset + MaxVisibleColumns * MaxVisibleRows;
+
                         foreach (var hlSection in HighlightedRegions)
                         {
-                            if (hlSection.End < Offset) continue;
+                            if (hlSection.End < Offset || (hlSection.Start > viewLimited)) continue;
 
                             Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Data);
-                            Point hiSectionPoint1 = ConvertOffsetToPosition(hlSection.End, SelectionArea.Data);
+                            Point hiSectionPoint1 = ConvertOffsetToPosition(Math.Min(hlSection.End, viewLimited), SelectionArea.Data);
 
                             if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
                             {
@@ -850,12 +854,14 @@ namespace HexBox.WinUI
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
+                        var viewLimited = Offset + MaxVisibleColumns * MaxVisibleRows;
+
                         foreach (var hlSection in HighlightedRegions)
                         {
-                            if (hlSection.End < Offset) continue;
+                            if (hlSection.End < Offset || (hlSection.Start > viewLimited)) continue;
 
                             Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Text);
-                            Point hiSectionPoint1 = ConvertOffsetToPosition(hlSection.End, SelectionArea.Text);
+                            Point hiSectionPoint1 = ConvertOffsetToPosition(Math.Min(hlSection.End, viewLimited), SelectionArea.Text);
 
                             if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
                             {
@@ -1227,7 +1233,7 @@ namespace HexBox.WinUI
             {
                 // We need to scroll down
                 Offset += ((offset - (Offset + maxBytesDisplayed)) / _BytesPerRow + 1) * _BytesPerRow;
-            }
+            }          
         }
 
         private static bool IsKeyDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key) == CoreVirtualKeyStates.Down;

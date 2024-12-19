@@ -2293,7 +2293,7 @@ namespace HexBox.WinUI
                 point2.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = Math.Min((_TextMeasure.Height + 1) * MaxVisibleRows, _Canvas.ActualHeight);
+            point2.Y = Math.Min(_TextMeasure.Height * (MaxVisibleRows+1), _Canvas.ActualHeight);
 
             return point2;
         }

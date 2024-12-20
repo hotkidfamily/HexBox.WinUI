@@ -11,6 +11,7 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -598,7 +599,7 @@ namespace HexBox.WinUI
         {
             if ((long)point0.Y > (long)point1.Y)
             {
-                throw new ArgumentException($"{nameof(point0)}.Y > {nameof(point1)}.Y", nameof(point0));
+                throw new ArgumentException($"{point0.ToString()} > {point1.ToString()}", nameof(point0));
             }
 
             Point lhsVerticalLinePoint0;
@@ -821,36 +822,38 @@ namespace HexBox.WinUI
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
-                        var viewLimited = Offset + MaxVisibleColumns * MaxVisibleRows;
-
+                        var viewLimited = Offset + _BytesPerRow * MaxVisibleRows;
+                        
                         foreach (var hlSection in HighlightedRegions)
                         {
-                            if (hlSection.End < Offset || (hlSection.Start > viewLimited)) continue;
+                            if (hlSection.End <= Offset || (hlSection.Start >= viewLimited) || hlSection.Start >= hlSection.End) continue;
 
-                            Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Data);
-                            Point hiSectionPoint1 = ConvertOffsetToPosition(Math.Min(hlSection.End, viewLimited), SelectionArea.Data);
+                            var max_visible = Math.Min(hlSection.End, viewLimited);
 
-                            if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
+                            Point hlsP0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Data);
+                            Point hlsP1 = ConvertOffsetToPosition(max_visible, SelectionArea.Data);
+
+                            if (max_visible % _BytesPerRow == 0)
                             {
-                                hiSectionPoint1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
-                                hiSectionPoint1.Y -=  _TextMeasure.Height;
+                                hlsP1.X = p1.X - _CharsBetweenSections * _TextMeasure.Width;
+                                hlsP1.Y = Math.Max(hlsP0.Y, hlsP1.Y - _TextMeasure.Height);
                             }
                             else
                             {
-                                hiSectionPoint1.X -= _CharsBetweenDataColumns * _TextMeasure.Width;
+                                hlsP1.X -= _TextMeasure.Width;
                             }
 
-                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hiSectionPoint0, hiSectionPoint1, SelectionArea.Data);
+                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hlsP0, hlsP1, SelectionArea.Data);
                         }
                     }
                 }
 
                 if (ShowText)
                 {
-                    var textVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
-                    var textVerticalLinePoint1 = new Point(_TextRect.Right, _TextRect.Bottom);
+                    var p0 = new Point(_TextRect.Left, _TextRect.Top);
+                    var p1 = new Point(_TextRect.Right, _TextRect.Bottom);
 
-                    canvas.DrawLine(textVerticalLinePoint0.ToSKPoint(), textVerticalLinePoint1.ToSKPoint(), _LinePaint);
+                    canvas.DrawLine(p0.ToSKPoint(), p1.ToSKPoint(), _LinePaint);
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
@@ -858,23 +861,20 @@ namespace HexBox.WinUI
 
                         foreach (var hlSection in HighlightedRegions)
                         {
-                            if (hlSection.End < Offset || (hlSection.Start > viewLimited)) continue;
+                            if (hlSection.End <= Offset || (hlSection.Start >= viewLimited) || hlSection.Start >= hlSection.End) continue;
 
-                            Point hiSectionPoint0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Text);
-                            Point hiSectionPoint1 = ConvertOffsetToPosition(Math.Min(hlSection.End, viewLimited), SelectionArea.Text);
+                            var max_visible = Math.Min(hlSection.End, viewLimited);
 
-                            if ((hlSection.End - Offset) / _BytesPerColumn % Columns == 0)
+                            Point hlsP0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Text);
+                            Point hlsP1 = ConvertOffsetToPosition(max_visible, SelectionArea.Text);
+
+                            if (max_visible % _BytesPerRow == 0)
                             {
-                                // We're selecting the last column so the end point is the text vertical line (effectively)
-                                hiSectionPoint1.X = textVerticalLinePoint0.X - _CharsBetweenSections * _TextMeasure.Width;
-                                hiSectionPoint1.Y -= _TextMeasure.Height;
+                                hlsP1.X = p1.X - _CharsBetweenSections * _TextMeasure.Width;
+                                hlsP1.Y = Math.Max(hlsP0.Y, hlsP1.Y - _TextMeasure.Height);
                             }
-                            var sectionPaint = _TextPaint.Clone();
-                            if (hlSection.Color is SolidColorBrush b)
-                            {
-                                sectionPaint.Color = b.Color.ToSKColor();
-                            }
-                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hiSectionPoint0, hiSectionPoint1, SelectionArea.Text);
+
+                            DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hlsP0, hlsP1, SelectionArea.Text);
                         }
                     }
                 }
@@ -883,20 +883,19 @@ namespace HexBox.WinUI
                 {
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
-                        Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
-                        Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
+                        Point sp0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Data);
+                        Point sp1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Data);
 
-                        if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
+                        if ((SelectedOffset + SelectionLength) % _BytesPerRow == 0)
                         {
-                            selectionPoint1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
-                            selectionPoint1.Y -=  _TextMeasure.Height;
+                            sp1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
+                            sp1.Y -=  _TextMeasure.Height;
                         }
-                        else
-                        {
-                            selectionPoint1.X -= _CharsBetweenDataColumns * _TextMeasure.Width;
+                        else { 
+                            sp1.X -= _TextMeasure.Width; 
                         }
 
-                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, selectionPoint0, selectionPoint1, SelectionArea.Data);
+                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, sp0, sp1, SelectionArea.Data);
                     }
                 }
 
@@ -904,17 +903,16 @@ namespace HexBox.WinUI
                 {
                     if (SelectionLength != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
-                        Point selectionPoint0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
-                        Point selectionPoint1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
+                        Point sp0 = ConvertOffsetToPosition(SelectedOffset, SelectionArea.Text);
+                        Point sp1 = ConvertOffsetToPosition(SelectedOffset + SelectionLength, SelectionArea.Text);
 
-                        if ((SelectedOffset + SelectionLength - Offset) / _BytesPerColumn % Columns == 0)
+                        if ((SelectedOffset + SelectionLength) % _BytesPerRow == 0)
                         {
-                            // We're selecting the last column so the end point is the text vertical line (effectively)
-                            selectionPoint1.X = _TextRect.Left - _CharsBetweenSections * _TextMeasure.Width;
-                            selectionPoint1.Y -= _TextMeasure.Height;
+                            sp1.X = _TextRect.Left - _CharsBetweenSections * _TextMeasure.Width;
+                            sp1.Y -= _TextMeasure.Height;
                         }
 
-                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, selectionPoint0, selectionPoint1, SelectionArea.Text);
+                        DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, sp0, sp1, SelectionArea.Text);
                     }
                 }
 

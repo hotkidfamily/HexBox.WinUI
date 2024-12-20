@@ -4,9 +4,6 @@
 
 A WinUI3 control for displaying binary data in a traditional hex view.
 
-## Usage
-* publish to local server, see [Local feeds](https://learn.microsoft.com/en-us/nuget/hosting-packages/local-feeds)
-
 ## Features
 * Supports viewing different data types, formats, signedness
 * Supports showing/hiding sections of the control

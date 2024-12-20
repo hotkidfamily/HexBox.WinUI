@@ -80,13 +80,13 @@ namespace HexBox.WinUI.Demo
                 HexViewer.HighlightedRegions.Clear();
                 List<HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
-                int offset = 0x256;
+                int offset = 0x2f2;
                 for(int i = 0; i < 3 ; i++)
                 {
                     HexBox.HighlightedRegion r = new()
                     {
-                        Start = offset+i*16,
-                        Length = 16,
+                        Start = offset + 3*i*29 + i,
+                        Length = 3*29,
                         Color = new SolidColorBrush() { Color = cols[i] }
                     };
                     HighlightedRegions.Add(r);

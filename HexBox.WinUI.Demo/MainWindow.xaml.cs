@@ -47,11 +47,13 @@ namespace HexBox.WinUI.Demo
             this.InitializeComponent();
             this.MaxWidth = 1920;
             this.MaxHeight = 1080;
-            this.Move(640, 1280);
+
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Width = 1280;
             this.Height = 720;
+
+            this.CenterOnScreen();
 
             Root.RequestedTheme = ElementTheme.Light;
         }

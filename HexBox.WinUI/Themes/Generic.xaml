@@ -26,66 +26,70 @@
                             <local:HexboxDataFormatBoolConverter x:Key="HexboxDataFormatBoolConverter" />
                             <local:HexboxDataTypeConverter x:Key="HexboxDataTypeConverter" />
                             <MenuFlyout x:Key="DataMenuFlyout">
-                                <ToggleMenuFlyoutItem IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" Text="No Data" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_1}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="1 byte-integer" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_2}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="2 byte-integer" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_4}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="4 byte-integer" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_8}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="8 byte-integer" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_32}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="32-bit Floating Point" />
-                                <RadioMenuFlyoutItem
-                                    GroupName="DataType"
-                                    IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_64}"
-                                    IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Text="64-bit Floating Point" />
-                                <MenuFlyoutSeparator />
-                                <ToggleMenuFlyoutItem
-                                    IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Signed}"
-                                    IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}"
-                                    Text="Signed" />
-                                <ToggleMenuFlyoutItem
-                                    IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Unsigned}"
-                                    IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}"
-                                    Text="Unsigned" />
-                                <ToggleMenuFlyoutItem IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Decimal}" Text="Decimal" />
-                                <ToggleMenuFlyoutItem IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Hexadecimal}" Text="Hexadecimal" />
-                                <MenuFlyoutSeparator />
-                                <ToggleMenuFlyoutItem IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=BigEndian}" Text="Big-Endian" />
-                                <ToggleMenuFlyoutItem IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=LittleEndian}" Text="Little-Endian" />
-                                <MenuFlyoutSeparator />
-                                <ToggleMenuFlyoutItem IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" Text="No Text" />
-                                <ToggleMenuFlyoutItem
-                                    IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
-                                    IsEnabled="False"
-                                    Text="ASCII" />
-                                <MenuFlyoutSeparator />
                                 <MenuFlyoutItem
                                     Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                     Icon="Copy"
                                     Text="Copy" />
                                 <MenuFlyoutItem
                                     Command="{Binding CopyTextCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                    Icon="Copy"
+                                    Icon="Font"
                                     Text="Copy text" />
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutSubItem IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" Text="Data properties">
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" Text="No Data" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_1}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="1 byte-integer" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_2}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="2 byte-integer" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_4}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="4 byte-integer" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_8}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="8 byte-integer" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_32}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="32-bit Floating Point" />
+                                    <RadioMenuFlyoutItem
+                                        GroupName="DataType"
+                                        IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_64}"
+                                        IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                        Text="64-bit Floating Point" />
+                                    <MenuFlyoutSeparator />
+                                    <ToggleMenuFlyoutItem
+                                        IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Signed}"
+                                        IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}"
+                                        Text="Signed" />
+                                    <ToggleMenuFlyoutItem
+                                        IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Unsigned}"
+                                        IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}"
+                                        Text="Unsigned" />
+                                    <MenuFlyoutSeparator />
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Decimal}" Text="Decimal" />
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Hexadecimal}" Text="Hexadecimal" />
+                                    <MenuFlyoutSeparator />
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=BigEndian}" Text="Big-Endian" />
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=LittleEndian}" Text="Little-Endian" />
+                                </MenuFlyoutSubItem>
+                                <MenuFlyoutSubItem IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" Text="Text properties">
+                                    <ToggleMenuFlyoutItem IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" Text="No Text" />
+                                    <ToggleMenuFlyoutItem
+                                        IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
+                                        IsEnabled="False"
+                                        Text="ASCII" />
+                                </MenuFlyoutSubItem>
                             </MenuFlyout>
                         </Grid.Resources>
 

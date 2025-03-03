@@ -144,6 +144,13 @@ namespace HexBox.WinUI
                 new PropertyMetadata(0L, OnSelectionStartChanged));
 
         /// <summary>
+        /// Determines whether the user can change the layout and data format.
+        /// </summary>
+        public static readonly DependencyProperty EnforcePropertiesProperty =
+            DependencyProperty.Register(nameof(EnforceProperties), typeof(bool), typeof(HexBox),
+                new PropertyMetadata(false, OnPropertyChangedInvalidateVisual));
+
+        /// <summary>
         /// Determines whether to show the address section of the control.
         /// </summary>
         public static readonly DependencyProperty ShowAddressProperty =
@@ -435,6 +442,15 @@ namespace HexBox.WinUI
             get => (Brush)GetValue(SelectionTextBrushProperty);
 
             set => SetValue(SelectionTextBrushProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the user can change the layout and data format or not.
+        /// </summary>
+        public bool EnforceProperties
+        {
+            get => (bool)GetValue(EnforcePropertiesProperty);
+            set => SetValue(EnforcePropertiesProperty, value);
         }
 
         /// <summary>

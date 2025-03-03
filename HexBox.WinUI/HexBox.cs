@@ -1453,7 +1453,7 @@ namespace HexBox.WinUI
 
         protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
         {
-            Focus(FocusState.Programmatic);
+            // Focus(FocusState.Programmatic); => Breaks text seleciton in other controls on the same ui.
             base.OnDoubleTapped(e);
 
             if (e.PointerDeviceType == PointerDeviceType.Mouse)
@@ -1464,7 +1464,7 @@ namespace HexBox.WinUI
 
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
         {
-            Focus(FocusState.Programmatic);
+            // Focus(FocusState.Programmatic); => Breaks text seleciton in other controls on the same ui.
             base.OnPointerPressed(e);
 
             var pps = e.GetCurrentPoint(this).Properties;

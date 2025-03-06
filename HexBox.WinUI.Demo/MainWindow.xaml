@@ -31,8 +31,13 @@
                            Margin="8,0,0,0">HexBox.WinUI.Demo</TextBlock>
             </StackPanel>
         </Border>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
+        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
             <Button Click="Button_Click">Browser</Button>
+            <RichEditBox Name="Editor2"
+                         Width="250" />
+            <TextBox Name="findBox"
+                     Width="150"
+                     PlaceholderText="Enter search text" />
         </StackPanel>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"

@@ -47,7 +47,8 @@ namespace HexBox.WinUI.Demo
             this.InitializeComponent();
             this.MaxWidth = 1920;
             this.MaxHeight = 1080;
-            this.Move(640, 1280);
+            //this.Move(640, 1280);
+            //this.CenterOnScreen();
             this.ExtendsContentIntoTitleBar = true;
             this.SetTitleBar(AppTitleBar);
             this.Width = 1280;
@@ -76,6 +77,14 @@ namespace HexBox.WinUI.Demo
             {
                 var fs = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
                 Reader = new BinaryReader(fs);
+                /* sample 2, using MemoryStream instead of file */
+                /*
+                var bytes = new byte[1024];
+                var rd = new Random();
+                rd.NextBytes(bytes);
+                var ms = new MemoryStream(bytes, 0, bytes.Length);
+                Reader = new BinaryReader(ms);
+                */
                 HexViewer.DataSource = Reader;
                 HexViewer.HighlightedRegions.Clear();
                 List<HighlightedRegion> HighlightedRegions = [];

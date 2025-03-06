@@ -19,11 +19,11 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 ## Preview
 * Total
 
-![demo](docs/HexBox.WinUI.Demo.gif)
+![demo](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Demo.gif)
 
 * Highlight regions
 
-![highlight](docs/HexBox.WinUI.Demo_HighLightRegions.png)
+![highlight](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Demo_HighLightRegions.png)
 
 ## Thanks
 Fork from [HexView.Wpf](https://github.com/fjeremic/HexView.Wpf.git)

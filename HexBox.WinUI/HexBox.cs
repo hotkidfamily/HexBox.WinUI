@@ -11,7 +11,6 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -1454,7 +1453,7 @@ namespace HexBox.WinUI
         protected override void OnDoubleTapped(DoubleTappedRoutedEventArgs e)
         {
             Focus(FocusState.Programmatic);
-            base.OnDoubleTapped(e);
+            e.Handled = true;
 
             if (e.PointerDeviceType == PointerDeviceType.Mouse)
             {
@@ -1465,7 +1464,7 @@ namespace HexBox.WinUI
         protected override void OnPointerPressed(PointerRoutedEventArgs e)
         {
             Focus(FocusState.Programmatic);
-            base.OnPointerPressed(e);
+            e.Handled = true;
 
             var pps = e.GetCurrentPoint(this).Properties;
             if (pps != null)
@@ -2651,18 +2650,6 @@ namespace HexBox.WinUI
         public HexBox()
         {
             DefaultStyleKey = typeof(HexBox);
-            this.LosingFocus += HexBox_LosingFocus;
-        }
-
-        private void HexBox_LosingFocus(UIElement sender, LosingFocusEventArgs args)
-        {
-            if (args.OriginalSource is Control b)
-            {
-                if (b == this)
-                {
-                    args.TryCancel();
-                }
-            }
         }
     }
 

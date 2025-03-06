@@ -98,26 +98,23 @@
                             <ColumnDefinition Width="24" />
                         </Grid.ColumnDefinitions>
 
-                        <skia:SKXamlCanvas
-                            Name="ElementCanvas"
-                            Grid.Column="0"
-                            Margin="2,0,2,0"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            ContextFlyout="{StaticResource DataMenuFlyout}"
-                            IsTabStop="False" />
+                        <skia:SKXamlCanvas Grid.Column="0"
+                                           Name="ElementCanvas"
+                                           Margin="2,0,2,0"
+                                           VerticalAlignment="Stretch"
+                                           HorizontalAlignment="Stretch"
+                                           ContextFlyout="{StaticResource DataMenuFlyout}">
+                        </skia:SKXamlCanvas>
 
-                        <ScrollBar
-                            Name="ElementScrollBar"
-                            Grid.Column="1"
-                            Margin="0,0,2,0"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch"
-                            FontFamily="{TemplateBinding FontFamily}"
-                            FontSize="{TemplateBinding FontSize}"
-                            IndicatorMode="MouseIndicator"
-                            IsTabStop="False"
-                            Orientation="Vertical" />
+                        <ScrollBar Grid.Column="1"
+                                   Name="ElementScrollBar"
+                                   VerticalAlignment="Stretch"
+                                   HorizontalAlignment="Stretch"
+                                   Margin="0,0,2,0"
+                                   IndicatorMode="MouseIndicator"
+                                   Orientation="Vertical"
+                                   FontFamily="{TemplateBinding FontFamily}"
+                                   FontSize="{TemplateBinding FontSize}" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

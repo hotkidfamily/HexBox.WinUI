@@ -1,11 +1,15 @@
 using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinUIEx;
@@ -21,8 +25,10 @@ namespace HexBox.WinUI.Demo
     /// </summary>
     public sealed partial class MainWindow : WindowEx, INotifyPropertyChanged
     {
-        //private Task _caretTask = null;
-        //private CancellationToken _taskToken;
+        private DispatcherQueue _queue;
+        private Task _queryTask;
+        private CancellationTokenSource _tokenSource;
+
 
         private BinaryReader _reader;
 
@@ -55,6 +61,48 @@ namespace HexBox.WinUI.Demo
             this.Height = 720;
 
             Root.RequestedTheme = ElementTheme.Light;
+            _tokenSource = new();
+            _queue = DispatcherQueue.GetForCurrentThread();
+            _queryTask = Task.Run(async () => { await _queryFocus(_tokenSource.Token, _queue); }, _tokenSource.Token);
+
+            _queue.ShutdownStarting += _queue_ShutdownStarting;
+        }
+
+        private void _queue_ShutdownStarting(DispatcherQueue sender, DispatcherQueueShutdownStartingEventArgs args)
+        {
+            _tokenSource.Cancel();
+
+            try
+            {
+                _queryTask.Wait();
+            }
+            catch (TaskCanceledException)
+            {
+                // ignore
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+        }
+
+        async Task _queryFocus(CancellationToken token, DispatcherQueue queue)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                queue.TryEnqueue(() =>
+                    {
+                        if (Root.IsLoaded)
+                        {
+                            var focusedElement = FocusManager.GetFocusedElement(Root.XamlRoot);
+
+                            findBox.Text = $"Focused: {focusedElement}";
+                        }
+                    }
+                );
+
+                await Task.Delay(1000, token).ConfigureAwait(false);
+            }
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)

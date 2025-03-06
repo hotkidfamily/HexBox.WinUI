@@ -34,9 +34,9 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
             <Button Click="Button_Click">Browser</Button>
             <RichEditBox Name="Editor2"
-                         Width="250" />
+                         Width="150" />
             <TextBox Name="findBox"
-                     Width="150"
+                     Width="350"
                      PlaceholderText="Enter search text" />
         </StackPanel>
         <hb:HexBox  Grid.Row="2"

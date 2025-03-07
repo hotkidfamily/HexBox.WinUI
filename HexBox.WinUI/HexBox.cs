@@ -143,6 +143,13 @@ namespace HexBox.WinUI
                 new PropertyMetadata(0L, OnSelectionStartChanged));
 
         /// <summary>
+        /// Determines whether the user can change the layout and data format.
+        /// </summary>
+        public static readonly DependencyProperty EnforcePropertiesProperty =
+            DependencyProperty.Register(nameof(EnforceProperties), typeof(bool), typeof(HexBox),
+                new PropertyMetadata(false, OnPropertyChangedInvalidateVisual));
+
+        /// <summary>
         /// Determines whether to show the address section of the control.
         /// </summary>
         public static readonly DependencyProperty ShowAddressProperty =
@@ -182,6 +189,19 @@ namespace HexBox.WinUI
         // Using a DependencyProperty as the backing store for CopyCommand.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CopyCommandProperty =
             DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(HexBox), new PropertyMetadata(null));
+
+        /// <summary>
+        /// Gets the <see cref="Copy"/> for text command.
+        /// </summary>
+        public ICommand CopyTextCommand
+        {
+            get { return (ICommand)GetValue(CopyTextCommandProperty); }
+            set { SetValue(CopyTextCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CopyTextCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty CopyTextCommandProperty =
+            DependencyProperty.Register("CopyTextCommand", typeof(ICommand), typeof(HexBox), new PropertyMetadata(null));
 
 
         private const int _MaxColumns = 128;
@@ -424,6 +444,15 @@ namespace HexBox.WinUI
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the user can change the layout and data format or not.
+        /// </summary>
+        public bool EnforceProperties
+        {
+            get => (bool)GetValue(EnforcePropertiesProperty);
+            set => SetValue(EnforcePropertiesProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether to show the address section of the control.
         /// </summary>
         public bool ShowAddress
@@ -525,7 +554,8 @@ namespace HexBox.WinUI
         /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
         /// </summary>
-        public void Copy()
+        /// <param name="copyText">Copy the text and not the data.</param>
+        public void Copy(bool copyText)
         {
             if (IsSelectionActive)
             {
@@ -537,9 +567,16 @@ namespace HexBox.WinUI
 
                 while (DataSource.BaseStream.Position < Math.Max(SelectionStart, SelectionEnd))
                 {
-                    var formattedData = ReadFormattedData();
-
-                    builder.Append(formattedData);
+                    if (copyText)
+                    {
+                        var formattedData = ReadFormattedText();
+                        builder.Append(formattedData);
+                    }
+                    else
+                    {
+                        var formattedData = ReadFormattedData();
+                        builder.Append(formattedData);
+                    }
                 }
 
                 DataSource.BaseStream.Position = savedDataSourcePositionBeforeReadingData;
@@ -559,6 +596,7 @@ namespace HexBox.WinUI
             if (_Canvas != null)
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
+                CopyTextCommand = new RelayCommand(CopyTextExecuted, CopyCanExecute);
                 _Canvas.PaintSurface += Canvas_PaintSurface;
             }
             else
@@ -2004,7 +2042,12 @@ namespace HexBox.WinUI
 
         private void CopyExecuted(object sender)
         {
-            Copy();
+            Copy(false);
+        }
+
+        private void CopyTextExecuted(object sender)
+        {
+            Copy(true);
         }
 
         private bool CopyCanExecute(object sender)

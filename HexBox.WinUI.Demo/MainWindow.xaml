@@ -14,7 +14,7 @@
           HorizontalAlignment="Stretch"
           Name="Root">
         <Grid.RowDefinitions>
-            <RowDefinition Height="48" />
+            <RowDefinition Height="32" />
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -31,19 +31,36 @@
                            Margin="8,0,0,0">HexBox.WinUI.Demo</TextBlock>
             </StackPanel>
         </Border>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" VerticalAlignment="Center" Spacing="8">
-            <Button Click="Button_Click">Browser</Button>
-            <RichEditBox Name="Editor2"
-                         Width="150" />
-            <TextBox Name="findBox"
-                     Width="350"
-                     PlaceholderText="Enter search text" />
-        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*" />
+                <ColumnDefinition Width="4*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                <Button Name="Browse" Click="Button_Click">Browser</Button>
+                <RichEditBox Name="Editor2"
+                             Width="150" />
+                <TextBox Name="FindBox"
+                         Width="350"
+                         PlaceholderText="Enter search text" />
+            </StackPanel>
+            <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                <CheckBox Name="EnforceModeCheckBox"
+                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
+            </StackPanel>
+        </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
                     Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
                     Background="Transparent"
                     Margin="4"
+                    EnforceProperties="{x:Bind EnforceMode, Mode=OneWay}"
                     BorderBrush="Blue"
                     BorderThickness="1"
                     FontFamily="Monaco"

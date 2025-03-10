@@ -30,9 +30,24 @@ namespace HexBox.WinUI.Demo
         private CancellationTokenSource _tokenSource;
 
 
-        private BinaryReader _reader;
+        private BinaryReader _reader = default!;
 
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        private bool _EnforceMode = false;
+
+        public bool EnforceMode
+        {
+            get { return _EnforceMode; }
+            set
+            {
+                if (_EnforceMode != value)
+                { 
+                    _EnforceMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public BinaryReader Reader
         {
@@ -63,7 +78,7 @@ namespace HexBox.WinUI.Demo
             Root.RequestedTheme = ElementTheme.Light;
             _tokenSource = new();
             _queue = DispatcherQueue.GetForCurrentThread();
-            _queryTask = Task.Run(async () => { await _queryFocus(_tokenSource.Token, _queue); }, _tokenSource.Token);
+            _queryTask = Task.Run(() => _queryFocus(_tokenSource.Token, _queue), _tokenSource.Token);
 
             _queue.ShutdownStarting += _queue_ShutdownStarting;
         }
@@ -72,18 +87,7 @@ namespace HexBox.WinUI.Demo
         {
             _tokenSource.Cancel();
 
-            try
-            {
-                _queryTask.Wait();
-            }
-            catch (TaskCanceledException)
-            {
-                // ignore
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred: {ex.Message}");
-            }
+            _queryTask.Wait();
         }
 
         async Task _queryFocus(CancellationToken token, DispatcherQueue queue)
@@ -96,26 +100,31 @@ namespace HexBox.WinUI.Demo
                         {
                             var focusedElement = FocusManager.GetFocusedElement(Root.XamlRoot);
 
-                            findBox.Text = $"Focused: {focusedElement}";
+                            FindBox.Text = $"Focused: {focusedElement}";
                         }
                     }
                 );
 
-                await Task.Delay(1000, token).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(1000, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
             }
         }
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
-            FileOpenPicker filePicker = new() 
-            { 
-
+            FileOpenPicker filePicker = new()
+            {
+                SuggestedStartLocation= PickerLocationId.PicturesLibrary,
             };
-            IntPtr hwnd = this.GetWindowHandle();
-
-            filePicker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
             filePicker.FileTypeFilter.Add("*");
-            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, hwnd);
+
+            WinRT.Interop.InitializeWithWindow.Initialize(filePicker, this.GetWindowHandle());
 
             var file = await filePicker.PickSingleFileAsync();
 
@@ -123,9 +132,10 @@ namespace HexBox.WinUI.Demo
                 return;
             else
             {
+                /*sample 1 using filestream as data provider */
                 var fs = new FileStream(file.Path, FileMode.Open, FileAccess.Read);
                 Reader = new BinaryReader(fs);
-                /* sample 2, using MemoryStream instead of file */
+                /* sample 2, using MemoryStream as data provider */
                 /*
                 var bytes = new byte[1024];
                 var rd = new Random();

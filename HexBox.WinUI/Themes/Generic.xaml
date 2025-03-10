@@ -35,6 +35,12 @@
                                     Icon="Font"
                                     Text="Copy text" />
                                 <MenuFlyoutSeparator />
+                                <MenuFlyoutSubItem IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
+                                                   Text="Address properties">
+                                    <ToggleMenuFlyoutItem
+                                        IsChecked="{Binding ShowAddress, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}"
+                                                     Text="No Address" />
+                                </MenuFlyoutSubItem>
                                 <MenuFlyoutSubItem IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}" Text="Data properties">
                                     <ToggleMenuFlyoutItem IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" Text="No Data" />
                                     <RadioMenuFlyoutItem

@@ -1310,8 +1310,6 @@ namespace HexBox.WinUI
                     {
                         if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
                         {
-                            e.Handled = true;
-
                             if (SelectAllCanExecute(null))
                             {
                                 SelectionStart = 0;
@@ -1319,36 +1317,31 @@ namespace HexBox.WinUI
                             }
                         }
 
+                        e.Handled = true;
                         break;
                     }
 
                     case VirtualKey.C:
                     {
-                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        if ((IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl)) &&
+                                (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift)))
                         {
-                            e.Handled = true;
-
+                            // Copy text
+                            if (CopyCanExecute(null))
+                            {
+                                Copy(true);
+                            }
+                        }
+                        else if ((IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl)))
+                        {
+                            // Copy data
                             if (CopyCanExecute(null))
                             {
                                 Copy(false);
                             }
                         }
 
-                        break;
-                    }
-
-                    case VirtualKey.T:
-                    {
-                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
-                        {
-                            e.Handled = true;
-
-                            if (CopyCanExecute(null))
-                            {
-                                Copy(false);
-                            }
-                        }
-
+                        e.Handled = true;
                         break;
                     }
 

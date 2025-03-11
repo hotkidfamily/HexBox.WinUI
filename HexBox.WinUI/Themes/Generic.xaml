@@ -39,7 +39,7 @@
                                     Icon="Font"
                                     Text="Copy text">
                                     <MenuFlyoutItem.KeyboardAccelerators>
-                                        <KeyboardAccelerator Key="T" Modifiers="Control" />
+                                        <KeyboardAccelerator Key="C" Modifiers="Control,Shift"/>
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem

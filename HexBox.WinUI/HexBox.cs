@@ -1628,11 +1628,11 @@ namespace HexBox.WinUI
                 // Move next row into view if selection goes out of view
                 if (position.Y > _AddressRect.Y + _AddressRect.Height)
                 {
-                    ScrollToOffset(currentMouseOverOffset + _BytesPerColumn);
+                    ScrollToOffset(currentMouseOverOffset + _BytesPerRow);
                 }
                 else if (position.Y < _AddressRect.Y)
                 {
-                    ScrollToOffset(currentMouseOverOffset - _BytesPerColumn);
+                    ScrollToOffset(currentMouseOverOffset - _BytesPerRow);
                 }
 
                         break;

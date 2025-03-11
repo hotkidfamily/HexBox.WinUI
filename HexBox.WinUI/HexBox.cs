@@ -1312,7 +1312,7 @@ namespace HexBox.WinUI
                         {
                             e.Handled = true;
 
-                            if (DataSource?.BaseStream?.Length > 0)
+                            if (DataSource != null)
                             {
                                 SelectionStart = 0;
                                 SelectionEnd = DataSource.BaseStream.Length;
@@ -2127,7 +2127,7 @@ namespace HexBox.WinUI
 
         private bool SelectAllCanExecute(object sender)
         {
-            return DataSource?.BaseStream?.Length > 0;
+            return DataSource != null;
         }
 
         private bool CopyCanExecute(object sender)

@@ -1607,22 +1607,38 @@ namespace HexBox.WinUI
         {
             base.OnPointerMoved(e);
 
-            switch (_HighlightState)
-            {
-            case SelectionArea.Data:
-            case SelectionArea.Text:
+            if (_HighlightState != SelectionArea.None)
             {
                 var position = e.GetCurrentPoint(_Canvas).Position;
-
                 var currentMouseOverOffset = ConvertPositionToOffset(position);
 
-                if (currentMouseOverOffset >= SelectionStart)
+                switch (_HighlightState)
                 {
-                    SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
-                }
-                else
-                {
-                    SelectionEnd = currentMouseOverOffset;
+                    case SelectionArea.Data:
+                    case SelectionArea.Text:
+                    {
+                        if (currentMouseOverOffset >= SelectionStart)
+                        {
+                            SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
+                        }
+                        else
+                        {
+                            SelectionEnd = currentMouseOverOffset;
+                        }
+                        break;
+                    }
+                    case SelectionArea.Address:
+                    {
+                        if (currentMouseOverOffset >= SelectionStart)
+                        {
+                            SelectionEnd = currentMouseOverOffset + _BytesPerRow;
+                        }
+                        else
+                        {
+                            SelectionEnd = currentMouseOverOffset;
+                        }
+                        break;
+                    }
                 }
 
                 // Move next row into view if selection goes out of view
@@ -1634,9 +1650,6 @@ namespace HexBox.WinUI
                 {
                     ScrollToOffset(currentMouseOverOffset - _BytesPerRow);
                 }
-
-                        break;
-            }
             }
         }
 

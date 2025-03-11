@@ -1295,7 +1295,8 @@ namespace HexBox.WinUI
             }          
         }
 
-        private static bool IsKeyDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key) == CoreVirtualKeyStates.Down;
+        // Using .HasFlag(x) to correctly detect state of modifier keys (CTRL, SHIFT, ...)
+        private static bool IsKeyDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
 
         /// <inheritdoc/>
         protected override void OnKeyDown(KeyRoutedEventArgs e)

@@ -1312,7 +1312,7 @@ namespace HexBox.WinUI
                         {
                             e.Handled = true;
 
-                            if (DataSource != null)
+                            if (SelectAllCanExecute(null))
                             {
                                 SelectionStart = 0;
                                 SelectionEnd = DataSource.BaseStream.Length;
@@ -1328,7 +1328,7 @@ namespace HexBox.WinUI
                         {
                             e.Handled = true;
 
-                            if (IsSelectionActive)
+                            if (CopyCanExecute(null))
                             {
                                 Copy(false);
                             }
@@ -1343,7 +1343,7 @@ namespace HexBox.WinUI
                         {
                             e.Handled = true;
 
-                            if (IsSelectionActive)
+                            if (CopyCanExecute(null))
                             {
                                 Copy(false);
                             }
@@ -2127,12 +2127,12 @@ namespace HexBox.WinUI
 
         private bool SelectAllCanExecute(object sender)
         {
-            return DataSource != null;
+            return DataSource != null && (ShowData || ShowText);
         }
 
         private bool CopyCanExecute(object sender)
         {
-            return IsSelectionActive;
+            return IsSelectionActive && (ShowData || ShowText);
         }
 
         private void OnVerticalScrollBarValueChanged(object sender, RangeBaseValueChangedEventArgs e)

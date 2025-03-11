@@ -178,6 +178,19 @@ namespace HexBox.WinUI
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
+        /// Gets the <see cref="SelectAll"/> command.
+        /// </summary>
+        public ICommand SelectAllCommand
+        {
+            get { return (ICommand)GetValue(SelectAllCommandProperty); }
+            set { SetValue(SelectAllCommandProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for CopyCommand.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectAllCommandProperty =
+            DependencyProperty.Register("SelectAllCommand", typeof(ICommand), typeof(HexBox), new PropertyMetadata(null));
+
+        /// <summary>
         /// Gets the <see cref="Copy"/> command.
         /// </summary>
         public ICommand CopyCommand
@@ -191,7 +204,7 @@ namespace HexBox.WinUI
             DependencyProperty.Register("CopyCommand", typeof(ICommand), typeof(HexBox), new PropertyMetadata(null));
 
         /// <summary>
-        /// Gets the <see cref="Copy"/> for text command.
+        /// Gets the <see cref="CopyText"/> for text command.
         /// </summary>
         public ICommand CopyTextCommand
         {
@@ -552,6 +565,16 @@ namespace HexBox.WinUI
 
 
         /// <summary>
+        /// Select all data.
+        /// </summary>
+        public void SelectAll()
+        {
+            SelectionStart = 0;
+            SelectionEnd = DataSource.BaseStream.Length;
+        }
+
+
+        /// <summary>
         /// Copies the current selection of the control to the <see cref="Clipboard"/>.
         /// </summary>
         /// <param name="copyText">Copy the text and not the data.</param>
@@ -597,6 +620,7 @@ namespace HexBox.WinUI
             {
                 CopyCommand = new RelayCommand(CopyExecuted, CopyCanExecute);
                 CopyTextCommand = new RelayCommand(CopyTextExecuted, CopyCanExecute);
+                SelectAllCommand = new RelayCommand(SelectAllExecuted, SelectAllCanExecute);
                 _Canvas.PaintSurface += Canvas_PaintSurface;
             }
             else
@@ -1282,208 +1306,231 @@ namespace HexBox.WinUI
             {
                 switch (e.Key)
                 {
-                case VirtualKey.A:
-                {
-                    if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                    case VirtualKey.A:
                     {
-                        SelectionStart = 0;
-                        SelectionEnd = DataSource.BaseStream.Length;
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        {
+                            e.Handled = true;
+
+                            if (DataSource?.BaseStream?.Length > 0)
+                            {
+                                SelectionStart = 0;
+                                SelectionEnd = DataSource.BaseStream.Length;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case VirtualKey.C:
+                    {
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        {
+                            e.Handled = true;
+
+                            if (IsSelectionActive)
+                            {
+                                Copy(false);
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case VirtualKey.T:
+                    {
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        {
+                            e.Handled = true;
+
+                            if (IsSelectionActive)
+                            {
+                                Copy(false);
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case VirtualKey.Down:
+                    {
+                        if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                        {
+                            SelectionEnd += _BytesPerRow;
+                        }
+                        else
+                        {
+                            SelectionStart += _BytesPerRow;
+                            SelectionEnd = SelectionStart + _BytesPerColumn;
+                        }
+
+                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                         e.Handled = true;
+
+                        break;
                     }
 
-                    break;
-                }
-
-                case VirtualKey.C:
-                {
-                    if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                    case VirtualKey.End:
                     {
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        {
+                            SelectionEnd = DataSource.BaseStream.Length;
+
+                            if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                            {
+                                SelectionStart = SelectionEnd - _BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        }
+                        else
+                        {
+                            SelectionEnd += (Offset - SelectionEnd).Mod(_BytesPerRow);
+
+                            if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                            {
+                                SelectionStart = SelectionEnd - _BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        }
+
                         e.Handled = true;
+
+                        break;
                     }
 
-                    break;
-                }
-
-                case VirtualKey.Down:
-                {
-                    if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                    case VirtualKey.Home:
                     {
-                        SelectionEnd += _BytesPerRow;
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                        {
+                            SelectionEnd = 0;
+
+                            if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                            {
+                                SelectionStart = SelectionEnd;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        }
+                        else
+                        {
+                            // TODO: Because of the way we represent selection there is no way to distinguish at the
+                            // moment whether the selection ends at the start of the current line or the end of the
+                            // previous line. As such, when the Shift+End hotkey is used twice consecutively a whole
+                            // new line above the current selection will be selected. This is undesirable behavior
+                            // that deviates from the canonical semantics of Shift+End.
+                            SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(_BytesPerRow) + 1;
+
+                            if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                            {
+                                SelectionStart = SelectionEnd;
+                                SelectionEnd = SelectionStart + _BytesPerColumn;
+                            }
+
+                            ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        }
+
+                        e.Handled = true;
+
+                        break;
                     }
-                    else
+
+                    case VirtualKey.Left:
                     {
-                        SelectionStart += _BytesPerRow;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                        {
+                            SelectionEnd -= _BytesPerColumn;
+                        }
+                        else
+                        {
+                            SelectionStart -= _BytesPerColumn;
+                            SelectionEnd = SelectionStart + _BytesPerColumn;
+                        }
+
+                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+
+                        e.Handled = true;
+
+                        break;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
-
-                    e.Handled = true;
-
-                    break;
-                }
-
-                case VirtualKey.End:
-                {
-                    if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                    case VirtualKey.PageDown:
                     {
-                        SelectionEnd = DataSource.BaseStream.Length;
+                        bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
+
+                        SelectionEnd += _BytesPerRow * MaxVisibleRows;
 
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
                             SelectionStart = SelectionEnd - _BytesPerColumn;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        _ScrollBar.Value += MaxVisibleRows;
+
+                        OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
+
+                        e.Handled = true;
+                        break;
                     }
-                    else
+
+                    case VirtualKey.PageUp:
                     {
-                        SelectionEnd += (Offset - SelectionEnd).Mod(_BytesPerRow);
+                        bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
+
+                        SelectionEnd -= _BytesPerRow * MaxVisibleRows;
 
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
                             SelectionStart = SelectionEnd - _BytesPerColumn;
+                            SelectionEnd = SelectionStart + _BytesPerColumn;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        _ScrollBar.Value -= MaxVisibleRows;
+
+                        OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
+
+                        e.Handled = true;
+                        break;
                     }
 
-                    e.Handled = true;
-
-                    break;
-                }
-
-                case VirtualKey.Home:
-                {
-                    if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
+                    case VirtualKey.Right:
                     {
-                        SelectionEnd = 0;
-
-                        if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                        if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                         {
-                            SelectionStart = SelectionEnd;
+                            SelectionEnd += _BytesPerColumn;
+                        }
+                        else
+                        {
+                            SelectionStart += _BytesPerColumn;
                             SelectionEnd = SelectionStart + _BytesPerColumn;
                         }
 
                         ScrollToOffset(SelectionEnd - _BytesPerColumn);
-                    }
-                    else
-                    {
-                        // TODO: Because of the way we represent selection there is no way to distinguish at the
-                        // moment whether the selection ends at the start of the current line or the end of the
-                        // previous line. As such, when the Shift+End hotkey is used twice consecutively a whole
-                        // new line above the current selection will be selected. This is undesirable behavior
-                        // that deviates from the canonical semantics of Shift+End.
-                        SelectionEnd -= (SelectionEnd - 1 - Offset).Mod(_BytesPerRow) + 1;
 
-                        if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
+                        e.Handled = true;
+                        break;
+                    }
+
+                    case VirtualKey.Up:
+                    {
+                        if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                         {
-                            SelectionStart = SelectionEnd;
+                            SelectionEnd -= _BytesPerRow;
+                        }
+                        else
+                        {
+                            SelectionStart -= _BytesPerRow;
                             SelectionEnd = SelectionStart + _BytesPerColumn;
                         }
 
                         ScrollToOffset(SelectionEnd - _BytesPerColumn);
+
+                        e.Handled = true;
+                        break;
                     }
-
-                    e.Handled = true;
-
-                    break;
-                }
-
-                case VirtualKey.Left:
-                {
-                    if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
-                    {
-                        SelectionEnd -= _BytesPerColumn;
-                    }
-                    else
-                    {
-                        SelectionStart -= _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
-                    }
-
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
-
-                    e.Handled = true;
-
-                    break;
-                }
-
-                case VirtualKey.PageDown:
-                {
-                    bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
-                    SelectionEnd += _BytesPerRow * MaxVisibleRows;
-
-                    if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
-                    {
-                        SelectionStart = SelectionEnd - _BytesPerColumn;
-                    }
-
-                    _ScrollBar.Value += MaxVisibleRows;
-
-                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
-
-                    e.Handled = true;
-                    break;
-                }
-
-                case VirtualKey.PageUp:
-                {
-                    bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
-                    SelectionEnd -= _BytesPerRow * MaxVisibleRows;
-
-                    if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
-                    {
-                        SelectionStart = SelectionEnd - _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
-                    }
-
-                    _ScrollBar.Value -= MaxVisibleRows;
-
-                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
-
-                    e.Handled = true;
-                    break;
-                }
-
-                case VirtualKey.Right:
-                {
-                    if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
-                    {
-                        SelectionEnd += _BytesPerColumn;
-                    }
-                    else
-                    {
-                        SelectionStart += _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
-                    }
-
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
-
-                    e.Handled = true;
-                    break;
-                }
-
-                case VirtualKey.Up:
-                {
-                    if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
-                    {
-                        SelectionEnd -= _BytesPerRow;
-                    }
-                    else
-                    {
-                        SelectionStart -= _BytesPerRow;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
-                    }
-
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
-
-                    e.Handled = true;
-                    break;
-                }
                 }
             }
         }
@@ -1578,7 +1625,13 @@ namespace HexBox.WinUI
                     SelectionEnd = currentMouseOverOffset;
                 }
 
-                break;
+                // Move next row into view if selection goes out of view
+                if (!IsOffsetVisible(SelectionEnd + _BytesPerColumn))
+                {
+                    ScrollToOffset(SelectionEnd + _BytesPerColumn);
+                }
+
+                        break;
             }
             }
         }
@@ -2040,6 +2093,11 @@ namespace HexBox.WinUI
             return result;
         }
 
+        private void SelectAllExecuted(object sender)
+        {
+            SelectAll();
+        }
+
         private void CopyExecuted(object sender)
         {
             Copy(false);
@@ -2048,6 +2106,11 @@ namespace HexBox.WinUI
         private void CopyTextExecuted(object sender)
         {
             Copy(true);
+        }
+
+        private bool SelectAllCanExecute(object sender)
+        {
+            return DataSource?.BaseStream?.Length > 0;
         }
 
         private bool CopyCanExecute(object sender)

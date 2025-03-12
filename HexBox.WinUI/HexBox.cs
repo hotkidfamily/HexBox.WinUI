@@ -609,7 +609,7 @@ namespace HexBox.WinUI
 
                 long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
 
-                // Adjust wrong SelectionEnd after selecting up or right to left
+                // Adjust wrong SelectionEnd after selecting down or left to right
                 long selectionEnd = SelectionStart < SelectionEnd ? SelectionEnd - 1 : SelectionEnd;
 
                 DataSource.BaseStream.Position = Math.Min(SelectionStart, selectionEnd);

@@ -609,9 +609,12 @@ namespace HexBox.WinUI
 
                 long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
 
-                DataSource.BaseStream.Position = Math.Min(SelectionStart, SelectionEnd);
+                // Adjust wrong SelectionEnd after selecting up or right to left
+                long selectionEnd = SelectionStart < SelectionEnd ? SelectionEnd - 1 : SelectionEnd;
 
-                while (DataSource.BaseStream.Position <= Math.Max(SelectionStart, SelectionEnd))
+                DataSource.BaseStream.Position = Math.Min(SelectionStart, selectionEnd);
+
+                while (DataSource.BaseStream.Position <= Math.Max(SelectionStart, selectionEnd))
                 {
                     if (copyText)
                     {

@@ -244,6 +244,8 @@ namespace HexBox.WinUI
         private ScrollBar _ScrollBar;
         private string _ScrollBarName = "ElementScrollBar";
 
+        private SelectionAdjustment _pointerMoveSelectionAdjustment = SelectionAdjustment.None;
+
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -253,6 +255,13 @@ namespace HexBox.WinUI
             Address,
             Data,
             Text,
+        }
+
+        private enum SelectionAdjustment
+        {
+            None,
+            Up,
+            Down
         }
 
         /// <summary>
@@ -443,7 +452,13 @@ namespace HexBox.WinUI
         {
             get => (long)GetValue(SelectionStartProperty);
 
-            private set => SetValue(SelectionStartProperty, CoerceSelectionStart(this, value));
+            private set
+            {
+                SetValue(SelectionStartProperty, CoerceSelectionStart(this, value));
+
+                // Reset SelectionStart adjustment state
+                _pointerMoveSelectionAdjustment = SelectionAdjustment.None;
+            }
         }
 
         /// <summary>
@@ -596,7 +611,7 @@ namespace HexBox.WinUI
 
                 DataSource.BaseStream.Position = Math.Min(SelectionStart, SelectionEnd);
 
-                while (DataSource.BaseStream.Position < Math.Max(SelectionStart, SelectionEnd))
+                while (DataSource.BaseStream.Position <= Math.Max(SelectionStart, SelectionEnd))
                 {
                     if (copyText)
                     {
@@ -1635,6 +1650,20 @@ namespace HexBox.WinUI
                         else
                         {
                             SelectionEnd = currentMouseOverOffset;
+                        }
+
+                        // Adjust start point
+                        if (SelectionStart > SelectionEnd && _pointerMoveSelectionAdjustment != SelectionAdjustment.Up)
+                        {
+                            // If moving up and SelectionStart was previously adjusted down or not adjusted, then set SelectionStart to end of row.
+                            SelectionStart = SelectionStart + (_BytesPerRow -1);
+                            _pointerMoveSelectionAdjustment = SelectionAdjustment.Up;
+                        }
+                        else if (SelectionStart < SelectionEnd && _pointerMoveSelectionAdjustment == SelectionAdjustment.Up)
+                        {
+                            // If moving down and SelectionStart was previously adjusted up, then set SelectionStart to start of row.
+                            SelectionStart = SelectionStart - (_BytesPerRow -1);
+                            _pointerMoveSelectionAdjustment = SelectionAdjustment.Down;
                         }
                         break;
                     }

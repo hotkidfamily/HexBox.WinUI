@@ -564,6 +564,15 @@ namespace HexBox.WinUI
 
 
         /// <summary>
+        /// Clears the current selection
+        /// </summary>
+        public void ClearSelection()
+        {
+            SelectionStart = SelectionEnd = 0;
+        }
+
+
+        /// <summary>
         /// Select all data.
         /// </summary>
         public void SelectAll()

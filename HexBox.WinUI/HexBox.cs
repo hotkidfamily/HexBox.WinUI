@@ -1281,6 +1281,17 @@ namespace HexBox.WinUI
         public void ScrollToOffset(long offset)
         {
             long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
+            long lastByteOffset = (DataSource?.BaseStream?.Length ?? 1) - 1;
+
+            // Adjust requested offset if not existing
+            if (offset < 0)
+            {
+                offset = 0;
+            }
+            else if (offset > lastByteOffset)
+            {
+                offset = lastByteOffset;
+            }
 
             if (Offset > offset)
             {

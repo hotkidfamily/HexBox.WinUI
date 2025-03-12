@@ -563,7 +563,6 @@ namespace HexBox.WinUI
             DependencyProperty.Register("HighlightedRegions", typeof(List<HighlightedRegion>), typeof(HexBox), new PropertyMetadata(new List<HighlightedRegion>(), OnPropertyChangedInvalidateVisual));
 
 
-
         /// <summary>
         /// Select all data.
         /// </summary>
@@ -1618,12 +1617,11 @@ namespace HexBox.WinUI
 
                 switch (_HighlightState)
                 {
-                    case SelectionArea.Data:
-                    case SelectionArea.Text:
+                    case SelectionArea.Address:
                     {
                         if (currentMouseOverOffset >= SelectionStart)
                         {
-                            SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
+                            SelectionEnd = currentMouseOverOffset + _BytesPerRow;
                         }
                         else
                         {
@@ -1631,11 +1629,12 @@ namespace HexBox.WinUI
                         }
                         break;
                     }
-                    case SelectionArea.Address:
+                    case SelectionArea.Data:
+                    case SelectionArea.Text:
                     {
                         if (currentMouseOverOffset >= SelectionStart)
                         {
-                            SelectionEnd = currentMouseOverOffset + _BytesPerRow;
+                            SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
                         }
                         else
                         {

@@ -1324,21 +1324,20 @@ namespace HexBox.WinUI
 
                     case VirtualKey.C:
                     {
-                        if ((IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl)) &&
-                                (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift)))
+                        if (IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl))
                         {
-                            // Copy text
                             if (CopyCanExecute(null))
                             {
-                                Copy(true);
-                            }
-                        }
-                        else if ((IsKeyDown(VirtualKey.LeftControl) || IsKeyDown(VirtualKey.RightControl)))
-                        {
-                            // Copy data
-                            if (CopyCanExecute(null))
-                            {
-                                Copy(false);
+                                if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                                {
+                                    // Copy text
+                                    Copy(true);
+                                }
+                                else
+                                {
+                                    // Copy data
+                                    Copy(false);
+                                }
                             }
                         }
 

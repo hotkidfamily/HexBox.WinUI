@@ -1659,13 +1659,13 @@ namespace HexBox.WinUI
                         if (SelectionStart > SelectionEnd && _pointerMoveSelectionAdjustment != SelectionAdjustment.Up)
                         {
                             // If moving up and SelectionStart was previously adjusted down or not adjusted, then set SelectionStart to end of row.
-                            SelectionStart = SelectionStart + (_BytesPerRow -1);
+                            SelectionStart = SelectionStart + (_BytesPerRow - _BytesPerColumn);
                             _pointerMoveSelectionAdjustment = SelectionAdjustment.Up;
                         }
                         else if (SelectionStart < SelectionEnd && _pointerMoveSelectionAdjustment == SelectionAdjustment.Up)
                         {
                             // If moving down and SelectionStart was previously adjusted up, then set SelectionStart to start of row.
-                            SelectionStart = SelectionStart - (_BytesPerRow -1);
+                            SelectionStart = SelectionStart - (_BytesPerRow - _BytesPerColumn);
                             _pointerMoveSelectionAdjustment = SelectionAdjustment.Down;
                         }
                         break;

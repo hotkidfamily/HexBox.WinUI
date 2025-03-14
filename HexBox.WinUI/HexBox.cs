@@ -976,7 +976,7 @@ namespace HexBox.WinUI
                         if ((SelectedOffset + SelectionLength) % _BytesPerRow == 0)
                         {
                             sp1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
-                            sp1.Y -=  _TextMeasure.Height;
+                            sp1.Y = Math.Max(sp0.Y, sp1.Y-_TextMeasure.Height);
                         }
                         else { 
                             sp1.X -= _TextMeasure.Width; 

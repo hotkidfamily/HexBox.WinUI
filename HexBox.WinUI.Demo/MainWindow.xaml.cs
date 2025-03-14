@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI;
 using WinUIEx;
-using static HexBox.WinUI.HexBox;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -145,7 +144,7 @@ namespace HexBox.WinUI.Demo
                 */
                 HexViewer.DataSource = Reader;
                 HexViewer.HighlightedRegions.Clear();
-                List<HighlightedRegion> HighlightedRegions = [];
+                List<HexBox.HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
                 int offset = 0x2f2;
                 for(int i = 0; i < 3 ; i++)

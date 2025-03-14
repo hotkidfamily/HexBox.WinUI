@@ -14,16 +14,18 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 * Built in context menu for controlling display of data
 * Supports template styling of the control
 * Monospaced Font is not required.
-* Highlight regions support
+* Supports highlight regions
+* Supports shortcut
 
 ## Preview
-* Total
-
+* Operators
 ![demo](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Demo.gif)
 
 * Highlight regions
-
 ![highlight](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Demo_HighLightRegions.png)
+
+* Menu
+![Menu](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Menu.png)
 
 ## Thanks
 Fork from [HexView.Wpf](https://github.com/fjeremic/HexView.Wpf.git)

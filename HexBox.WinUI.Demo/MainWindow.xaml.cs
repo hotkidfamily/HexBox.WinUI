@@ -1,8 +1,10 @@
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.ApplicationModel.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -27,7 +29,6 @@ namespace HexBox.WinUI.Demo
         private DispatcherQueue _queue;
         private Task _queryTask;
         private CancellationTokenSource _tokenSource;
-
 
         private BinaryReader _reader = default!;
 
@@ -73,7 +74,6 @@ namespace HexBox.WinUI.Demo
             this.SetTitleBar(AppTitleBar);
             this.Width = 1280;
             this.Height = 720;
-
             Root.RequestedTheme = ElementTheme.Light;
             _tokenSource = new();
             _queue = DispatcherQueue.GetForCurrentThread();

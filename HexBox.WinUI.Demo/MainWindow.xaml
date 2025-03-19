@@ -40,20 +40,25 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8">
-                <Button Name="Browse" Click="Button_Click">Browser</Button>
+                <Button Name="Browse"
+                        Click="Button_Click"
+                        x:Uid="BrowseButton"></Button>
                 <RichEditBox Name="Editor2"
                              Width="150" />
                 <TextBox Name="FindBox"
                          Width="350"
-                         PlaceholderText="Enter search text" />
+                         PlaceholderText="Enter search text"
+                         x:Uid="FindBox" />
             </StackPanel>
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8">
                 <CheckBox Name="EnforceModeCheckBox"
-                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
+                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}"
+                          x:Uid="FixedView"></CheckBox>
             </StackPanel>
+
         </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"

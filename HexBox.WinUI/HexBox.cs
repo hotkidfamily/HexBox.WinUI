@@ -11,6 +11,7 @@ using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -25,8 +26,6 @@ using Windows.UI.Core;
 
 namespace HexBox.WinUI
 {
-    [TemplatePart(Name = "ElementCanvas", Type = typeof(SKXamlCanvas))]
-    [TemplatePart(Name = "ElementScrollBar", Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
         /// <summary>

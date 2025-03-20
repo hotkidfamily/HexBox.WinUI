@@ -20,5 +20,5 @@
   "DataProperties/Text": "数据属性",
   "DataFormatHex/Text": "十六进制",
   "DataFormatDecimal/Text": "十进制",
-  "CopyText/Text": "复制文本",
+  "CopyText/Text": "复制文本"
 }

@@ -13,7 +13,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -2811,12 +2810,17 @@ namespace HexBox.WinUI
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
         }
 
+
+        private LocalizedStrings _localStrings = new();
+        public LocalizedStrings LocalStrings { get => _localStrings; }
+        
         /// <summary>
         /// Initializes static members of the <see cref="HexBox"/> class.
         /// </summary>
         public HexBox()
         {
             DefaultStyleKey = typeof(HexBox);
+            Debug.Write(LocalStrings.DataUnsigned);
         }
     }
 

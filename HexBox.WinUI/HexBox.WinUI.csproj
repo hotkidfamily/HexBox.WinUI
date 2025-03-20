@@ -47,12 +47,12 @@
     <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.9" />
   </ItemGroup>
   <ItemGroup>
-    <PRIResource Include="Strings\de\resources.resjson" />
-    <PRIResource Include="Strings\en-US\resources.resjson" />
-    <PRIResource Include="Strings\ja\resources.resjson" />
-    <PRIResource Include="Strings\resources.resjson" />
-    <PRIResource Include="Strings\zh-hans\resources.resjson" />
-    <PRIResource Include="Strings\zh-hant\resources.resjson" />
+    <PRIResource Include="Strings\de\Resources.resjson" />
+    <PRIResource Include="Strings\en-US\Resources.resjson" />
+    <PRIResource Include="Strings\ja\Resources.resjson" />
+    <PRIResource Include="Strings\Resources.resjson" />
+    <PRIResource Include="Strings\zh-hans\Resources.resjson" />
+    <PRIResource Include="Strings\zh-hant\Resources.resjson" />
   </ItemGroup>
   
 </Project>

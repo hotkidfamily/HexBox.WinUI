@@ -4,7 +4,7 @@
   "AddressProperties/Text": "地址内容",
   "TextPropertiesNoText/Text": "不顯示文字",
   "TextProperties/Text": "文字内容",
-  "TextFormatAscii/Text": "美國資訊交換用標準程式碼",
+  "TextFormatAscii/Text": "ASCII",
   "SelectAll/Text": "全選",
   "EndianLittle/Text": "小端",
   "EndianBig/Text": "大端",

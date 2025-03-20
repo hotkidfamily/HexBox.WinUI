@@ -16,7 +16,9 @@
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}"
-                        IsTabStop="False">
+                        IsTabStop="False"
+                        Padding="4"
+                        CornerRadius="{TemplateBinding CornerRadius}">
 
                         <Grid.Resources>
                             <convert:BoolNegationConverter x:Key="BoolNegationConverter" />

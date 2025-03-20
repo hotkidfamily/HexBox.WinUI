@@ -6,13 +6,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Windows.ApplicationModel.Resources;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -2820,7 +2818,6 @@ namespace HexBox.WinUI
         public HexBox()
         {
             DefaultStyleKey = typeof(HexBox);
-            Debug.Write(LocalStrings.DataUnsigned);
         }
     }
 

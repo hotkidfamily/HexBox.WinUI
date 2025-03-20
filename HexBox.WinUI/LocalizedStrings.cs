@@ -6,8 +6,8 @@ namespace HexBox.WinUI
 {
     public partial class LocalizedStrings: INotifyPropertyChanged
     {
-        private const string ResourcesSpace = "HexBox.WinUI";
-        private static readonly ResourceManager _resourceManager = new();
+        private const string _resSpace = "HexBox.WinUI";
+        private static readonly ResourceManager _rm = new();
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -44,8 +44,8 @@ namespace HexBox.WinUI
 
         private static string GetValue(string name)
         {
-            var value = _resourceManager.MainResourceMap.TryGetValue($"{ResourcesSpace}/Resources/{name}/Text");
-            value ??= _resourceManager.MainResourceMap.GetValue($"{ResourcesSpace}/{ResourcesSpace}/Resources/{name}");
+            var value = _rm.MainResourceMap.TryGetValue($"{_resSpace}/Resources/{name}/Text");
+            value ??= _rm.MainResourceMap.GetValue($"{_resSpace}/{_resSpace}/Resources/{name}");
 
             return value?.ValueAsString;
         }

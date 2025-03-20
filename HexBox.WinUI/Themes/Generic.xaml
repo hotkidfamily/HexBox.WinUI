@@ -25,7 +25,7 @@
                             <local:HexboxDataTypeConverter x:Key="HexboxDataTypeConverter" />
                             <MenuFlyout x:Key="DataMenuFlyout">
                                 <MenuFlyoutItem Icon="Copy"
-                                                x:Uid="Copy"
+                                                x:Uid="HexBox.WinUI.Copy"
                                                 Command="{Binding CopyCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
                                     <MenuFlyoutItem.KeyboardAccelerators>
                                         <KeyboardAccelerator Key="C"
@@ -33,7 +33,7 @@
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem Icon="Font"
-                                                x:Uid="CopyText"
+                                                x:Uid="HexBox.WinUI.CopyText"
                                                 Command="{Binding CopyTextCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
                                     <MenuFlyoutItem.KeyboardAccelerators>
                                         <KeyboardAccelerator Key="C"
@@ -41,7 +41,7 @@
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutItem Icon="SelectAll"
-                                                x:Uid="SelectAll"
+                                                x:Uid="HexBox.WinUI.SelectAll"
                                                 Command="{Binding SelectAllCommand, RelativeSource={RelativeSource Mode=TemplatedParent}}">
                                     <MenuFlyoutItem.KeyboardAccelerators>
                                         <KeyboardAccelerator Key="A"
@@ -49,62 +49,62 @@
                                     </MenuFlyoutItem.KeyboardAccelerators>
                                 </MenuFlyoutItem>
                                 <MenuFlyoutSeparator />
-                                <MenuFlyoutSubItem x:Uid="AddressProperties"
+                                <MenuFlyoutSubItem x:Uid="HexBox.WinUI.AddressProperties"
                                                    IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                    <ToggleMenuFlyoutItem x:Uid="AddressPropertiesNoAddress"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.AddressPropertiesNoAddress"
                                                           IsChecked="{Binding ShowAddress, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                 </MenuFlyoutSubItem>
-                                <MenuFlyoutSubItem x:Uid="DataProperties"
+                                <MenuFlyoutSubItem x:Uid="HexBox.WinUI.DataProperties"
                                                    IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                    <ToggleMenuFlyoutItem x:Uid="DataPropertiesNoData"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.DataPropertiesNoData"
                                                           IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeOneByteInteger"
+                                                         x:Uid="HexBox.WinUI.DataTypeOneByteInteger"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_1}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeTwoByteInteger"
+                                                         x:Uid="HexBox.WinUI.DataTypeTwoByteInteger"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_2}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeFourByteInteger"
+                                                         x:Uid="HexBox.WinUI.DataTypeFourByteInteger"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_4}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeEightByteInteger"
+                                                         x:Uid="HexBox.WinUI.DataTypeEightByteInteger"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_8}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeFourByteFloat"
+                                                         x:Uid="HexBox.WinUI.DataTypeFourByteFloat"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_32}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
-                                                         x:Uid="DataTypeEightByteFloat"
+                                                         x:Uid="HexBox.WinUI.DataTypeEightByteFloat"
                                                          IsChecked="{Binding DataType, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_64}"
                                                          IsEnabled="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}}" />
                                     <MenuFlyoutSeparator />
-                                    <ToggleMenuFlyoutItem x:Uid="DataSigned"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.DataSigned"
                                                           IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Signed}"
                                                           IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}" />
-                                    <ToggleMenuFlyoutItem x:Uid="DataUnSigned"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.DataUnSigned"
                                                           IsChecked="{Binding DataSignedness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Unsigned}"
                                                           IsEnabled="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Converter={StaticResource HexboxDataFormatBoolConverter}, ConverterParameter={Binding DataFormat}}" />
                                     <MenuFlyoutSeparator />
-                                    <ToggleMenuFlyoutItem x:Uid="DataformatDecimal"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.DataformatDecimal"
                                                           IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Decimal}" />
-                                    <ToggleMenuFlyoutItem x:Uid="DataFormatHex"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.DataFormatHex"
                                                           IsChecked="{Binding DataFormat, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Hexadecimal}" />
                                     <MenuFlyoutSeparator />
-                                    <ToggleMenuFlyoutItem x:Uid="EndianBig"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.EndianBig"
                                                           IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=BigEndian}" />
-                                    <ToggleMenuFlyoutItem x:Uid="EndianLittle"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.EndianLittle"
                                                           IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=LittleEndian}" />
                                 </MenuFlyoutSubItem>
-                                <MenuFlyoutSubItem x:Uid="TextProperties"
+                                <MenuFlyoutSubItem x:Uid="HexBox.WinUI.TextProperties"
                                                    IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
-                                    <ToggleMenuFlyoutItem x:Uid="TextPropertiesNoText"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.TextPropertiesNoText"
                                                           IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
-                                    <ToggleMenuFlyoutItem x:Uid="TextFormatAscii"
+                                    <ToggleMenuFlyoutItem x:Uid="HexBox.WinUI.TextFormatAscii"
                                                           IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay}"
                                                           IsEnabled="False" />
                                 </MenuFlyoutSubItem>

@@ -6,11 +6,13 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Microsoft.Windows.ApplicationModel.Resources;
 using SkiaSharp;
 using SkiaSharp.Views.Windows;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -575,7 +577,6 @@ namespace HexBox.WinUI
         // Using a DependencyProperty as the backing store for HighlightedRegions.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty HighlightedRegionsProperty =
             DependencyProperty.Register("HighlightedRegions", typeof(List<HighlightedRegion>), typeof(HexBox), new PropertyMetadata(new List<HighlightedRegion>(), OnPropertyChangedInvalidateVisual));
-
 
         /// <summary>
         /// Clears the current selection

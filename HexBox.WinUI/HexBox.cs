@@ -1362,6 +1362,7 @@ namespace HexBox.WinUI
                 }
             }
 
+            // Other keys
             if (Columns > 0 && MaxVisibleRows > 0)
             {
                 switch (e.Key)

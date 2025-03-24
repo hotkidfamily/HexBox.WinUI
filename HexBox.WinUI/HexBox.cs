@@ -173,8 +173,8 @@ namespace HexBox.WinUI
         /// <summary>
         /// Defines the brush used for the fill of the vertical separator line between the areas.
         /// </summary>
-        public static readonly DependencyProperty VerticalSeparatorBrushProperty =
-            DependencyProperty.Register(nameof(VerticalSeparatorBrush), typeof(SolidColorBrush), typeof(HexBox),
+        public static readonly DependencyProperty VerticalSeparatorLineBrushProperty =
+            DependencyProperty.Register(nameof(VerticalSeparatorLineBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateVisual));
 
 
@@ -521,11 +521,11 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets the brush used to display the vertical separator line between the control areas.
         /// </summary>
-        public SolidColorBrush VerticalSeparatorBrush
+        public SolidColorBrush VerticalSeparatorLineBrush
         {
-            get => (SolidColorBrush)GetValue(VerticalSeparatorBrushProperty);
+            get => (SolidColorBrush)GetValue(VerticalSeparatorLineBrushProperty);
 
-            set => SetValue(VerticalSeparatorBrushProperty, value);
+            set => SetValue(VerticalSeparatorLineBrushProperty, value);
         }
 
         /// <summary>
@@ -886,7 +886,7 @@ namespace HexBox.WinUI
                     TextAlign = SKTextAlign.Left,
                 };
             }
-            _LinePaint.Color = VerticalSeparatorBrush.Color.ToSKColor();
+            _LinePaint.Color = VerticalSeparatorLineBrush.Color.ToSKColor();
 
             if (_TextPaint == null)
             {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <SolidColorBrush x:Key="AddressBrush"
+                     Color="CornflowerBlue" />
+    <SolidColorBrush x:Key="AlternatingDataColumnTextBrush"
+                     Color="Gray" />
+    <SolidColorBrush x:Key="SelectionBrush"
+                     Color="LightPink" />
+    <SolidColorBrush x:Key="SelectionTextBrush"
+                     Color="Black" />
+    <SolidColorBrush x:Key="Background"
+                     Color="Transparent" />
+    <SolidColorBrush x:Key="BorderBrush"
+                     Color="White" />
+    
+</ResourceDictionary>

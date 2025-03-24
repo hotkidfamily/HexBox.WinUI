@@ -25,8 +25,6 @@ using Windows.UI.Core;
 
 namespace HexBox.WinUI
 {
-    [TemplatePart(Name = "ElementCanvas", Type = typeof(SKXamlCanvas))]
-    [TemplatePart(Name = "ElementScrollBar", Type = typeof(ScrollBar))]
     public sealed class HexBox : Control, INotifyPropertyChanged
     {
         /// <summary>
@@ -868,6 +866,12 @@ namespace HexBox.WinUI
                     Typeface = _TextTypeFace,
                     TextAlign = SKTextAlign.Left,
                 };
+            }
+
+            if((_LinePaint != null) && (BorderBrush is SolidColorBrush c))
+            {
+                _LinePaint.Color
+                     = c.Color.ToSKColor();
             }
 
             if (_TextPaint == null)
@@ -2819,5 +2823,4 @@ namespace HexBox.WinUI
             DefaultStyleKey = typeof(HexBox);
         }
     }
-
 }

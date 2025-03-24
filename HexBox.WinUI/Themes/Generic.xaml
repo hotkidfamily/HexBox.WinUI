@@ -5,17 +5,36 @@
     xmlns:local="using:HexBox.WinUI"
     xmlns:skia="using:SkiaSharp.Views.Windows">
 
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary Source="/HexBox.WinUI/Themes/LightTheme.xaml"
+                            x:Key="Light" />
+        <ResourceDictionary Source="/HexBox.WinUI/Themes/DarkTheme.xaml"
+                            x:Key="Dark" />
+        <ResourceDictionary Source="/HexBox.WinUI/Themes/DefaultTheme.xaml"
+                            x:Key="Default" />
+    </ResourceDictionary.ThemeDictionaries>
+
     <Style TargetType="local:HexBox">
+        <Setter Property="SelectionBrush"
+                Value="{ThemeResource SelectionBrush}" />
+        <Setter Property="SelectionTextBrush"
+                Value="{ThemeResource SelectionTextBrush}" />
+        <Setter Property="AddressBrush"
+                Value="{ThemeResource AddressBrush}" />
+        <Setter Property="AlternatingDataColumnTextBrush"
+                Value="{ThemeResource AlternatingDataColumnTextBrush}" />
+        <Setter Property="BorderBrush"
+                Value="{ThemeResource BorderBrush}" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:HexBox">
-                    <Grid
-                        Margin="{TemplateBinding Margin}"
+                    <Grid Margin="{TemplateBinding   Margin}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}"
+                        Background="{ThemeResource  Background}"
+                        BorderBrush="{ThemeResource  BorderBrush}"
+                        BorderThickness="{TemplateBinding  BorderThickness}"
                         IsTabStop="False">
 
                         <Grid.Resources>

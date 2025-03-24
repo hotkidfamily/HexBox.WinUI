@@ -14,6 +14,14 @@
     <WindowsPackageType>None</WindowsPackageType>
     <WindowAppSdkSelfContainer>True</WindowAppSdkSelfContainer>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Themes\DarkTheme.xaml" />
+    <None Remove="Themes\LightTheme.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Remove="Themes\DarkTheme.xaml" />
+    <Page Remove="Themes\LightTheme.xaml" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -44,6 +52,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HexBox.WinUI\HexBox.WinUI.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Themes\DarkTheme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Themes\LightTheme.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <WebView2EnableCsWinRTProjection>False</WebView2EnableCsWinRTProjection>

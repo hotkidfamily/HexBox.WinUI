@@ -12,7 +12,8 @@
 
     <Grid VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
-          Name="Root">
+          Name="Root"
+          Background="{ThemeResource AppBarBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="48" />
@@ -31,7 +32,8 @@
                            Margin="8,0,0,0">HexBox.WinUI.Demo</TextBlock>
             </StackPanel>
         </Border>
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1"
+              Background="{ThemeResource AppBarBackgroundThemeBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*" />
                 <ColumnDefinition Width="4*" />
@@ -53,15 +55,23 @@
                         Spacing="8">
                 <CheckBox Name="EnforceModeCheckBox"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
+                <ComboBox Name="Theme"
+                          SelectionChanged="Theme_SelectionChanged">
+                    <ComboBoxItem IsSelected="True"
+                                  Content="As System"
+                                  Tag="0" />
+                    <ComboBoxItem Content="Light Theme"
+                                  Tag="1" />
+                    <ComboBoxItem Content="Dark Theme"
+                                  Tag="2" />
+                </ComboBox>
             </StackPanel>
         </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
                     Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
-                    Background="Transparent"
                     Margin="4"
                     EnforceProperties="{x:Bind EnforceMode, Mode=OneWay}"
-                    BorderBrush="Blue"
                     BorderThickness="1"
                     FontFamily="Monaco"
                     FontSize="14">

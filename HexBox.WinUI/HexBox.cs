@@ -40,7 +40,7 @@ namespace HexBox.WinUI
         /// Defines the brush used to display the addresses in the address section of the control.
         /// </summary>
         public static readonly DependencyProperty AddressBrushProperty =
-            DependencyProperty.Register(nameof(AddressBrush), typeof(Brush), typeof(HexBox),
+            DependencyProperty.Register(nameof(AddressBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.CornflowerBlue), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace HexBox.WinUI
         ///  Defines the brush used for alternating for text in alternating (odd numbered) columns in the data section of the control.
         /// </summary>
         public static readonly DependencyProperty AlternatingDataColumnTextBrushProperty =
-            DependencyProperty.Register(nameof(AlternatingDataColumnTextBrush), typeof(Brush), typeof(HexBox),
+            DependencyProperty.Register(nameof(AlternatingDataColumnTextBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.Gray), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
@@ -118,14 +118,14 @@ namespace HexBox.WinUI
         /// Defines the brush used for selection fill.
         /// </summary>
         public static readonly DependencyProperty SelectionBrushProperty =
-            DependencyProperty.Register(nameof(SelectionBrush), typeof(Brush), typeof(HexBox),
+            DependencyProperty.Register(nameof(SelectionBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.LightPink), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Defines the brush used for selected text.
         /// </summary>
         public static readonly DependencyProperty SelectionTextBrushProperty =
-            DependencyProperty.Register(nameof(SelectionTextBrush), typeof(Brush), typeof(HexBox),
+            DependencyProperty.Register(nameof(SelectionTextBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
@@ -169,6 +169,14 @@ namespace HexBox.WinUI
         public static readonly DependencyProperty ShowTextProperty =
             DependencyProperty.Register(nameof(ShowText), typeof(bool), typeof(HexBox),
                 new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
+
+        /// <summary>
+        /// Defines the brush used for the fill of the vertical separator line between the areas.
+        /// </summary>
+        public static readonly DependencyProperty VerticalSeparatorLineBrushProperty =
+            DependencyProperty.Register(nameof(VerticalSeparatorLineBrush), typeof(SolidColorBrush), typeof(HexBox),
+                new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateVisual));
+
 
         /// <summary>
         /// Defines the format of the text to display in the text section.
@@ -277,9 +285,9 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets the brush used to display the addresses in the address section of the control.
         /// </summary>
-        public Brush AddressBrush
+        public SolidColorBrush AddressBrush
         {
-            get => (Brush)GetValue(AddressBrushProperty);
+            get => (SolidColorBrush)GetValue(AddressBrushProperty);
 
             set => SetValue(AddressBrushProperty, value);
         }
@@ -287,9 +295,9 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets the brush used for alternating for text in alternating (odd numbered) columns in the data section of the control.
         /// </summary>
-        public Brush AlternatingDataColumnTextBrush
+        public SolidColorBrush AlternatingDataColumnTextBrush
         {
-            get => (Brush)GetValue(AlternatingDataColumnTextBrushProperty);
+            get => (SolidColorBrush)GetValue(AlternatingDataColumnTextBrushProperty);
 
             set => SetValue(AlternatingDataColumnTextBrushProperty, value);
         }
@@ -410,9 +418,9 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets the brush used for selection fill.
         /// </summary>
-        public Brush SelectionBrush
+        public SolidColorBrush SelectionBrush
         {
-            get => (Brush)GetValue(SelectionBrushProperty);
+            get => (SolidColorBrush)GetValue(SelectionBrushProperty);
 
             set => SetValue(SelectionBrushProperty, value);
         }
@@ -464,9 +472,9 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets the brush used for selected text.
         /// </summary>
-        public Brush SelectionTextBrush
+        public SolidColorBrush SelectionTextBrush
         {
-            get => (Brush)GetValue(SelectionTextBrushProperty);
+            get => (SolidColorBrush)GetValue(SelectionTextBrushProperty);
 
             set => SetValue(SelectionTextBrushProperty, value);
         }
@@ -508,6 +516,16 @@ namespace HexBox.WinUI
             get => (bool)GetValue(ShowTextProperty);
 
             set => SetValue(ShowTextProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used to display the vertical separator line between the control areas.
+        /// </summary>
+        public SolidColorBrush VerticalSeparatorLineBrush
+        {
+            get => (SolidColorBrush)GetValue(VerticalSeparatorLineBrushProperty);
+
+            set => SetValue(VerticalSeparatorLineBrushProperty, value);
         }
 
         /// <summary>
@@ -860,7 +878,6 @@ namespace HexBox.WinUI
             {
                 _LinePaint = new()
                 {
-                    Color = SKColors.Black,
                     IsStroke = true,
                     IsAntialias = true,
                     StrokeWidth = 1,
@@ -869,6 +886,7 @@ namespace HexBox.WinUI
                     TextAlign = SKTextAlign.Left,
                 };
             }
+            _LinePaint.Color = VerticalSeparatorLineBrush.Color.ToSKColor();
 
             if (_TextPaint == null)
             {

@@ -1358,6 +1358,29 @@ namespace HexBox.WinUI
         {
             base.OnKeyDown(e);
 
+            // Context Menu
+            switch (e.Key)
+            {
+                case VirtualKey.Application:
+                {
+                    ShowContextMenu();
+                    e.Handled = true;
+                    return;
+                }
+
+                case VirtualKey.F10:
+                {
+                    if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
+                    {
+                        ShowContextMenu();
+                    }
+
+                    e.Handled = true;
+                    return;
+                }
+            }
+
+            // Other keys
             if (Columns > 0 && MaxVisibleRows > 0)
             {
                 switch (e.Key)
@@ -2827,6 +2850,41 @@ namespace HexBox.WinUI
             long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
 
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
+        }
+
+        /// <summary>
+        /// Show the context menu programatical.
+        /// Invoked if Application key or SCHIFT+F10 is pressed.
+        /// </summary>
+        private void ShowContextMenu()
+        {
+            // Get offset for context menu
+            var lastVisibleOffset = Offset + (_BytesPerRow * MaxVisibleRows) - 1;
+            var offset = Math.Max(Math.Max(SelectionStart, SelectionEnd), Offset);
+            var palcementOffset = Math.Min(offset, lastVisibleOffset);
+
+            // Show menu
+            if (ShowData)
+            {
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Data),
+                });
+            }
+            else if (ShowText)
+            {
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Text),
+                });
+            }
+            else
+            {
+                _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
+                {
+                    Position = new Point(0, 0),
+                });
+            }
         }
 
         /// <summary>

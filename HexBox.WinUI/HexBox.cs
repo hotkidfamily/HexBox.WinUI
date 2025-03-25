@@ -19,7 +19,6 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI.ViewManagement;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -175,6 +174,13 @@ namespace HexBox.WinUI
         public static readonly DependencyProperty TextFormatProperty =
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
+
+        /// <summary>
+        /// Defines the brush used for selected text.
+        /// </summary>
+        public static readonly DependencyProperty VerticalLineBrushProperty =
+            DependencyProperty.Register(nameof(VerticalLineBrush), typeof(Brush), typeof(HexBox),
+                new PropertyMetadata(new SolidColorBrush(Colors.Blue), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Gets the <see cref="SelectAll"/> command.
@@ -529,6 +535,16 @@ namespace HexBox.WinUI
             set => SetValue(TextFormatProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets the brush used to display the Vertical Line between sections.
+        /// </summary>
+        public Brush VerticalLineBrush
+        {
+            get => (Brush)GetValue(VerticalLineBrushProperty);
+
+            set => SetValue(VerticalLineBrushProperty, value);
+        }
+
         private double _SelectionBoxDataXPadding => _TextMeasure.Width / 4;
 
         private double _SelectionBoxDataYPadding => 0;
@@ -869,7 +885,7 @@ namespace HexBox.WinUI
                 };
             }
 
-            if((_LinePaint != null) && (BorderBrush is SolidColorBrush c))
+            if((_LinePaint != null) && (VerticalLineBrush is SolidColorBrush c))
             {
                 _LinePaint.Color
                      = c.Color.ToSKColor();

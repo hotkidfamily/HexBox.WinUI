@@ -23,8 +23,8 @@
                 Value="{ThemeResource AddressBrush}" />
         <Setter Property="AlternatingDataColumnTextBrush"
                 Value="{ThemeResource AlternatingDataColumnTextBrush}" />
-        <Setter Property="BorderBrush"
-                Value="{ThemeResource BorderBrush}" />
+        <Setter Property="VerticalLineBrush"
+                Value="{ThemeResource VerticalLineBrush}" />
 
         <Setter Property="Template">
             <Setter.Value>
@@ -32,8 +32,8 @@
                     <Grid Margin="{TemplateBinding   Margin}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        Background="{ThemeResource  Background}"
-                        BorderBrush="{ThemeResource  BorderBrush}"
+                        Background="{TemplateBinding  Background}"
+                        BorderBrush="{TemplateBinding  BorderBrush}"
                         BorderThickness="{TemplateBinding  BorderThickness}"
                         IsTabStop="False">
 

@@ -71,6 +71,8 @@
                     x:Name="HexViewer"
                     Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
                     Margin="4"
+                    BorderBrush="Blue"
+                    Background="Transparent"
                     EnforceProperties="{x:Bind EnforceMode, Mode=OneWay}"
                     BorderThickness="1"
                     FontFamily="Monaco"

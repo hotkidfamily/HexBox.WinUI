@@ -13,6 +13,6 @@
                      Color="White" />
     <SolidColorBrush x:Key="Background"
                      Color="Transparent" />
-    <SolidColorBrush x:Key="BorderBrush"
+    <SolidColorBrush x:Key="VerticalLineBrush"
                      Color="Blue" />
 </ResourceDictionary>

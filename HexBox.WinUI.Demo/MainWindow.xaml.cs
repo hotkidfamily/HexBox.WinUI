@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Windows.ApplicationModel.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -57,6 +56,20 @@ namespace HexBox.WinUI.Demo
                 OnPropertyChanged();
             }
         }
+
+        private int _columns = 16;
+
+        public int Columns
+        {
+            get { return _columns; }
+            set { 
+                if(_columns != value) { 
+                    _columns = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
 
         private void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -159,6 +172,18 @@ namespace HexBox.WinUI.Demo
                 }
                 HexViewer.HighlightedRegions = HighlightedRegions;
                 HexViewer.ScrollToOffset(offset);
+            }
+        }
+
+        private void ColumnsSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if ((Slider)sender == ColumnsSlider)
+            {
+                int cols = (int)e.NewValue;
+                _queue?.TryEnqueue(() =>
+                {
+                    Columns = cols;
+                });
             }
         }
     }

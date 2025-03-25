@@ -17,7 +17,7 @@ namespace HexBox.WinUI.Demo
         public App()
         {
             this.InitializeComponent();
-            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "ja";
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "zh-hant";
         }
 
         /// <summary>

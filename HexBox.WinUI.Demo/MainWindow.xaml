@@ -57,12 +57,19 @@
                 <CheckBox Name="EnforceModeCheckBox"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}"
                           x:Uid="FixedView"></CheckBox>
+                <Slider Value="8"
+                        Minimum="8"
+                        Maximum="64"
+                        StepFrequency="8"
+                        Name="ColumnsSlider"
+                        Width="100"
+                        ValueChanged="ColumnsSlider_ValueChanged"></Slider>
             </StackPanel>
 
         </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
-                    Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
+                    Columns="{x:Bind Columns, Mode=OneWay}"
                     Background="Transparent"
                     Margin="4"
                     EnforceProperties="{x:Bind EnforceMode, Mode=OneWay}"

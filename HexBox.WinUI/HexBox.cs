@@ -19,6 +19,7 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.ViewManagement;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -2821,6 +2822,12 @@ namespace HexBox.WinUI
         public HexBox()
         {
             DefaultStyleKey = typeof(HexBox);
+            ActualThemeChanged +=HexBox_ActualThemeChanged;
+        }
+
+        private void HexBox_ActualThemeChanged(FrameworkElement sender, object args)
+        {
+            this.RequestedTheme = ElementTheme.Light;
         }
     }
 }

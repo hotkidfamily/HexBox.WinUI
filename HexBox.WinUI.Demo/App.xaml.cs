@@ -1,3 +1,4 @@
+
 ﻿using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -20,6 +21,7 @@ namespace HexBox.WinUI.Demo
         public App()
         {
             this.InitializeComponent();
+
             _uisettings = new();
             _uisettings.ColorValuesChanged += Settings_ColorValuesChanged;
             var systemTheme = _uisettings.GetColorValue(UIColorType.Background) == Colors.Black ? ApplicationTheme.Dark : ApplicationTheme.Light;
@@ -32,6 +34,7 @@ namespace HexBox.WinUI.Demo
             Application.Current.RequestedTheme = systemTheme;
 
             _queue = DispatcherQueue.GetForCurrentThread();
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "zh-hant";
         }
         
         private void Settings_ColorValuesChanged(UISettings sender, object args)

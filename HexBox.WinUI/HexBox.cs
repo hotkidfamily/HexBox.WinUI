@@ -2835,6 +2835,10 @@ namespace HexBox.WinUI
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
         }
 
+
+        private LocalizedStrings _localStrings = new();
+        public LocalizedStrings LocalStrings { get => _localStrings; }
+        
         /// <summary>
         /// Initializes static members of the <see cref="HexBox"/> class.
         /// </summary>

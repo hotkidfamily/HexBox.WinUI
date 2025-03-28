@@ -23,6 +23,14 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Strings\de\resources.resjson" />
+    <None Remove="Strings\en-US\resources.resjson" />
+    <None Remove="Strings\ja\resources.resjson" />
+    <None Remove="Strings\resources.resjson" />
+    <None Remove="Strings\zh-hans\resources.resjson" />
+    <None Remove="Strings\zh-hant\resources.resjson" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
@@ -39,6 +47,7 @@
     <PackageReference Include="SkiaSharp.Views.WinUI" Version="2.88.9" />
   </ItemGroup>
   <ItemGroup>
+
     <Page Update="Themes\DefaultTheme.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -52,6 +61,14 @@
     <Page Update="Themes\LightTheme.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\de\Resources.resjson" />
+    <PRIResource Include="Strings\en-US\Resources.resjson" />
+    <PRIResource Include="Strings\ja\Resources.resjson" />
+    <PRIResource Include="Strings\Resources.resjson" />
+    <PRIResource Include="Strings\zh-hans\Resources.resjson" />
+    <PRIResource Include="Strings\zh-hant\Resources.resjson" />
   </ItemGroup>
   
 </Project>

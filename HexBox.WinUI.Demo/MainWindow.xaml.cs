@@ -58,6 +58,20 @@ namespace HexBox.WinUI.Demo
             }
         }
 
+        private int _columns = 16;
+
+        public int Columns
+        {
+            get { return _columns; }
+            set { 
+                if(_columns != value) { 
+                    _columns = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+
         private void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -186,6 +200,17 @@ namespace HexBox.WinUI.Demo
                     AppSettings.LocalSettings.Values["theme"] = idx;
                     AppSettings.LocalSettings.Save();
                 }
+
+        private void ColumnsSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            if ((Slider)sender == ColumnsSlider)
+            {
+                int cols = (int)e.NewValue;
+                _queue?.TryEnqueue(() =>
+                {
+                    Columns = cols;
+                });
+
             }
         }
     }

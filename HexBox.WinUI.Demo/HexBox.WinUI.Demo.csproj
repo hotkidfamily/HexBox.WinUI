@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
@@ -21,6 +21,14 @@
   <ItemGroup>
     <Page Remove="Themes\DarkTheme.xaml" />
     <Page Remove="Themes\LightTheme.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Strings\de\resources.resjson" />
+    <None Remove="Strings\en-US\resources.resjson" />
+    <None Remove="Strings\ja\resources.resjson" />
+    <None Remove="Strings\resources.resjson" />
+    <None Remove="Strings\zh-hans\resources.resjson" />
+    <None Remove="Strings\zh-hant\resources.resjson" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +57,14 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.241114003" />
     <PackageReference Include="WinUIEx" Version="2.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="Strings\de\resources.resjson" />
+    <PRIResource Include="Strings\en-US\resources.resjson" />
+    <PRIResource Include="Strings\ja\resources.resjson" />
+    <PRIResource Include="Strings\resources.resjson" />
+    <PRIResource Include="Strings\zh-hans\resources.resjson" />
+    <PRIResource Include="Strings\zh-hant\resources.resjson" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\HexBox.WinUI\HexBox.WinUI.csproj" />
@@ -81,7 +97,7 @@
     <PublishReadyToRun Condition="'$(Configuration)' == 'Debug'">False</PublishReadyToRun>
     <PublishReadyToRun Condition="'$(Configuration)' != 'Debug'">True</PublishReadyToRun>
     <PublishTrimmed Condition="'$(Configuration)' == 'Debug'">False</PublishTrimmed>
-    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">False</PublishTrimmed>
+    <PublishTrimmed Condition="'$(Configuration)' != 'Debug'">True</PublishTrimmed>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 </Project>

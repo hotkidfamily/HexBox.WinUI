@@ -42,12 +42,15 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8">
-                <Button Name="Browse" Click="Button_Click">Browser</Button>
+                <Button Name="Browse"
+                        Click="Button_Click"
+                        x:Uid="BrowseButton"></Button>
                 <RichEditBox Name="Editor2"
                              Width="150" />
                 <TextBox Name="FindBox"
                          Width="350"
-                         PlaceholderText="Enter search text" />
+                         PlaceholderText="Enter search text"
+                         x:Uid="FindBox" />
             </StackPanel>
             <StackPanel Grid.Column="1"
                         Orientation="Horizontal"
@@ -63,11 +66,20 @@
                     <ComboBoxItem Content="Dark Theme"
                                   Tag="2" />
                 </ComboBox>
+                <Slider Value="8"
+                        Minimum="8"
+                        Maximum="64"
+                        StepFrequency="8"
+                        Name="ColumnsSlider"
+                        Width="100"
+                        ValueChanged="ColumnsSlider_ValueChanged"></Slider>
             </StackPanel>
+
         </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
-                    Columns="{Binding RelativeSource={RelativeSource Self},Path=MaxVisibleColumns}"
+                    Columns="{x:Bind Columns, Mode=OneWay}"
+                    Background="Transparent"
                     Margin="4"
                     BorderBrush="Blue"
                     Background="Transparent"

@@ -34,10 +34,12 @@
                     <Grid Margin="{TemplateBinding   Margin}"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
-                        Background="{TemplateBinding  Background}"
-                        BorderBrush="{TemplateBinding  BorderBrush}"
-                        BorderThickness="{TemplateBinding  BorderThickness}"
-                        IsTabStop="False">
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        IsTabStop="False"
+                        Padding="4"
+                        CornerRadius="{TemplateBinding CornerRadius}">
 
                         <Grid.Resources>
                             <convert:BoolNegationConverter x:Key="BoolNegationConverter" />

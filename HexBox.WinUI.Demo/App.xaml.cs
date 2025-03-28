@@ -1,6 +1,6 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
-using Windows.ApplicationModel;
 using Windows.UI.ViewManagement;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -22,55 +22,32 @@ namespace HexBox.WinUI.Demo
             this.InitializeComponent();
             _uisettings = new();
             _uisettings.ColorValuesChanged += Settings_ColorValuesChanged;
-            var systemTheme = _uisettings.GetColorValue(UIColorType.Background).ToString().Equals("#FFFFFFFF") ? ApplicationTheme.Light : ApplicationTheme.Dark;
+            var systemTheme = _uisettings.GetColorValue(UIColorType.Background) == Colors.Black ? ApplicationTheme.Dark : ApplicationTheme.Light;
 
-            // packaged 
-            if(IsPackaged())
+            if(AppSettings.LocalSettings.TryGetUintValue("theme", out var theme))
             {
-                _localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-                var userTheme = _localSettings.Values["themes"] as string;
-                if (userTheme != null)
-                {
-                    App.Current.RequestedTheme = userTheme == "light" ? ApplicationTheme.Light : ApplicationTheme.Dark;
-                }
+                systemTheme = theme == 0 ? systemTheme : theme == 1 ? ApplicationTheme.Light : ApplicationTheme.Dark;
             }
 
-            App.Current.RequestedTheme = systemTheme;
+            Application.Current.RequestedTheme = systemTheme;
 
             _queue = DispatcherQueue.GetForCurrentThread();
-        }
-
-        private bool IsPackaged()
-        {
-            try
-            {
-                var package = Package.Current;
-                return package != null;
-            }
-            catch
-            {
-                return false;
-            }
         }
         
         private void Settings_ColorValuesChanged(UISettings sender, object args)
         {
-            var currentTheme = _uisettings.GetColorValue(UIColorType.Background).ToString().Equals("#FFFFFFFF") ? ApplicationTheme.Light : ApplicationTheme.Dark;
+            var systemTheme = _uisettings.GetColorValue(UIColorType.Background) == Colors.Black ? ApplicationTheme.Dark : ApplicationTheme.Light;
 
             _queue.TryEnqueue(() =>
             {
-                if (currentTheme == ApplicationTheme.Dark)
+                if (AppSettings.LocalSettings.TryGetUintValue("theme", out var theme))
                 {
-                    if (_window?.Content is FrameworkElement b)
+                    if (theme == 0)
                     {
-                        b.RequestedTheme =  ElementTheme.Dark;
-                    }
-                }
-                else
-                {
-                    if (_window?.Content is FrameworkElement b)
-                    {
-                        b.RequestedTheme =  ElementTheme.Light;
+                        if (_window?.Content is FrameworkElement b)
+                        {
+                            b.RequestedTheme = systemTheme == ApplicationTheme.Dark ? ElementTheme.Dark : ElementTheme.Light;
+                        }
                     }
                 }
             });
@@ -86,9 +63,9 @@ namespace HexBox.WinUI.Demo
             _window.Activate();
         }
 
+
         private Window? _window;
         private UISettings _uisettings;
         private DispatcherQueue _queue;
-        Windows.Storage.ApplicationDataContainer? _localSettings;
     }
 }

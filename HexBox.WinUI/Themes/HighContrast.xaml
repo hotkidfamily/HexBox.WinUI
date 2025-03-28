@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
     <SolidColorBrush x:Key="AddressBrush"
-                     Color="DodgerBlue" />
+                     Color="{ThemeResource SystemColorWindowColor}" />
     <SolidColorBrush x:Key="AlternatingDataColumnTextBrush"
-                     Color="#4e4e4e" />
+                     Color="{ThemeResource SystemColorGrayTextColor}" />
     <SolidColorBrush x:Key="SelectionBrush"
-                     Color="LightPink" />
+                     Color="{ThemeResource SystemColorBackgroundColor}" />
     <SolidColorBrush x:Key="SelectionTextBrush"
-                     Color="#222222" />
+                     Color="{ThemeResource SystemColorHighlightColor}" />
     <SolidColorBrush x:Key="Background"
                      Color="Transparent" />
     <SolidColorBrush x:Key="VerticalLineBrush"
-                     Color="Blue" />
+                     Color="{ThemeResource SystemColorActiveCaptionColor}" />
 </ResourceDictionary>

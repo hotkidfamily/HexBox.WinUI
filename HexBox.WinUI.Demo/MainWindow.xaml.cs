@@ -41,7 +41,7 @@ namespace HexBox.WinUI.Demo
             set
             {
                 if (_EnforceMode != value)
-                { 
+                {
                     _EnforceMode = value;
                     OnPropertyChanged();
                 }
@@ -51,7 +51,8 @@ namespace HexBox.WinUI.Demo
         public BinaryReader Reader
         {
             get { return _reader; }
-            set {
+            set
+            {
                 _reader = value;
                 OnPropertyChanged();
             }
@@ -78,6 +79,19 @@ namespace HexBox.WinUI.Demo
             _queryTask = Task.Run(() => _queryFocus(_tokenSource.Token, _queue), _tokenSource.Token);
 
             _queue.ShutdownStarting += _queue_ShutdownStarting;
+
+            if (AppSettings.LocalSettings.TryGetUintValue("theme", out var theme))
+            {
+                foreach (ComboBoxItem item in ThemeBox.Items)
+                {
+                    if (item.Tag.ToString() == theme.ToString())
+                    {
+                        ThemeBox.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
+            ThemeBox.SelectionChanged += Theme_SelectionChanged;
         }
 
         private void _queue_ShutdownStarting(DispatcherQueue sender, DispatcherQueueShutdownStartingEventArgs args)
@@ -87,7 +101,7 @@ namespace HexBox.WinUI.Demo
             _queryTask.Wait();
         }
 
-        async Task _queryFocus(CancellationToken token, DispatcherQueue queue)
+        private async Task _queryFocus(CancellationToken token, DispatcherQueue queue)
         {
             while (!token.IsCancellationRequested)
             {
@@ -145,7 +159,7 @@ namespace HexBox.WinUI.Demo
                 List<HexBox.HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
                 int offset = 0x2f2;
-                for(int i = 0; i < 3 ; i++)
+                for (int i = 0; i < 3; i++)
                 {
                     HexBox.HighlightedRegion r = new()
                     {
@@ -162,15 +176,17 @@ namespace HexBox.WinUI.Demo
 
         private void Theme_SelectionChanged(object sender, Microsoft.UI.Xaml.Controls.SelectionChangedEventArgs e)
         {
-            if(sender is ComboBox b)
+            if ((ComboBox)sender == ThemeBox)
             {
-                if(b.SelectedItem is ComboBoxItem c){
+                if (ThemeBox.SelectedItem is ComboBoxItem c)
+                {
                     uint idx = uint.Parse(c.Tag?.ToString());
-                    if(Content is FrameworkElement a)
+                    if (Content is FrameworkElement a)
                         a.RequestedTheme  = idx == 0 ? ElementTheme.Default : idx == 1 ? ElementTheme.Light : ElementTheme.Dark;
+                    AppSettings.LocalSettings.Values["theme"] = idx;
+                    AppSettings.LocalSettings.Save();
                 }
             }
-
         }
     }
 }

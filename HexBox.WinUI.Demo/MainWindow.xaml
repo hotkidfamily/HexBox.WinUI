@@ -9,7 +9,7 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 mc:Ignorable="d"
                 Title="HexBox.WinUI.Demo">
-
+   
     <Grid VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
           Name="Root"
@@ -55,10 +55,8 @@
                         Spacing="8">
                 <CheckBox Name="EnforceModeCheckBox"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
-                <ComboBox Name="Theme"
-                          SelectionChanged="Theme_SelectionChanged">
-                    <ComboBoxItem IsSelected="True"
-                                  Content="As System"
+                <ComboBox Name="ThemeBox">
+                    <ComboBoxItem Content="As System"
                                   Tag="0" />
                     <ComboBoxItem Content="Light Theme"
                                   Tag="1" />

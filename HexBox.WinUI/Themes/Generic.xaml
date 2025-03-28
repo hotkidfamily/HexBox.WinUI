@@ -12,6 +12,8 @@
                             x:Key="Dark" />
         <ResourceDictionary Source="/HexBox.WinUI/Themes/DefaultTheme.xaml"
                             x:Key="Default" />
+        <ResourceDictionary Source="/HexBox.WinUI/Themes/HighContrast.xaml"
+                            x:Key="HighContrast" />
     </ResourceDictionary.ThemeDictionaries>
 
     <Style TargetType="local:HexBox">

@@ -75,6 +75,35 @@ namespace HexBox.WinUI.Demo
             return false;
         }
 
+        public bool TryGetStringValue(string key, out string v)
+        {
+            if (Values != null)
+            {
+                try
+                {
+                    Values.TryGetValue(key, out var theme);
+
+                    if (theme is JsonElement b)
+                    {
+                        v = b.GetString();
+                        return true;
+                    }
+                    else
+                    {
+                        if (theme is string c)
+                        {
+                            v = c;
+                            return true;
+                        }
+                    }
+                }
+                catch { }
+            }
+
+            v = "";
+            return false;
+        }
+
         public void Save() =>
             File.WriteAllText(_filePath, JsonSerializer.Serialize(_values));
     }

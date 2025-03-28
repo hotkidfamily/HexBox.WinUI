@@ -1,5 +1,8 @@
 ﻿{
   "FindBox/PlaceholderText": "Enter search text...",
   "BrowseButton/Content": "Browse",
-  "FixedView/Content": "Fixed View"
+  "FixedView/Content": "Fixed View",
+  "Columns/Text": "Columns",
+  "ThemeTB/Text": "Theme",
+  "LangTB/Text": "Theme"
 }

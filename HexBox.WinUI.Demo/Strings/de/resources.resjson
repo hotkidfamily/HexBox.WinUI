@@ -1,5 +1,8 @@
 ﻿{
   "FindBox/PlaceholderText": "Suchtext eingeben...",
   "BrowseButton/Content": "Durchsuchen",
-  "FixedView/Content": "Feste Ansicht"
+  "FixedView/Content": "Feste Ansicht",
+  "Columns/Text": "Spalten",
+  "ThemeTB/Text": "Thema",
+  "LangTB/Text": "Sprache"
 }

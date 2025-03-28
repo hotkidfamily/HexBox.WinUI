@@ -63,14 +63,15 @@ namespace HexBox.WinUI.Demo
         public int Columns
         {
             get { return _columns; }
-            set { 
-                if(_columns != value) { 
+            set
+            {
+                if (_columns != value)
+                {
                     _columns = value;
                     OnPropertyChanged();
                 }
             }
         }
-
 
         private void OnPropertyChanged([CallerMemberName] string name = null)
         {
@@ -105,7 +106,20 @@ namespace HexBox.WinUI.Demo
                     }
                 }
             }
+
+            if (AppSettings.LocalSettings.TryGetStringValue("Language", out var lang))
+            {
+                foreach (ComboBoxItem item in LanguageBox.Items)
+                {
+                    if (item.Tag.ToString() == lang.ToString())
+                    {
+                        LanguageBox.SelectedItem = item;
+                        break;
+                    }
+                }
+            }
             ThemeBox.SelectionChanged += Theme_SelectionChanged;
+            LanguageBox.SelectionChanged += LanguageBox_SelectionChanged;
         }
 
         private void _queue_ShutdownStarting(DispatcherQueue sender, DispatcherQueueShutdownStartingEventArgs args)
@@ -200,6 +214,21 @@ namespace HexBox.WinUI.Demo
                     AppSettings.LocalSettings.Values["theme"] = idx;
                     AppSettings.LocalSettings.Save();
                 }
+            }
+        }
+
+        private void LanguageBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if ((ComboBox)sender == LanguageBox)
+            {
+                if (LanguageBox.SelectedItem is ComboBoxItem c)
+                {
+                    var lang = c.Tag.ToString();
+                    AppSettings.LocalSettings.Values["Language"] = lang;
+                    AppSettings.LocalSettings.Save();
+                }
+            }
+        }
 
         private void ColumnsSlider_ValueChanged(object sender, Microsoft.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
@@ -210,7 +239,6 @@ namespace HexBox.WinUI.Demo
                 {
                     Columns = cols;
                 });
-
             }
         }
     }

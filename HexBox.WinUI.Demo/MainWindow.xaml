@@ -9,14 +9,14 @@
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 mc:Ignorable="d"
                 Title="HexBox.WinUI.Demo">
-   
+
     <Grid VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
           Name="Root"
           Background="{ThemeResource AppBarBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
-            <RowDefinition Height="48" />
+            <RowDefinition Height="72" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Border Grid.Row="0"
@@ -34,14 +34,15 @@
         </Border>
         <Grid Grid.Row="1"
               Background="{ThemeResource AppBarBackgroundThemeBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="6*" />
-                <ColumnDefinition Width="4*" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Grid.Column="0"
+            <Grid.RowDefinitions>
+                <RowDefinition Height="5*" />
+                <RowDefinition Height="5*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0"
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8">
+                <AppBarSeparator/>
                 <Button Name="Browse"
                         Click="Button_Click"
                         x:Uid="BrowseButton"></Button>
@@ -51,14 +52,10 @@
                          Width="350"
                          PlaceholderText="Enter search text"
                          x:Uid="FindBox" />
-            </StackPanel>
-            <StackPanel Grid.Column="1"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Center"
-                        Spacing="8">
-                <CheckBox Name="EnforceModeCheckBox"
-                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
-                <ComboBox Name="ThemeBox">
+                <TextBlock x:Uid="ThemeTB"
+                           VerticalAlignment="Center" />
+                <ComboBox Name="ThemeBox"
+                          Width="120">
                     <ComboBoxItem Content="As System"
                                   Tag="0" />
                     <ComboBoxItem Content="Light Theme"
@@ -66,7 +63,42 @@
                     <ComboBoxItem Content="Dark Theme"
                                   Tag="2" />
                 </ComboBox>
-                <Slider Value="8"
+                <TextBlock x:Uid="LangTB"
+                           VerticalAlignment="Center" />
+                <ComboBox Name="LanguageBox"
+                          Width="120">
+                    <ComboBoxItem Content="Default"
+                                  Tag="Default" />
+                    <ComboBoxItem Content="en-US"
+                                  Tag="en-US" />
+                    <ComboBoxItem Content="de"
+                                  Tag="de" />
+                    <ComboBoxItem Content="ja"
+                                  Tag="ja" />
+                    <ComboBoxItem Content="zh-hant"
+                                  Tag="zh-hant" />
+                    <ComboBoxItem Content="zh-hans"
+                                  Tag="zh-hans" />
+                </ComboBox>
+            </StackPanel>
+            <StackPanel Grid.Row="1"
+                        Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        Spacing="8">
+                <AppBarSeparator />
+                <CheckBox VerticalContentAlignment="Center"
+                          Name="EnforceModeCheckBox"
+                          x:Uid="FixedView"
+                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
+                <TextBlock x:Uid="Columns"
+                           VerticalAlignment="Center" />
+                <RichTextBlock VerticalAlignment="Center">
+                    <Paragraph>
+                        <Run Foreground="Red"
+                             Text="{x:Bind Columns, Mode=OneWay}"></Run>
+                    </Paragraph>
+                </RichTextBlock>
+                <Slider Value="{x:Bind Columns, Mode=OneWay}"
                         Minimum="8"
                         Maximum="64"
                         StepFrequency="8"
@@ -74,12 +106,10 @@
                         Width="100"
                         ValueChanged="ColumnsSlider_ValueChanged"></Slider>
             </StackPanel>
-
         </Grid>
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
                     Columns="{x:Bind Columns, Mode=OneWay}"
-                    Background="Transparent"
                     Margin="4"
                     BorderBrush="Blue"
                     Background="Transparent"

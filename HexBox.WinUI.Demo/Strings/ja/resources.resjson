@@ -1,5 +1,8 @@
 ﻿{
   "FindBox/PlaceholderText": "検索テキストを入力します...",
   "BrowseButton/Content": "参照",
-  "FixedView/Content": "固定ビュー"
+  "FixedView/Content": "固定ビュー",
+  "Columns/Text": "列",
+  "ThemeTB/Text": "テーマ",
+  "LangTB/Text": "言語"
 }

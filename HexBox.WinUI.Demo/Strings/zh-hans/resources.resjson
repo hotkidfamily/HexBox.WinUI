@@ -1,5 +1,8 @@
 ﻿{
   "FindBox/PlaceholderText": "输入搜索文本。。。",
   "BrowseButton/Content": "浏览",
-  "FixedView/Content": "固定视图"
+  "FixedView/Content": "固定视图",
+  "Columns/Text": "列数",
+  "ThemeTB/Text": "主题",
+  "LangTB/Text": "语言"
 }

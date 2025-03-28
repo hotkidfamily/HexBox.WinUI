@@ -1,5 +1,8 @@
 ﻿{
   "FindBox/PlaceholderText": "輸入蒐索文字。。。",
   "BrowseButton/Content": "瀏覽",
-  "FixedView/Content": "固定視圖"
+  "FixedView/Content": "固定視圖",
+  "Columns/Text": "欄",
+  "ThemeTB/Text": "主題",
+  "LangTB/Text": "語言"
 }

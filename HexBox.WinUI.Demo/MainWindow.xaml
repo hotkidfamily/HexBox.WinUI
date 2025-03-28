@@ -25,11 +25,12 @@
                 Background="{ThemeResource AppBarBackgroundThemeBrush}">
             <StackPanel Orientation="Horizontal"
                         VerticalAlignment="Center"
-                        HorizontalAlignment="Left">
-                <FontIcon Glyph="&#xE726;"
-                          Margin="8,0,0,0" />
-                <TextBlock VerticalAlignment="Center"
-                           Margin="8,0,0,0">HexBox.WinUI.Demo</TextBlock>
+                        HorizontalAlignment="Left"
+                        Spacing="8">
+                <AppBarSeparator></AppBarSeparator>
+                <ImageIcon Source="/Assets/hexagons_32.ico"
+                           Height="24" />
+                <TextBlock VerticalAlignment="Center">HexBox.WinUI.Demo</TextBlock>
             </StackPanel>
         </Border>
         <Grid Grid.Row="1"
@@ -42,7 +43,7 @@
                         Orientation="Horizontal"
                         VerticalAlignment="Center"
                         Spacing="8">
-                <AppBarSeparator/>
+                <AppBarSeparator />
                 <Button Name="Browse"
                         Click="Button_Click"
                         x:Uid="BrowseButton"></Button>

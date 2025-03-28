@@ -81,6 +81,7 @@ namespace HexBox.WinUI.Demo
         public MainWindow()
         {
             this.InitializeComponent();
+            this.SetTaskBarIcon(Icon.FromFile("Assets/hexagons_32.ico"));
             this.MaxWidth = 1920;
             this.MaxHeight = 1080;
             //this.Move(640, 1280);

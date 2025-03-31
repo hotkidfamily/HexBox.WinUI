@@ -16,6 +16,8 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 * Monospaced Font is not required.
 * Supports highlight regions
 * Supports shortcut
+* Supports Theme
+* Supports localization
 
 ## Preview
 * Operators

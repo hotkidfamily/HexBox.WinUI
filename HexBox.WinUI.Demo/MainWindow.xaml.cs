@@ -58,7 +58,7 @@ namespace HexBox.WinUI.Demo
             }
         }
 
-        private int _columns = 16;
+        private int _columns = 32;
 
         public int Columns
         {

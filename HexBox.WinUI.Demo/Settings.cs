@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace HexBox.WinUI.Demo
 {
@@ -17,6 +16,10 @@ namespace HexBox.WinUI.Demo
                 if (_localSettings == null)
                 {
                     var localFolder = Environment.CurrentDirectory;
+                    if (Utils.IsPackaged())
+                    {
+                        localFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    }
                     var appFolder = Path.Combine(localFolder, "Data");
                     Directory.CreateDirectory(appFolder);
                     _localSettings = new JsonSettingsContainer(Path.Combine(appFolder, "Settings.json"));
@@ -85,8 +88,11 @@ namespace HexBox.WinUI.Demo
 
                     if (theme is JsonElement b)
                     {
-                        v = b.GetString();
-                        return true;
+                        if (b.GetString() is string c)
+                        {
+                            v = c;
+                            return true;
+                        }
                     }
                     else
                     {

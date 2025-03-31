@@ -5,7 +5,7 @@
     <SolidColorBrush x:Key="AddressBrush"
                      Color="DodgerBlue" />
     <SolidColorBrush x:Key="AlternatingDataColumnTextBrush"
-                     Color="#4e4e4e" />
+                     Color="SlateGray" />
     <SolidColorBrush x:Key="SelectionBrush"
                      Color="LightPink" />
     <SolidColorBrush x:Key="SelectionTextBrush"

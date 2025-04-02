@@ -11,6 +11,6 @@
                      Color="#222222" />
     <SolidColorBrush x:Key="Background"
                      Color="Transparent" />
-    <SolidColorBrush x:Key="VerticalLineBrush"
+    <SolidColorBrush x:Key="VerticalSeparatorLineBrush"
                      Color="White" />
 </ResourceDictionary>

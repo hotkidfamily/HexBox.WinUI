@@ -174,20 +174,12 @@ namespace HexBox.WinUI
             DependencyProperty.Register(nameof(VerticalSeparatorLineBrush), typeof(SolidColorBrush), typeof(HexBox),
                 new PropertyMetadata(new SolidColorBrush(Colors.Black), OnPropertyChangedInvalidateVisual));
 
-
         /// <summary>
         /// Defines the format of the text to display in the text section.
         /// </summary>
         public static readonly DependencyProperty TextFormatProperty =
             DependencyProperty.Register(nameof(TextFormat), typeof(TextFormat), typeof(HexBox),
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
-
-        /// <summary>
-        /// Defines the brush used for selected text.
-        /// </summary>
-        public static readonly DependencyProperty VerticalLineBrushProperty =
-            DependencyProperty.Register(nameof(VerticalLineBrush), typeof(Brush), typeof(HexBox),
-                new PropertyMetadata(new SolidColorBrush(Colors.Blue), OnPropertyChangedInvalidateVisual));
 
         /// <summary>
         /// Gets the <see cref="SelectAll"/> command.
@@ -551,16 +543,6 @@ namespace HexBox.WinUI
             set => SetValue(TextFormatProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the brush used to display the Vertical Line between sections.
-        /// </summary>
-        public Brush VerticalLineBrush
-        {
-            get => (Brush)GetValue(VerticalLineBrushProperty);
-
-            set => SetValue(VerticalLineBrushProperty, value);
-        }
-
         private double _SelectionBoxDataXPadding => _TextMeasure.Width / 4;
 
         private double _SelectionBoxDataYPadding => 0;
@@ -896,14 +878,8 @@ namespace HexBox.WinUI
                     TextSize = (float)FontSize,
                     Typeface = _TextTypeFace,
                     TextAlign = SKTextAlign.Left,
+                    Color = VerticalSeparatorLineBrush.Color.ToSKColor()
                 };
-            }
-            _LinePaint.Color = VerticalSeparatorLineBrush.Color.ToSKColor();
-
-            if ((_LinePaint != null) && (VerticalLineBrush is SolidColorBrush c))
-            {
-                _LinePaint.Color
-                     = c.Color.ToSKColor();
             }
 
             if (_TextPaint == null)
@@ -2875,7 +2851,6 @@ namespace HexBox.WinUI
 
             return Offset <= offset && Offset + maxBytesDisplayed >= offset;
         }
-
 
         private LocalizedStrings _localStrings = new();
         public LocalizedStrings LocalStrings { get => _localStrings; }

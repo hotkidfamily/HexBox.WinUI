@@ -25,8 +25,8 @@
                 Value="{ThemeResource AddressBrush}" />
         <Setter Property="AlternatingDataColumnTextBrush"
                 Value="{ThemeResource AlternatingDataColumnTextBrush}" />
-        <Setter Property="VerticalLineBrush"
-                Value="{ThemeResource VerticalLineBrush}" />
+        <Setter Property="VerticalSeparatorLineBrush"
+                Value="{ThemeResource VerticalSeparatorLineBrush}" />
 
         <Setter Property="Template">
             <Setter.Value>

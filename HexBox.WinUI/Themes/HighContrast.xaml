@@ -11,6 +11,6 @@
                      Color="{ThemeResource SystemColorHighlightColor}" />
     <SolidColorBrush x:Key="Background"
                      Color="Transparent" />
-    <SolidColorBrush x:Key="VerticalLineBrush"
+    <SolidColorBrush x:Key="VerticalSeparatorLineBrush"
                      Color="{ThemeResource SystemColorActiveCaptionColor}" />
 </ResourceDictionary>

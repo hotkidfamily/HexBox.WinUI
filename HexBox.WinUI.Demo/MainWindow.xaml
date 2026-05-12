@@ -91,12 +91,13 @@
                           Name="EnforceModeCheckBox"
                           x:Uid="FixedView"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
-                <RichTextBlock VerticalAlignment="Center">
-                    <Paragraph> Columns:
-                        <Run Foreground="Red"
-                             Text="{x:Bind Columns, Mode=OneWay}"></Run>
-                    </Paragraph>
-                </RichTextBlock>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Uid="Columns" VerticalAlignment="Center" />
+                    <TextBlock Foreground="Red"
+                               Text="{x:Bind Columns, Mode=OneWay}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0" />
+                </StackPanel>
                 <Slider Value="{x:Bind Columns, Mode=OneWay}"
                         Minimum="8"
                         Maximum="64"
@@ -104,12 +105,13 @@
                         Name="ColumnsSlider"
                         Width="100"
                         ValueChanged="ColumnsSlider_ValueChanged"></Slider>
-                <RichTextBlock VerticalAlignment="Center">
-                    <Paragraph> Size: 
-                        <Run Foreground="Red"
-                             Text="{x:Bind FileSize, Mode=OneWay}"></Run>
-                    </Paragraph>
-                </RichTextBlock>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock x:Uid="FileSize" VerticalAlignment="Center" />
+                    <TextBlock Foreground="Red"
+                               Text="{x:Bind FileSize, Mode=OneWay}"
+                               VerticalAlignment="Center"
+                               Margin="4,0,0,0" />
+                </StackPanel>
             </StackPanel>
         </Grid>
         <hb:HexBox  Grid.Row="2"

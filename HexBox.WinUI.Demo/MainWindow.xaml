@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WinEx:WindowEx x:Class="HexBox.WinUI.Demo.MainWindow"
                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -91,10 +91,8 @@
                           Name="EnforceModeCheckBox"
                           x:Uid="FixedView"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
-                <TextBlock x:Uid="Columns"
-                           VerticalAlignment="Center" />
                 <RichTextBlock VerticalAlignment="Center">
-                    <Paragraph>
+                    <Paragraph> Columns:
                         <Run Foreground="Red"
                              Text="{x:Bind Columns, Mode=OneWay}"></Run>
                     </Paragraph>
@@ -106,6 +104,12 @@
                         Name="ColumnsSlider"
                         Width="100"
                         ValueChanged="ColumnsSlider_ValueChanged"></Slider>
+                <RichTextBlock VerticalAlignment="Center">
+                    <Paragraph> Size: 
+                        <Run Foreground="Red"
+                             Text="{x:Bind FileSize, Mode=OneWay}"></Run>
+                    </Paragraph>
+                </RichTextBlock>
             </StackPanel>
         </Grid>
         <hb:HexBox  Grid.Row="2"

@@ -1,4 +1,4 @@
-using Microsoft.UI;
+﻿using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -71,6 +71,22 @@ namespace HexBox.WinUI.Demo
                     OnPropertyChanged();
                 }
             }
+        }
+
+        private string _fileSize = "0";
+
+        public string FileSize
+        {
+            get { return _fileSize; }
+            set
+            {
+                if (_fileSize != value)
+                {
+                    _fileSize = value;
+                    OnPropertyChanged();
+                }
+            }
+
         }
 
         private void OnPropertyChanged([CallerMemberName] string name = null)
@@ -185,6 +201,7 @@ namespace HexBox.WinUI.Demo
                 */
                 HexViewer.DataSource = Reader;
                 HexViewer.HighlightedRegions.Clear();
+                FileSize = fs.Length.ToString();
                 List<HexBox.HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
                 int offset = 0x2f2;

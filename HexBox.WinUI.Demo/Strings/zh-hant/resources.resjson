@@ -4,5 +4,6 @@
   "FixedView/Content": "固定視圖",
   "Columns/Text": "欄",
   "ThemeTB/Text": "主題",
-  "LangTB/Text": "語言"
+  "LangTB/Text": "語言",
+  "FileSize/Text": "文件大小"
 }

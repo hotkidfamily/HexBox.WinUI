@@ -4,5 +4,6 @@
   "FixedView/Content": "Feste Ansicht",
   "Columns/Text": "Spalten",
   "ThemeTB/Text": "Thema",
-  "LangTB/Text": "Sprache"
+  "LangTB/Text": "Sprache",
+  "FileSize/Text": "lie"
 }

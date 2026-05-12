@@ -95,7 +95,7 @@ namespace HexBox.WinUI
         /// </summary>
         public static readonly DependencyProperty OffsetProperty =
             DependencyProperty.Register(nameof(Offset), typeof(long), typeof(HexBox),
-                new PropertyMetadata(0L, OnPropertyChangedInvalidateVisual));
+                new PropertyMetadata(0L, OnOffsetChanged));
 
         /// <summary>
         /// Defines the maximum number of columns, based on the size of the control, which can be displayed.
@@ -242,12 +242,12 @@ namespace HexBox.WinUI
         private SelectionArea _HighlightBegin = SelectionArea.None;
         private SelectionArea _HighlightState = SelectionArea.None;
 
-        private double _LastVerticalScrollValue = 0;
-
         private ScrollBar _ScrollBar;
         private string _ScrollBarName = "ElementScrollBar";
 
         private SelectionAdjustment _pointerMoveSelectionAdjustment = SelectionAdjustment.None;
+
+        private bool _syncingScrollBar;
 
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
@@ -676,7 +676,6 @@ namespace HexBox.WinUI
             if (_ScrollBar != null)
             {
                 _ScrollBar.Scroll += OnVerticalScrollBarScroll;
-                _ScrollBar.ValueChanged += OnVerticalScrollBarValueChanged;
 
                 _ScrollBar.Minimum = 0;
                 _ScrollBar.SmallChange = 1;
@@ -1319,29 +1318,22 @@ namespace HexBox.WinUI
         /// </param>
         public void ScrollToOffset(long offset)
         {
+            if (DataSource == null || _BytesPerRow == 0) return;
+
             long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
-            long lastByteOffset = (DataSource?.BaseStream?.Length ?? 1) - 1;
+            long lastByteOffset = DataSource.BaseStream.Length - 1;
 
-            // Adjust requested offset if not existing
-            if (offset < 0)
-            {
-                offset = 0;
-            }
-            else if (offset > lastByteOffset)
-            {
-                offset = lastByteOffset;
-            }
+            offset = offset.Clamp(0, lastByteOffset);
 
-            if (Offset > offset)
+            if (offset < Offset)
             {
-                // We need to scroll up
-                Offset -= ((Offset - offset - 1) / _BytesPerRow + 1) * _BytesPerRow;
+                // Target is above viewport — align viewport top to target row
+                Offset = (offset / _BytesPerRow) * _BytesPerRow;
             }
-
-            if (Offset + maxBytesDisplayed <= offset)
+            else if (offset >= Offset + maxBytesDisplayed)
             {
-                // We need to scroll down
-                Offset += ((offset - (Offset + maxBytesDisplayed)) / _BytesPerRow + 1) * _BytesPerRow;
+                // Target is below viewport — align viewport bottom to target row
+                Offset = ((offset - maxBytesDisplayed + _BytesPerRow) / _BytesPerRow) * _BytesPerRow + _BytesPerRow;
             }
         }
 
@@ -1525,8 +1517,6 @@ namespace HexBox.WinUI
 
                 case VirtualKey.PageDown:
                 {
-                    bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
                     SelectionEnd += _BytesPerRow * MaxVisibleRows;
 
                     if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
@@ -1534,9 +1524,7 @@ namespace HexBox.WinUI
                         SelectionStart = SelectionEnd - _BytesPerColumn;
                     }
 
-                    _ScrollBar.Value += MaxVisibleRows;
-
-                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
+                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                     e.Handled = true;
                     break;
@@ -1544,8 +1532,6 @@ namespace HexBox.WinUI
 
                 case VirtualKey.PageUp:
                 {
-                    bool isOffsetVisibleBeforeSelectionChange = IsOffsetVisible(SelectionEnd);
-
                     SelectionEnd -= _BytesPerRow * MaxVisibleRows;
 
                     if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
@@ -1554,9 +1540,7 @@ namespace HexBox.WinUI
                         SelectionEnd = SelectionStart + _BytesPerColumn;
                     }
 
-                    _ScrollBar.Value -= MaxVisibleRows;
-
-                    OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
+                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
 
                     e.Handled = true;
                     break;
@@ -1737,20 +1721,16 @@ namespace HexBox.WinUI
         protected override void OnPointerWheelChanged(PointerRoutedEventArgs e)
         {
             base.OnPointerWheelChanged(e);
-            var Delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
+            var delta = e.GetCurrentPoint(this).Properties.MouseWheelDelta;
 
-            var value = _ScrollBar.Value;
-            if (Delta < 0)
+            long rowOffset = _ScrollWheelScrollRows * _BytesPerRow;
+            if (delta < 0)
             {
-                _ScrollBar.Value += _ScrollWheelScrollRows;
-
-                OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallIncrement, _ScrollBar.Value);
+                Offset += rowOffset;
             }
             else
             {
-                _ScrollBar.Value -= _ScrollWheelScrollRows;
-
-                OnVerticalScrollBarScroll(_ScrollBar, ScrollEventType.SmallDecrement, _ScrollBar.Value);
+                Offset -= rowOffset;
             }
         }
 
@@ -1811,6 +1791,21 @@ namespace HexBox.WinUI
             _HighlightState = SelectionArea.None;
 
             ReleasePointerCapture(e.Pointer);
+        }
+
+        private static void OnOffsetChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var hexBox = (HexBox)d;
+
+            // Sync ScrollBar position with Offset
+            if (!hexBox._syncingScrollBar && hexBox._ScrollBar != null && hexBox._BytesPerRow > 0)
+            {
+                hexBox._syncingScrollBar = true;
+                hexBox._ScrollBar.Value = hexBox.Offset / hexBox._BytesPerRow;
+                hexBox._syncingScrollBar = false;
+            }
+
+            hexBox.Reflush();
         }
 
         private static void OnPropertyChangedInvalidateVisual(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -2220,23 +2215,11 @@ namespace HexBox.WinUI
             return IsSelectionActive && (ShowData || ShowText);
         }
 
-        private void OnVerticalScrollBarValueChanged(object sender, RangeBaseValueChangedEventArgs e)
-        {
-            _LastVerticalScrollValue = e.OldValue;
-        }
-
         private void OnVerticalScrollBarScroll(object sender, ScrollEventArgs e)
         {
-            long newOffset = (long)e.NewValue * _BytesPerRow;
+            if (_syncingScrollBar) return;
 
-            Offset = newOffset;
-        }
-
-        private void OnVerticalScrollBarScroll(object sender, ScrollEventType type, double NewValue)
-        {
-            long newOffset = (long)NewValue * _BytesPerRow;
-
-            Offset = newOffset;
+            Offset = (long)e.NewValue * _BytesPerRow;
         }
 
         private string GetFormattedAddressText(ulong address)
@@ -2659,15 +2642,7 @@ namespace HexBox.WinUI
                 // Each scroll value represents a single drawn row
                 _ScrollBar.Maximum = q + (r > 0 ? 1 : 0) - MaxVisibleRows;
 
-                // Adjust the scroll value based on the current offset
-                _ScrollBar.Value = Offset / _BytesPerRow;
-
-                // Adjust again to compensate for residual bytes if the number of bytes between the start of the stream
-                // and the current offset is less than the number of bytes we can display per row
-                if (_ScrollBar.Value == 0 && Offset > 0)
-                {
-                    ++_ScrollBar.Value;
-                }
+                // ScrollBar.Value is synced via OnOffsetChanged
             }
             else
             {

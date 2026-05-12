@@ -21,8 +21,14 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore
+        run: msbuild HexBox.WinUI/HexBox.WinUI.csproj /t:Restore /p:Configuration=Release
+
       - name: Build
-        run: dotnet build HexBox.WinUI/HexBox.WinUI.csproj -c Release
+        run: msbuild HexBox.WinUI/HexBox.WinUI.csproj /p:Configuration=Release
 
       - name: Pack
         run: dotnet pack HexBox.WinUI/HexBox.WinUI.csproj -c Release --no-build

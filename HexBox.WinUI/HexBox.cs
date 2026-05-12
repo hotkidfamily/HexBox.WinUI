@@ -1924,7 +1924,11 @@ namespace HexBox.WinUI
             {
                 long offset = (long)value;
 
-                value = offset.Clamp(0, HexBox.DataSource.BaseStream.Length);
+                // Allow scrolling so the last row reaches the top of the viewport,
+                // matching the ScrollBar Maximum = totalRows - MaxVisibleRows
+                long maxOffset = Math.Max(0, HexBox.DataSource.BaseStream.Length - HexBox._BytesPerRow * HexBox.MaxVisibleRows);
+
+                value = offset.Clamp(0, maxOffset);
             }
             else
             {

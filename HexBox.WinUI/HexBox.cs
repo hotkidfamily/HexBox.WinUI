@@ -1,4 +1,4 @@
-using HexBox.WinUI.Library.EndianConvert;
+﻿using HexBox.WinUI.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -1926,7 +1926,8 @@ namespace HexBox.WinUI
 
                 // Allow scrolling so the last row reaches the top of the viewport,
                 // matching the ScrollBar Maximum = totalRows - MaxVisibleRows
-                long maxOffset = Math.Max(0, HexBox.DataSource.BaseStream.Length - HexBox._BytesPerRow * HexBox.MaxVisibleRows);
+                long totalRows = (HexBox.DataSource.BaseStream.Length + HexBox._BytesPerRow - 1) / HexBox._BytesPerRow;
+                long maxOffset = Math.Max(0, (totalRows - HexBox.MaxVisibleRows) * HexBox._BytesPerRow);
 
                 value = offset.Clamp(0, maxOffset);
             }

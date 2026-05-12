@@ -699,7 +699,7 @@ namespace HexBox.WinUI
         {
             if ((long)point0.Y > (long)point1.Y)
             {
-                throw new ArgumentException($"{point0.ToString()} > {point1.ToString()}", nameof(point0));
+                (point0, point1) = (point1, point0);
             }
 
             Point lhsVerticalLinePoint0;

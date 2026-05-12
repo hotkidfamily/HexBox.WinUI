@@ -1,13 +1,13 @@
 ﻿{
   "AddressPropertiesNoAddress/Text": "アドレスを表示しない",
-  "Copy/Text": "レプリケーション",
+  "Copy/Text": "コピー",
   "AddressProperties/Text": "アドレス属性",
   "TextPropertiesNoText/Text": "テキストを表示しない",
   "TextProperties/Text": "テキスト属性",
   "TextFormatAscii/Text": "ASCII",
   "SelectAll/Text": "すべて選択",
-  "EndianLittle/Text": "リトルデータ",
-  "EndianBig/Text": "マクロデータ",
+  "EndianLittle/Text": "リトルエンディアン",
+  "EndianBig/Text": "ビッグエンディアン",
   "DataUnsigned/Text": "符号なし",
   "DataTypeTwoByteInteger/Text": "2バイト整数",
   "DataTypeOneByteInteger/Text": "1バイト整数",
@@ -18,7 +18,7 @@
   "DataSigned/Text": "符号付き",
   "DataPropertiesNoData/Text": "データを表示しない",
   "DataProperties/Text": "データ属性",
-  "DataFormatHex/Text": "16進法",
-  "DataFormatDecimal/Text": "デシマル",
+  "DataFormatHex/Text": "16進数",
+  "DataFormatDecimal/Text": "10進数",
   "CopyText/Text": "テキストのコピー"
 }

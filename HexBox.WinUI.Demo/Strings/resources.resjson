@@ -4,6 +4,6 @@
   "FixedView/Content": "Fixed View",
   "Columns/Text": "Columns",
   "ThemeTB/Text": "Theme",
-  "LangTB/Text": "Theme",
-  "FileSize/Text": "FileSize"
+  "LangTB/Text": "Language",
+  "FileSize/Text": "File Size"
 }

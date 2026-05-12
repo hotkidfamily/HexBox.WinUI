@@ -21,8 +21,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build & Pack
-        run: dotnet pack HexBox.WinUI/HexBox.WinUI.csproj -c Release
+      - name: Build
+        run: dotnet build HexBox.WinUI/HexBox.WinUI.csproj -c Release
+
+      - name: Pack
+        run: dotnet pack HexBox.WinUI/HexBox.WinUI.csproj -c Release --no-build
 
       - name: Upload package
         uses: actions/upload-artifact@v4

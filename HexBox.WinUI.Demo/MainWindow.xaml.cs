@@ -89,6 +89,9 @@ namespace HexBox.WinUI.Demo
 
         }
 
+        private DemoLocalizedStrings _localStrings = new();
+        public DemoLocalizedStrings LocalStrings { get => _localStrings; }
+
         private void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
@@ -242,6 +245,13 @@ namespace HexBox.WinUI.Demo
                 if (LanguageBox.SelectedItem is ComboBoxItem c)
                 {
                     var lang = c.Tag.ToString();
+                    if (lang == "Default")
+                        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride =
+                            Microsoft.Windows.Globalization.ApplicationLanguages.Languages[0];
+                    else
+                        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = lang;
+                    LocalStrings.Reload();
+                    HexViewer.RefreshLanguage();
                     AppSettings.LocalSettings.Values["Language"] = lang;
                     AppSettings.LocalSettings.Save();
                 }

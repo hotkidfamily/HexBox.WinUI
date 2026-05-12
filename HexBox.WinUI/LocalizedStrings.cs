@@ -18,6 +18,11 @@ namespace HexBox.WinUI
 
         public LocalizedStrings()
         {
+            Reload();
+        }
+
+        public void Reload()
+        {
             AddressProperties = GetValue(nameof(AddressProperties));
             Copy = GetValue(nameof(Copy));
             CopyText = GetValue(nameof(CopyText));

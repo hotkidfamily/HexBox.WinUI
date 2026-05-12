@@ -46,14 +46,13 @@
                 <AppBarSeparator />
                 <Button Name="Browse"
                         Click="Button_Click"
-                        x:Uid="BrowseButton"></Button>
+                        Content="{x:Bind LocalStrings.BrowseButton, Mode=OneWay}"></Button>
                 <RichEditBox Name="Editor2"
                              Width="150" />
                 <TextBox Name="FindBox"
                          Width="350"
-                         PlaceholderText="Enter search text"
-                         x:Uid="FindBox" />
-                <TextBlock x:Uid="ThemeTB"
+                         PlaceholderText="{x:Bind LocalStrings.FindBox, Mode=OneWay}" />
+                <TextBlock Text="{x:Bind LocalStrings.ThemeTB, Mode=OneWay}"
                            VerticalAlignment="Center" />
                 <ComboBox Name="ThemeBox"
                           Width="120">
@@ -64,7 +63,7 @@
                     <ComboBoxItem Content="Dark Theme"
                                   Tag="2" />
                 </ComboBox>
-                <TextBlock x:Uid="LangTB"
+                <TextBlock Text="{x:Bind LocalStrings.LangTB, Mode=OneWay}"
                            VerticalAlignment="Center" />
                 <ComboBox Name="LanguageBox"
                           Width="120">
@@ -89,10 +88,10 @@
                 <AppBarSeparator />
                 <CheckBox VerticalContentAlignment="Center"
                           Name="EnforceModeCheckBox"
-                          x:Uid="FixedView"
-                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}">Fixed View</CheckBox>
+                          Content="{x:Bind LocalStrings.FixedView, Mode=OneWay}"
+                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Uid="Columns" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind LocalStrings.Columns, Mode=OneWay}" VerticalAlignment="Center" />
                     <TextBlock Foreground="Red"
                                Text="{x:Bind Columns, Mode=OneWay}"
                                VerticalAlignment="Center"
@@ -106,7 +105,7 @@
                         Width="100"
                         ValueChanged="ColumnsSlider_ValueChanged"></Slider>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Uid="FileSize" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Bind LocalStrings.FileSize, Mode=OneWay}" VerticalAlignment="Center" />
                     <TextBlock Foreground="Red"
                                Text="{x:Bind FileSize, Mode=OneWay}"
                                VerticalAlignment="Center"

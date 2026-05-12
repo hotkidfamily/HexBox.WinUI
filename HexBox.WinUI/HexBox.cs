@@ -2845,6 +2845,8 @@ namespace HexBox.WinUI
 
         private LocalizedStrings _localStrings = new();
         public LocalizedStrings LocalStrings { get => _localStrings; }
+
+        public void RefreshLanguage() => _localStrings.Reload();
         
         /// <summary>
         /// Show the context menu programatical.

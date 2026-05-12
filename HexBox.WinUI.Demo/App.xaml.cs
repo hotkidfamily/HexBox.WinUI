@@ -33,7 +33,7 @@ namespace HexBox.WinUI.Demo
             Application.Current.RequestedTheme = systemTheme;
 
             _queue = DispatcherQueue.GetForCurrentThread();
-            if (AppSettings.LocalSettings.TryGetStringValue("Language", out var lang))
+            if (AppSettings.LocalSettings.TryGetStringValue("Language", out var lang) && lang != "Default")
             {
                 Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = lang;
             }

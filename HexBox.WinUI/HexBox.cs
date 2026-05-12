@@ -249,6 +249,8 @@ namespace HexBox.WinUI
 
         private bool _syncingScrollBar;
 
+        private double _dpiScale = 1.0;
+
         /// <inheritdoc/>
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -867,6 +869,10 @@ namespace HexBox.WinUI
             var view = sender as SKXamlCanvas;
             var canvas = e.Surface.Canvas;
 
+            _dpiScale = _Canvas.XamlRoot?.RasterizationScale ?? 1.0;
+
+            var scaledFontSize = (float)(FontSize * _dpiScale);
+
             if (_LinePaint == null)
             {
                 _LinePaint = new()
@@ -874,18 +880,17 @@ namespace HexBox.WinUI
                     IsStroke = true,
                     IsAntialias = true,
                     StrokeWidth = 1,
-                    TextSize = (float)FontSize,
                     Typeface = _TextTypeFace,
                     TextAlign = SKTextAlign.Left,
                     Color = VerticalSeparatorLineBrush.Color.ToSKColor()
                 };
             }
+            _LinePaint.TextSize = scaledFontSize;
 
             if (_TextPaint == null)
             {
                 _TextPaint = new()
                 {
-                    TextSize = (float)FontSize,
                     Typeface = _TextTypeFace,
                     TextScaleX = 1f,
                     IsAntialias = true,
@@ -893,6 +898,7 @@ namespace HexBox.WinUI
                     HintingLevel = SKPaintHinting.Normal,
                 };
             }
+            _TextPaint.TextSize = scaledFontSize;
 
             UpdateState();
 
@@ -1706,11 +1712,12 @@ namespace HexBox.WinUI
                 }
 
                 // Move next row into view if selection goes out of view
-                if (position.Y > _AddressRect.Y + _AddressRect.Height)
+                var positionPx = new Point(position.X * _dpiScale, position.Y * _dpiScale);
+                if (positionPx.Y > _AddressRect.Y + _AddressRect.Height)
                 {
                     ScrollToOffset(currentMouseOverOffset + _BytesPerRow);
                 }
-                else if (position.Y < _AddressRect.Y)
+                else if (positionPx.Y < _AddressRect.Y)
                 {
                     ScrollToOffset(currentMouseOverOffset - _BytesPerRow);
                 }
@@ -2481,7 +2488,7 @@ namespace HexBox.WinUI
                 point2.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = Math.Min(_TextMeasure.Height * (MaxVisibleRows+1), _Canvas.ActualHeight);
+            point2.Y = Math.Min(_TextMeasure.Height * (MaxVisibleRows+1), _Canvas.ActualHeight * _dpiScale);
 
             return point2;
         }
@@ -2586,11 +2593,11 @@ namespace HexBox.WinUI
 
                 _TextMeasure.Bottom = _TextMeasure.Height; /* 2 * line font height */
 
-                maxVisibleRows = Math.Max(0, (int)(_Canvas.ActualHeight / _TextMeasure.Height));
+                maxVisibleRows = Math.Max(0, (int)(_Canvas.ActualHeight * _dpiScale / _TextMeasure.Height));
 
                 if (ShowData || ShowText)
                 {
-                    int charsPerRow = (int)(_Canvas.ActualWidth / _TextMeasure.Width);
+                    int charsPerRow = (int)(_Canvas.ActualWidth * _dpiScale / _TextMeasure.Width);
 
                     if (ShowAddress)
                     {
@@ -2653,6 +2660,10 @@ namespace HexBox.WinUI
         private long ConvertPositionToOffset(Point position)
         {
             long offset = Offset;
+
+            // Pointer positions are in DIP, convert to physical pixels
+            position.X *= _dpiScale;
+            position.Y *= _dpiScale;
 
             switch (_HighlightBegin)
             {
@@ -2841,19 +2852,21 @@ namespace HexBox.WinUI
             var offset = Math.Max(Math.Max(SelectionStart, SelectionEnd), Offset);
             var palcementOffset = Math.Min(offset, lastVisibleOffset);
 
+            Point ToDip(Point p) => new(p.X / _dpiScale, p.Y / _dpiScale);
+
             // Show menu
             if (ShowData)
             {
                 _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
                 {
-                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Data),
+                    Position = ToDip(ConvertOffsetToPosition(palcementOffset, SelectionArea.Data)),
                 });
             }
             else if (ShowText)
             {
                 _Canvas.ContextFlyout.ShowAt(_Canvas, new FlyoutShowOptions
                 {
-                    Position = ConvertOffsetToPosition(palcementOffset, SelectionArea.Text),
+                    Position = ToDip(ConvertOffsetToPosition(palcementOffset, SelectionArea.Text)),
                 });
             }
             else

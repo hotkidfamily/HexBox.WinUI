@@ -2,15 +2,17 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="AddressBrush"
-                     Color="{ThemeResource SystemColorWindowColor}" />
+                     Color="{ThemeResource SystemColorWindowTextColor}" />
     <SolidColorBrush x:Key="AlternatingDataColumnTextBrush"
                      Color="{ThemeResource SystemColorGrayTextColor}" />
     <SolidColorBrush x:Key="SelectionBrush"
-                     Color="{ThemeResource SystemColorBackgroundColor}" />
-    <SolidColorBrush x:Key="SelectionTextBrush"
                      Color="{ThemeResource SystemColorHighlightColor}" />
+    <SolidColorBrush x:Key="SelectionTextBrush"
+                     Color="{ThemeResource SystemColorHighlightTextColor}" />
+    <SolidColorBrush x:Key="HeaderBrush"
+                     Color="{ThemeResource SystemColorGrayTextColor}" />
     <SolidColorBrush x:Key="Background"
                      Color="Transparent" />
     <SolidColorBrush x:Key="VerticalSeparatorLineBrush"
-                     Color="{ThemeResource SystemColorActiveCaptionColor}" />
+                     Color="{ThemeResource SystemColorGrayTextColor}" />
 </ResourceDictionary>

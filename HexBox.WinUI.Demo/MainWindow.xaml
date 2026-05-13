@@ -120,12 +120,12 @@
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
                     Columns="{x:Bind Columns, Mode=OneWay}"
-                    Margin="0"
-                    BorderBrush="Transparent"
+                    Margin="4"
+                    BorderBrush="#6D6D6D"
                     Background="Transparent"
                     FixedMode="{x:Bind FixedMode, Mode=OneWay}"
                     ShowHeader="{x:Bind ShowHeader, Mode=OneWay}"
-                    BorderThickness="4"
+                    BorderThickness="1"
                     FontFamily="Monaco"
                     FontSize="14">
         </hb:HexBox>

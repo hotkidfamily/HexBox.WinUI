@@ -10,7 +10,7 @@
                             x:Key="Light" />
         <ResourceDictionary Source="/HexBox.WinUI/Themes/DarkTheme.xaml"
                             x:Key="Dark" />
-        <ResourceDictionary Source="/HexBox.WinUI/Themes/DefaultTheme.xaml"
+        <ResourceDictionary Source="/HexBox.WinUI/Themes/LightTheme.xaml"
                             x:Key="Default" />
         <ResourceDictionary Source="/HexBox.WinUI/Themes/HighContrast.xaml"
                             x:Key="HighContrast" />
@@ -27,6 +27,8 @@
                 Value="{ThemeResource AlternatingDataColumnTextBrush}" />
         <Setter Property="VerticalSeparatorLineBrush"
                 Value="{ThemeResource VerticalSeparatorLineBrush}" />
+        <Setter Property="HeaderBrush"
+                Value="{ThemeResource HeaderBrush}" />
 
         <Setter Property="Template">
             <Setter.Value>

@@ -142,8 +142,8 @@ namespace HexBox.WinUI
         /// <summary>
         /// Determines whether the user can change the layout and data format.
         /// </summary>
-        public static readonly DependencyProperty EnforcePropertiesProperty =
-            DependencyProperty.Register(nameof(Enforce), typeof(bool), typeof(HexBox),
+        public static readonly DependencyProperty FixedModeProperty =
+            DependencyProperty.Register(nameof(FixedMode), typeof(bool), typeof(HexBox),
                 new PropertyMetadata(false, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
@@ -487,10 +487,10 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets a value indicating whether the user can change the layout and data format or not.
         /// </summary>
-        public bool Enforce
+        public bool FixedMode
         {
-            get => (bool)GetValue(EnforcePropertiesProperty);
-            set => SetValue(EnforcePropertiesProperty, value);
+            get => (bool)GetValue(FixedModeProperty);
+            set => SetValue(FixedModeProperty, value);
         }
 
         /// <summary>

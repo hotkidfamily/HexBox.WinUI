@@ -75,12 +75,12 @@
                                 </MenuFlyoutItem>
                                 <MenuFlyoutSeparator />
                                 <MenuFlyoutSubItem Text="{Binding LocalStrings.AddressProperties , RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                                   IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                                   IsEnabled="{Binding FixedMode, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                     <ToggleMenuFlyoutItem Text="{Binding LocalStrings.AddressPropertiesNoAddress , RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                                           IsChecked="{Binding ShowAddress, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                 </MenuFlyoutSubItem>
                                 <MenuFlyoutSubItem Text="{Binding LocalStrings.DataProperties , RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                                   IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                                   IsEnabled="{Binding FixedMode, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                     <ToggleMenuFlyoutItem Text="{Binding LocalStrings.DataPropertiesNoData , RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                                           IsChecked="{Binding ShowData, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                     <RadioMenuFlyoutItem GroupName="DataType"
@@ -126,7 +126,7 @@
                                                           IsChecked="{Binding Endianness, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=LittleEndian}" />
                                 </MenuFlyoutSubItem>
                                 <MenuFlyoutSubItem Text="{Binding LocalStrings.TextProperties , RelativeSource={RelativeSource Mode=TemplatedParent}}"
-                                                   IsEnabled="{Binding EnforceProperties, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                                                   IsEnabled="{Binding FixedMode, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
                                     <ToggleMenuFlyoutItem Text="{Binding LocalStrings.TextPropertiesNoText , RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                                           IsChecked="{Binding ShowText, RelativeSource={RelativeSource Mode=TemplatedParent}, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
                                     <ToggleMenuFlyoutItem Text="{Binding LocalStrings.TextFormatAscii , RelativeSource={RelativeSource Mode=TemplatedParent}}"

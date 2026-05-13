@@ -33,17 +33,17 @@ namespace HexBox.WinUI.Demo
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private bool _EnforceMode = false;
+        private bool _fixedMode = false;
         private bool _ShowHeader = true;
 
-        public bool EnforceMode
+        public bool FixedMode
         {
-            get { return _EnforceMode; }
+            get { return _fixedMode; }
             set
             {
-                if (_EnforceMode != value)
+                if (_fixedMode != value)
                 {
-                    _EnforceMode = value;
+                    _fixedMode = value;
                     OnPropertyChanged();
                 }
             }

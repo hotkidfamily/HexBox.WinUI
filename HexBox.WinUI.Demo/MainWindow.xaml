@@ -89,7 +89,7 @@
                 <CheckBox VerticalContentAlignment="Center"
                           Name="EnforceModeCheckBox"
                           Content="{x:Bind LocalStrings.FixedView, Mode=OneWay}"
-                          IsChecked="{x:Bind EnforceMode, Mode=TwoWay}" />
+                          IsChecked="{x:Bind FixedMode, Mode=TwoWay}" />
                 <CheckBox VerticalContentAlignment="Center"
                           Name="ShowHeaderCheckBox"
                           Content="{x:Bind LocalStrings.ShowHeader, Mode=OneWay}"
@@ -123,7 +123,7 @@
                     Margin="0"
                     BorderBrush="Transparent"
                     Background="Transparent"
-                    Enforce="{x:Bind EnforceMode, Mode=OneWay}"
+                    FixedMode="{x:Bind FixedMode, Mode=OneWay}"
                     ShowHeader="{x:Bind ShowHeader, Mode=OneWay}"
                     BorderThickness="4"
                     FontFamily="Monaco"

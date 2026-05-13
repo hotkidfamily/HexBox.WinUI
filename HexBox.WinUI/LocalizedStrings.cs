@@ -10,19 +10,31 @@ namespace HexBox.WinUI
         private const string _resSpace = "HexBox.WinUI";
         private static readonly ResourceManager _rm = new();
 
-        private static readonly string[] _keys =
-        [
-            nameof(AddressProperties), nameof(AddressPropertiesNoAddress),
-            nameof(Copy), nameof(CopyText), nameof(SelectAll),
-            nameof(DataformatDecimal), nameof(DataFormatHex),
-            nameof(DataProperties), nameof(DataPropertiesNoData),
-            nameof(DataSigned), nameof(DataUnsigned),
-            nameof(DataTypeEightByteFloat), nameof(DataTypeEightByteInteger),
-            nameof(DataTypeFourByteFloat), nameof(DataTypeFourByteInteger),
-            nameof(DataTypeTwoByteInteger), nameof(DataTypeOneByteInteger),
-            nameof(EndianBig), nameof(EndianLittle),
-            nameof(TextFormatAscii), nameof(TextProperties), nameof(TextPropertiesNoText),
-        ];
+        private static readonly Dictionary<string, string> _keyMap = new()
+        {
+            [nameof(AddressProperties)] = "AddressProperties/Text",
+            [nameof(AddressPropertiesNoAddress)] = "AddressPropertiesNoAddress/Text",
+            [nameof(Copy)] = "Copy/Text",
+            [nameof(CopyText)] = "CopyText/Text",
+            [nameof(SelectAll)] = "SelectAll/Text",
+            [nameof(DataformatDecimal)] = "DataformatDecimal/Text",
+            [nameof(DataFormatHex)] = "DataFormatHex/Text",
+            [nameof(DataProperties)] = "DataProperties/Text",
+            [nameof(DataPropertiesNoData)] = "DataPropertiesNoData/Text",
+            [nameof(DataSigned)] = "DataSigned/Text",
+            [nameof(DataUnsigned)] = "DataUnsigned/Text",
+            [nameof(DataTypeEightByteFloat)] = "DataTypeEightByteFloat/Text",
+            [nameof(DataTypeEightByteInteger)] = "DataTypeEightByteInteger/Text",
+            [nameof(DataTypeFourByteFloat)] = "DataTypeFourByteFloat/Text",
+            [nameof(DataTypeFourByteInteger)] = "DataTypeFourByteInteger/Text",
+            [nameof(DataTypeTwoByteInteger)] = "DataTypeTwoByteInteger/Text",
+            [nameof(DataTypeOneByteInteger)] = "DataTypeOneByteInteger/Text",
+            [nameof(EndianBig)] = "EndianBig/Text",
+            [nameof(EndianLittle)] = "EndianLittle/Text",
+            [nameof(TextFormatAscii)] = "TextFormatAscii/Text",
+            [nameof(TextProperties)] = "TextProperties/Text",
+            [nameof(TextPropertiesNoText)] = "TextPropertiesNoText/Text",
+        };
 
         private readonly Dictionary<string, string> _values = [];
 
@@ -34,16 +46,16 @@ namespace HexBox.WinUI
         internal void Reload()
         {
             _values.Clear();
-            foreach (var key in _keys)
-                _values[key] = GetValue(key);
-            foreach (var key in _keys)
+            foreach (var (key, resKey) in _keyMap)
+                _values[key] = GetValue(resKey);
+            foreach (var key in _keyMap.Keys)
                 OnPropertyChanged(key);
         }
 
-        private static string GetValue(string name)
+        private static string GetValue(string resKey)
         {
-            var value = _rm.MainResourceMap.TryGetValue($"{_resSpace}/Resources/{name}/Text");
-            value ??= _rm.MainResourceMap.GetValue($"{_resSpace}/{_resSpace}/Resources/{name}");
+            var value = _rm.MainResourceMap.TryGetValue($"{_resSpace}/Resources/{resKey}");
+            value ??= _rm.MainResourceMap.GetValue($"{_resSpace}/{_resSpace}/Resources/{resKey}");
             return value?.ValueAsString;
         }
 

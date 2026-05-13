@@ -9,13 +9,6 @@ namespace HexBox.WinUI.Demo
         private const string _resSpace = "HexBox.WinUI.Demo";
         private static readonly ResourceManager _rm = new();
 
-        private static readonly string[] _keys =
-        [
-            nameof(BrowseButton), nameof(FindBox),
-            nameof(ThemeTB), nameof(LangTB),
-            nameof(FixedView), nameof(Columns), nameof(FileSize),
-        ];
-
         private static readonly Dictionary<string, string> _keyMap = new()
         {
             [nameof(BrowseButton)] = "BrowseButton/Content",
@@ -37,9 +30,9 @@ namespace HexBox.WinUI.Demo
         public void Reload()
         {
             _values.Clear();
-            foreach (var key in _keys)
-                _values[key] = GetValue(_keyMap[key]);
-            foreach (var key in _keys)
+            foreach (var (key, resKey) in _keyMap)
+                _values[key] = GetValue(resKey);
+            foreach (var key in _keyMap.Keys)
                 OnPropertyChanged(key);
         }
 

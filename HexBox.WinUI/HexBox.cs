@@ -235,9 +235,48 @@ namespace HexBox.WinUI
         private const int _CharsBetweenDataColumns = 1;
         private const int _ScrollWheelScrollRows = 3;
 
+        private static readonly Dictionary<AddressFormat, int> _addressCharWidths = new()
+        {
+            [AddressFormat.Address16] = 4,
+            [AddressFormat.Address24] = 7,
+            [AddressFormat.Address32] = 9,
+            [AddressFormat.Address48] = 13,
+            [AddressFormat.Address64] = 17,
+        };
+
+        private static readonly Dictionary<AddressFormat, Func<ulong, string>> _addressFormatters = new()
+        {
+            [AddressFormat.Address16] = a => $"{a & 0xFFFF:X4}",
+            [AddressFormat.Address24] = a => $"{a >> 16 & 0xFF:X2}:{a & 0xFFFF:X4}",
+            [AddressFormat.Address32] = a => $"{a >> 16 & 0xFFFF:X4}:{a & 0xFFFF:X4}",
+            [AddressFormat.Address48] = a => $"{a >> 32 & 0xFF:X4}:{a & 0xFFFFFFFF:X8}",
+            [AddressFormat.Address64] = a => $"{a >> 32:X8}:{a & 0xFFFFFFFF:X8}",
+        };
+
+        private static readonly Dictionary<(DataType, DataSignedness), int> _decimalCharWidths = new()
+        {
+            [(DataType.Int_1, DataSignedness.Signed)] = 4,
+            [(DataType.Int_2, DataSignedness.Signed)] = 6,
+            [(DataType.Int_4, DataSignedness.Signed)] = 11,
+            [(DataType.Int_8, DataSignedness.Signed)] = 21,
+            [(DataType.Int_1, DataSignedness.Unsigned)] = 3,
+            [(DataType.Int_2, DataSignedness.Unsigned)] = 5,
+            [(DataType.Int_4, DataSignedness.Unsigned)] = 10,
+            [(DataType.Int_8, DataSignedness.Unsigned)] = 20,
+        };
+
+        private static readonly Dictionary<DataType, int> _floatCharWidths = new()
+        {
+            [DataType.Float_32] = 16,
+            [DataType.Float_64] = 24,
+        };
+
         private Rect _AddressRect;
         private Rect _DataRect;
         private Rect _TextRect;
+
+        private int _AddressColumnCharWidth;
+        private int _DataColumnCharWidth;
 
         private SKPaint _TextPaint;
         private SKPaint _LinePaint;
@@ -573,17 +612,12 @@ namespace HexBox.WinUI
             set => SetValue(TextFormatProperty, value);
         }
 
-        private double _SelectionBoxDataXPadding => _CharsBetweenDataColumns * _TextMeasure.Width / 2;
-
-        private double _SelectionBoxDataYPadding => 0;
-
-        private double _SelectionBoxTextXPadding => 0;
-
-        private double _SelectionBoxTextYPadding => 0;
+        private Point _SelectionBoxDataPadding => new(_CharsBetweenDataColumns * _TextMeasure.Width / 2, 0);
+        private Point _SelectionBoxTextPadding => new(0, 0);
 
         private int _BytesPerRow => DataWidth * Columns;
 
-        private float _headerHeight => ShowHeader ? _TextMeasure.Height : 0;
+        private float _HeaderHeight => ShowHeader ? _TextMeasure.Height : 0;
 
         public class HighlightedRegion
         {
@@ -733,29 +767,26 @@ namespace HexBox.WinUI
             Point lhsVerticalLinePoint0;
             Point rhsVerticalLinePoint0;
 
-            double selectionBoxXPadding;
-            double selectionBoxYPadding;
+            Point selectionBoxPadding;
 
             switch (relativeTo)
             {
             case SelectionArea.Data:
             {
-                lhsVerticalLinePoint0 = new Point(_AddressRect.Left, _AddressRect.Top);
-                rhsVerticalLinePoint0 = new Point(_DataRect.Left, _DataRect.Top);
+                lhsVerticalLinePoint0 = _AddressRect.TopLeft();
+                rhsVerticalLinePoint0 = _DataRect.TopLeft();
 
-                selectionBoxXPadding = _SelectionBoxDataXPadding;
-                selectionBoxYPadding = _SelectionBoxDataYPadding;
+                selectionBoxPadding = _SelectionBoxDataPadding;
             }
 
             break;
 
             case SelectionArea.Text:
             {
-                lhsVerticalLinePoint0 = new Point(_DataRect.Left, _DataRect.Top);
-                rhsVerticalLinePoint0 = new Point(_TextRect.Left, _TextRect.Top);
+                lhsVerticalLinePoint0 = _DataRect.TopLeft();
+                rhsVerticalLinePoint0 = _TextRect.TopLeft();
 
-                selectionBoxXPadding = _SelectionBoxTextXPadding;
-                selectionBoxYPadding = _SelectionBoxTextYPadding;
+                selectionBoxPadding = _SelectionBoxTextPadding;
             }
 
             break;
@@ -766,10 +797,10 @@ namespace HexBox.WinUI
             }
             }
 
-            point0.X -=  selectionBoxXPadding;
-            point1.X +=  selectionBoxXPadding;
-            point0.Y -=  selectionBoxYPadding;
-            point1.Y +=  selectionBoxYPadding;
+            point0.X -=  selectionBoxPadding.X;
+            point1.X +=  selectionBoxPadding.X;
+            point0.Y -=  selectionBoxPadding.Y;
+            point1.Y +=  selectionBoxPadding.Y;
 
             var ps_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
 
@@ -791,11 +822,11 @@ namespace HexBox.WinUI
                     // |                           |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
+                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point1.Y);
                     Point point4 = new(point1.X, point1.Y + _TextMeasure.Height);
-                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
-                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point1.Y + _TextMeasure.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point0.Y + _TextMeasure.Height);
                     Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 
                     points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
@@ -835,8 +866,8 @@ namespace HexBox.WinUI
                     // |                           |
                     // +---------------------------+
                     {
-                        Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
-                        Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
+                        Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point0.Y);
+                        Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point1.Y);
                         Point point4 = new(point0.X, point1.Y);
 
                         points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point4.ToSKPoint()];
@@ -846,8 +877,8 @@ namespace HexBox.WinUI
 
                     {
                         Point point5 = new(point1.X, point1.Y + _TextMeasure.Height);
-                        Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
-                        Point point7 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y);
+                        Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point1.Y + _TextMeasure.Height);
+                        Point point7 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point1.Y);
                         points = [point1.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
                     }
                 }
@@ -864,11 +895,11 @@ namespace HexBox.WinUI
                     // 5--------4                  |
                     // |                           |
                     // +---------------------------+
-                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point0.Y);
-                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxXPadding, point1.Y);
+                    Point point2 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point0.Y);
+                    Point point3 = new(rhsVerticalLinePoint0.X - ps_CharsBetweenSections + selectionBoxPadding.X, point1.Y);
                     Point point4 = new(point1.X, point1.Y + _TextMeasure.Height);
-                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point1.Y + _TextMeasure.Height);
-                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxXPadding, point0.Y + _TextMeasure.Height);
+                    Point point5 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point1.Y + _TextMeasure.Height);
+                    Point point6 = new(lhsVerticalLinePoint0.X + ps_CharsBetweenSections - selectionBoxPadding.X, point0.Y + _TextMeasure.Height);
                     Point point7 = new(point0.X, point0.Y + _TextMeasure.Height);
 
                     points = [point0.ToSKPoint(), point2.ToSKPoint(), point3.ToSKPoint(), point1.ToSKPoint(), point4.ToSKPoint(), point5.ToSKPoint(), point6.ToSKPoint(), point7.ToSKPoint()];
@@ -939,16 +970,16 @@ namespace HexBox.WinUI
 
                 if (ShowAddress)
                 {
-                    var p0 = new Point(_AddressRect.Left, _AddressRect.Top).ToSKPoint();
-                    var p1 = new Point(_AddressRect.Right, _AddressRect.Bottom).ToSKPoint();
+                    var p0 = _AddressRect.TopLeft().ToSKPoint();
+                    var p1 = _AddressRect.BottomRight().ToSKPoint();
 
                     canvas.DrawLine(p0, p1, _LinePaint);
                 }
 
                 if (ShowData)
                 {
-                    var p0 = new Point(_DataRect.Left, _DataRect.Top).ToSKPoint();
-                    var p1 = new Point(_DataRect.Right, _DataRect.Bottom).ToSKPoint();
+                    var p0 = _DataRect.TopLeft().ToSKPoint();
+                    var p1 = _DataRect.BottomRight().ToSKPoint();
 
                     canvas.DrawLine(p0, p1, _LinePaint);
 
@@ -984,10 +1015,8 @@ namespace HexBox.WinUI
 
                 if (ShowText)
                 {
-                    var p0 = new Point(_TextRect.Left, _TextRect.Top);
-                    var p1 = new Point(_TextRect.Right, _TextRect.Bottom);
-
-                    //canvas.DrawLine(p0.ToSKPoint(), p1.ToSKPoint(), _LinePaint);
+                    var p0 = _TextRect.TopLeft();
+                    var p1 = _TextRect.BottomRight();
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
@@ -1054,7 +1083,7 @@ namespace HexBox.WinUI
                 }
 
                 SKPoint origin = default;
-                origin.Y = _headerHeight + _TextMeasure.Height * 3 / 4; /* left bottom to right top */
+                origin.Y = _HeaderHeight + _TextMeasure.Height * 3 / 4; /* left bottom to right top */
 
                 if (ShowHeader)
                 {
@@ -1067,14 +1096,14 @@ namespace HexBox.WinUI
 
                     if (ShowAddress)
                     {
-                        headerX += (float)((CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width);
+                        headerX += (float)((_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width);
                     }
 
                     if (ShowData)
                     {
                         headerX += (float)(_CharsBetweenSections * _TextMeasure.Width);
 
-                        var dataColCharWidth = CalculateDataColumnCharWidth();
+                        var dataColCharWidth = _DataColumnCharWidth;
                         for (int i = 0; i < Columns; i++)
                         {
                             canvas.DrawText(i.ToString("X2"), headerX, headerY, _TextPaint);
@@ -1096,7 +1125,7 @@ namespace HexBox.WinUI
                         }
                     }
 
-                    canvas.DrawLine(0, _headerHeight, headerX, _headerHeight, _LinePaint);
+                    canvas.DrawLine(0, _HeaderHeight, headerX, _HeaderHeight, _LinePaint);
                 }
 
                 for (var row = 0; row < MaxVisibleRows; ++row)
@@ -1113,7 +1142,7 @@ namespace HexBox.WinUI
                             }
                             canvas.DrawText(textToFormat, origin.X, origin.Y, _TextPaint);
 
-                            origin.X += (float)((CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width);
+                            origin.X += (float)((_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width);
                         }
                     }
 
@@ -1123,7 +1152,7 @@ namespace HexBox.WinUI
                     {
                         origin.X += (float)(_CharsBetweenSections * _TextMeasure.Width);
 
-                        var cachedDataColumnCharWidth = CalculateDataColumnCharWidth();
+                        var cachedDataColumnCharWidth = _DataColumnCharWidth;
 
                         var column = 0;
 
@@ -1995,6 +2024,15 @@ namespace HexBox.WinUI
 
         private void Reflush()
         {
+            _AddressColumnCharWidth = _addressCharWidths[AddressFormat];
+
+            if (DataType < DataType.Float_32)
+                _DataColumnCharWidth = DataFormat == DataFormat.Hexadecimal
+                    ? 2 * DataWidth
+                    : _decimalCharWidths[(DataType, DataSignedness)];
+            else
+                _DataColumnCharWidth = _floatCharWidths[DataType];
+
             if (_Canvas != null)
             {
                 _Canvas.Invalidate();
@@ -2042,160 +2080,48 @@ namespace HexBox.WinUI
 
         private string ReadFormattedData()
         {
-            string result;
+            if (DataType >= DataType.Float_32)
+                return ReadFormattedFloat();
 
-            if (DataType < DataType.Float_32)
-            {
-                switch (DataFormat)
-                {
-                case DataFormat.Decimal:
-                {
-                    if (DataSignedness == DataSignedness.Signed)
-                    {
-                        switch (DataType)
-                        {
-                        case DataType.Int_1:
-                        {
-                            result = $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(4);
-                            break;
-                        }
+            return DataFormat == DataFormat.Hexadecimal
+                ? ReadFormattedHex()
+                : ReadFormattedDecimal();
+        }
 
-                        case DataType.Int_2:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(6);
-                            break;
-                        }
+        private string ReadFormattedHex() => DataType switch
+        {
+            DataType.Int_1 => $"{DataSource.ReadByte():X2}",
+            DataType.Int_2 => $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness):X4}",
+            DataType.Int_4 => $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness):X8}",
+            DataType.Int_8 => $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness):X16}",
+            _ => throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.")
+        };
 
-                        case DataType.Int_4:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(11);
-                            break;
-                        }
+        private string ReadFormattedDecimal() => (DataSignedness, DataType) switch
+        {
+            (DataSignedness.Signed, DataType.Int_1) => $"{DataSource.ReadSByte():+#;-#;0}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Signed, DataType.Int_2) => $"{EndianBitConverter.Convert(DataSource.ReadInt16(), Endianness):+#;-#;0}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Signed, DataType.Int_4) => $"{EndianBitConverter.Convert(DataSource.ReadInt32(), Endianness):+#;-#;0}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Signed, DataType.Int_8) => $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Unsigned, DataType.Int_1) => $"{DataSource.ReadByte()}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Unsigned, DataType.Int_2) => $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Unsigned, DataType.Int_4) => $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(_DataColumnCharWidth),
+            (DataSignedness.Unsigned, DataType.Int_8) => $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(_DataColumnCharWidth),
+            _ => throw new InvalidOperationException($"Invalid {nameof(DataType)} value.")
+        };
 
-                        case DataType.Int_8:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadInt64(), Endianness):+#;-#;0}".PadLeft(21);
-                            break;
-                        }
+        private string ReadFormattedFloat() => DataType switch
+        {
+            DataType.Float_32 => FormatFloat(DataSource.ReadUInt32(), 8, 16),
+            DataType.Float_64 => FormatFloat(DataSource.ReadUInt64(), 16, 24),
+            _ => throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.")
+        };
 
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                        }
-                    }
-                    else if (DataSignedness == DataSignedness.Unsigned)
-                    {
-                        switch (DataType)
-                        {
-                        case DataType.Int_1:
-                        {
-                            result = $"{DataSource.ReadByte()}".PadLeft(3);
-                            break;
-                        }
-
-                        case DataType.Int_2:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness)}".PadLeft(5);
-                            break;
-                        }
-
-                        case DataType.Int_4:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness)}".PadLeft(10);
-                            break;
-                        }
-
-                        case DataType.Int_8:
-                        {
-                            result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness)}".PadLeft(20);
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                    }
-                }
-                break;
-
-                case DataFormat.Hexadecimal:
-                {
-                    switch (DataType)
-                    {
-                    case DataType.Int_1:
-                    {
-                        result = $"{DataSource.ReadByte(),0:X2}";
-                        break;
-                    }
-
-                    case DataType.Int_2:
-                    {
-                        result = $"{EndianBitConverter.Convert(DataSource.ReadUInt16(), Endianness),0:X4}";
-                        break;
-                    }
-
-                    case DataType.Int_4:
-                    {
-                        result = $"{EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness),0:X8}";
-                        break;
-                    }
-
-                    case DataType.Int_8:
-                    {
-                        result = $"{EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness),0:X16}";
-                        break;
-                    }
-
-                    default:
-                    {
-                        throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                    }
-                    }
-
-                    break;
-                }
-
-                default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
-                }
-                }
-            }
-            else
-            {
-                switch (DataType)
-                {
-                case DataType.Float_32:
-                {
-                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt32(), Endianness));
-                    var value = BitConverter.ToSingle(bytes, 0);
-                    result = $"{value:E08}".PadLeft(16);
-                    break;
-                }
-
-                case DataType.Float_64:
-                {
-                    var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(DataSource.ReadUInt64(), Endianness));
-                    var value = BitConverter.ToSingle(bytes, 0);
-                    result = $"{value:E16}".PadLeft(24);
-                    break;
-                }
-
-                default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                }
-                }
-            }
-
-            return result;
+        private string FormatFloat(ulong raw, int precision, int width)
+        {
+            var bytes = BitConverter.GetBytes(EndianBitConverter.Convert(raw, Endianness));
+            var value = BitConverter.ToSingle(bytes, 0);
+            return value.ToString($"E{precision}").PadLeft(width);
         }
 
         private void SelectAllExecuted(object sender)
@@ -2230,243 +2156,7 @@ namespace HexBox.WinUI
             Offset = (long)e.NewValue * _BytesPerRow;
         }
 
-        private string GetFormattedAddressText(ulong address)
-        {
-            string formattedAddressText;
-
-            switch (AddressFormat)
-            {
-            case AddressFormat.Address16:
-            {
-                formattedAddressText = $"{address & 0xFFFF,0:X4}";
-                break;
-            }
-
-            case AddressFormat.Address24:
-            {
-                formattedAddressText = $"{address >> 16 & 0xFF,0:X2}:{address & 0xFFFF,0:X4}";
-                break;
-            }
-
-            case AddressFormat.Address32:
-            {
-                formattedAddressText = $"{address >> 16 & 0xFFFF,0:X4}:{address & 0xFFFF,0:X4}";
-                break;
-            }
-
-            case AddressFormat.Address48:
-            {
-                formattedAddressText = $"{address >> 32 & 0xFF,0:X4}:{address & 0xFFFFFFFF,0:X8}";
-                break;
-            }
-
-            case AddressFormat.Address64:
-            {
-                formattedAddressText = $"{address >> 32,0:X8}:{address & 0xFFFFFFFF,0:X8}";
-                break;
-            }
-
-            default:
-            {
-                throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
-            }
-            }
-
-            return formattedAddressText;
-        }
-
-        private int CalculateAddressColumnCharWidth()
-        {
-            int addressColumnCharWidth;
-
-            switch (AddressFormat)
-            {
-            case AddressFormat.Address16:
-            {
-                addressColumnCharWidth = 4;
-                break;
-            }
-
-            case AddressFormat.Address24:
-            {
-                addressColumnCharWidth = 7;
-                break;
-            }
-
-            case AddressFormat.Address32:
-            {
-                addressColumnCharWidth = 9;
-                break;
-            }
-
-            case AddressFormat.Address48:
-            {
-                addressColumnCharWidth = 13;
-                break;
-            }
-
-            case AddressFormat.Address64:
-            {
-                addressColumnCharWidth = 17;
-                break;
-            }
-
-            default:
-            {
-                throw new InvalidOperationException($"Invalid {nameof(AddressFormat)} value.");
-            }
-            }
-
-            return addressColumnCharWidth;
-        }
-
-        private int CalculateDataColumnCharWidth()
-        {
-            int dataColumnCharWidth;
-
-            if (DataType < DataType.Float_32)
-            {
-                switch (DataFormat)
-                {
-                case DataFormat.Decimal:
-                {
-                    switch (DataSignedness)
-                    {
-                    case DataSignedness.Signed:
-                    {
-                        switch (DataType)
-                        {
-                        case DataType.Int_1:
-                        {
-                            dataColumnCharWidth = 4;
-                            break;
-                        }
-
-                        case DataType.Int_2:
-                        {
-                            dataColumnCharWidth = 6;
-                            break;
-                        }
-
-                        case DataType.Int_4:
-                        {
-                            dataColumnCharWidth = 11;
-                            break;
-                        }
-
-                        case DataType.Int_8:
-                        {
-                            dataColumnCharWidth = 21;
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                        }
-                    }
-
-                    break;
-
-                    case DataSignedness.Unsigned:
-                    {
-                        switch (DataType)
-                        {
-                        case DataType.Int_1:
-                        {
-                            dataColumnCharWidth = 3;
-                            break;
-                        }
-
-                        case DataType.Int_2:
-                        {
-                            dataColumnCharWidth = 5;
-                            break;
-                        }
-
-                        case DataType.Int_4:
-                        {
-                            dataColumnCharWidth = 10;
-                            break;
-                        }
-
-                        case DataType.Int_8:
-                        {
-                            dataColumnCharWidth = 20;
-                            break;
-                        }
-
-                        default:
-                        {
-                            throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                        }
-                        }
-                    }
-
-                    break;
-
-                    default:
-                    {
-                        throw new InvalidOperationException($"Invalid {nameof(DataType)} value.");
-                    }
-                    }
-                }
-
-                break;
-
-                case DataFormat.Hexadecimal:
-                {
-                    switch (DataWidth)
-                    {
-                    case 1:
-                    case 2:
-                    case 4:
-                    case 8:
-                    {
-                        dataColumnCharWidth = 2 * DataWidth;
-                        break;
-                    }
-
-                    default:
-                    {
-                        throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                    }
-                    }
-
-                    break;
-                }
-
-                default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataFormat)} value.");
-                }
-                }
-            }
-            else
-            {
-                switch (DataType)
-                {
-                case DataType.Float_32:
-                {
-                    dataColumnCharWidth = 16;
-                    break;
-                }
-
-                case DataType.Float_64:
-                {
-                    dataColumnCharWidth = 24;
-                    break;
-                }
-
-                default:
-                {
-                    throw new InvalidOperationException($"Invalid {nameof(DataWidth)} value.");
-                }
-                }
-            }
-            return dataColumnCharWidth;
-        }
+        private string GetFormattedAddressText(ulong address) => _addressFormatters[AddressFormat](address);
 
         private Point CalculateAddressVerticalLinePoint0()
         {
@@ -2474,10 +2164,10 @@ namespace HexBox.WinUI
 
             if (ShowAddress)
             {
-                point1.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
+                point1.X = (_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point1.Y = _headerHeight;
+            point1.Y = _HeaderHeight;
 
             return point1;
         }
@@ -2488,10 +2178,10 @@ namespace HexBox.WinUI
 
             if (ShowAddress)
             {
-                point2.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
+                point2.X = (_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = _headerHeight + Math.Min(_TextMeasure.Height * MaxVisibleRows, _Canvas.ActualHeight * _dpiScale - _headerHeight);
+            point2.Y = _HeaderHeight + Math.Min(_TextMeasure.Height * MaxVisibleRows, _Canvas.ActualHeight * _dpiScale - _HeaderHeight);
 
             return point2;
         }
@@ -2502,7 +2192,7 @@ namespace HexBox.WinUI
 
             if (ShowData)
             {
-                point1.X += (_CharsBetweenSections + (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
+                point1.X += (_CharsBetweenSections + (_DataColumnCharWidth + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point1;
@@ -2514,7 +2204,7 @@ namespace HexBox.WinUI
 
             if (ShowData)
             {
-                point2.X += (_CharsBetweenSections + (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
+                point2.X += (_CharsBetweenSections + (_DataColumnCharWidth + _CharsBetweenDataColumns) * Columns - _CharsBetweenDataColumns + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
             return point2;
@@ -2596,7 +2286,7 @@ namespace HexBox.WinUI
 
                 _TextMeasure.Bottom = _TextMeasure.Height; /* 2 * line font height */
 
-                maxVisibleRows = Math.Max(0, (int)((_Canvas.ActualHeight * _dpiScale - _headerHeight) / _TextMeasure.Height));
+                maxVisibleRows = Math.Max(0, (int)((_Canvas.ActualHeight * _dpiScale - _HeaderHeight) / _TextMeasure.Height));
 
                 if (ShowData || ShowText)
                 {
@@ -2604,7 +2294,7 @@ namespace HexBox.WinUI
 
                     if (ShowAddress)
                     {
-                        charsPerRow -= CalculateAddressColumnCharWidth() + 2 * _CharsBetweenSections;
+                        charsPerRow -= _AddressColumnCharWidth + 2 * _CharsBetweenSections;
                     }
 
                     if (ShowData && ShowText)
@@ -2616,7 +2306,7 @@ namespace HexBox.WinUI
 
                     if (ShowData)
                     {
-                        charsPerColumn += CalculateDataColumnCharWidth() + _CharsBetweenDataColumns;
+                        charsPerColumn += _DataColumnCharWidth + _CharsBetweenDataColumns;
                     }
 
                     if (ShowText)
@@ -2676,7 +2366,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_AddressRect.Top, _AddressRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
+                position.Y = (position.Y - _HeaderHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {
@@ -2700,7 +2390,7 @@ namespace HexBox.WinUI
                 position.X -= _AddressRect.Left + pix_CharsBetweenSections;
 
                 // Convert the X coordinate to the column number
-                position.X /= (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
+                position.X /= (_DataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width;
 
                 if (position.X >= Columns)
                 {
@@ -2712,7 +2402,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_DataRect.Top, _DataRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
+                position.Y = (position.Y - _HeaderHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {
@@ -2749,7 +2439,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_TextRect.Top, _TextRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
+                position.Y = (position.Y - _HeaderHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {
@@ -2785,7 +2475,7 @@ namespace HexBox.WinUI
                 // Normalize requested offset to a zero based column
                 long normalizedColumn = (offset - Offset) / DataWidth;
 
-                position.X += (normalizedColumn % Columns + Columns) % Columns * (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
+                position.X += (normalizedColumn % Columns + Columns) % Columns * (_DataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width;
 
                 if (normalizedColumn < 0)
                 {
@@ -2882,12 +2572,6 @@ namespace HexBox.WinUI
         public HexBox()
         {
             DefaultStyleKey = typeof(HexBox);
-            ActualThemeChanged +=HexBox_ActualThemeChanged;
-        }
-
-        private void HexBox_ActualThemeChanged(FrameworkElement sender, object args)
-        {
-            //this.RequestedTheme = ElementTheme.Light;
         }
     }
 }

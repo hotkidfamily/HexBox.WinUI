@@ -1,12 +1,14 @@
 ﻿namespace HexBox.WinUI
 {
     using System;
+    using Windows.Foundation;
 
-    /// <summary>
-    /// A utility class with miscellaneous methods.
-    /// </summary>
     internal static class Utilities
     {
+        public static Point TopLeft(this Rect r) => new(r.X, r.Y);
+
+        public static Point BottomRight(this Rect r) => new(r.X + r.Width, r.Y + r.Height);
+
         /// <summary>
         /// Clamps the <paramref name="value"/> to the range [<paramref name="min"/>, <paramref name="max"/>].
         /// </summary>

@@ -573,7 +573,7 @@ namespace HexBox.WinUI
             set => SetValue(TextFormatProperty, value);
         }
 
-        private double _SelectionBoxDataXPadding => _TextMeasure.Width / 4;
+        private double _SelectionBoxDataXPadding => _CharsBetweenDataColumns * _TextMeasure.Width / 2;
 
         private double _SelectionBoxDataYPadding => 0;
 

@@ -1125,10 +1125,6 @@ namespace HexBox.WinUI
 
                         var cachedDataColumnCharWidth = CalculateDataColumnCharWidth();
 
-                        // Needed to track text in alternating columns so we can use a different brush when drawing
-                        var evenColumnBuilder = new StringBuilder(Columns * DataWidth);
-                        var oddColumnBuilder = new StringBuilder(Columns * DataWidth);
-
                         var column = 0;
 
                         // Draw text up until selection start point
@@ -1137,143 +1133,68 @@ namespace HexBox.WinUI
                             if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                             {
                                 if (DataSource.BaseStream.Position >= SelectedOffset)
-                                {
                                     break;
-                                }
 
                                 var textToFormat = ReadFormattedData();
-
-                                if (column % 2 == 0)
-                                {
-                                    evenColumnBuilder.Append(textToFormat);
-                                    evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
-
-                                    oddColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
-                                }
-                                else
-                                {
-                                    oddColumnBuilder.Append(textToFormat);
-                                    oddColumnBuilder.Append(' ', _CharsBetweenDataColumns);
-
-                                    evenColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
-                                }
+                                var brush = (column % 2 == 0) ? Foreground : AlternatingDataColumnTextBrush;
+                                if (brush is SolidColorBrush s)
+                                    _TextPaint.Color = s.Color.ToSKColor();
+                                DrawTextAccuracy(canvas, _TextPaint, origin, textToFormat);
+                                origin.X += (float)((textToFormat.Length + _CharsBetweenDataColumns) * _TextMeasure.Width);
                             }
                             else
                             {
-                                evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
-                                oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
+                                origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
                             }
 
                             ++column;
                         }
 
-                        {
-                            if (Foreground is SolidColorBrush s)
-                            {
-                                _TextPaint.Color = s.Color.ToSKColor();
-                            }
-                            DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
-                        }
-
-                        {
-                            if (AlternatingDataColumnTextBrush is SolidColorBrush s)
-                            {
-                                _TextPaint.Color = s.Color.ToSKColor();
-                            }
-                            DrawTextAccuracy(canvas, _TextPaint, origin, oddColumnBuilder.ToString());
-                        }
-                        origin.X += evenColumnBuilder.Length * _TextMeasure.Width;
-
                         if (column < Columns)
                         {
-                            // We'll reuse this builder for drawing selection text
-                            evenColumnBuilder.Clear();
-
                             // Draw text starting from selection start point
                             while (column < Columns)
                             {
                                 if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                 {
                                     if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
-                                    {
                                         break;
-                                    }
 
                                     var textToFormat = ReadFormattedData();
-
-                                    evenColumnBuilder.Append(textToFormat);
-                                    evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
+                                    if (SelectionTextBrush is SolidColorBrush s)
+                                        _TextPaint.Color = s.Color.ToSKColor();
+                                    DrawTextAccuracy(canvas, _TextPaint, origin, textToFormat);
+                                    origin.X += (float)((textToFormat.Length + _CharsBetweenDataColumns) * _TextMeasure.Width);
                                 }
                                 else
                                 {
-                                    evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
+                                    origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
                                 }
 
                                 ++column;
                             }
 
-                            {
-                                if (SelectionTextBrush is SolidColorBrush s)
-                                {
-                                    _TextPaint.Color = s.Color.ToSKColor();
-                                }
-                                DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
-                            }
-
-                            origin.X += evenColumnBuilder.Length * _TextMeasure.Width;
-
                             if (column < Columns)
                             {
-                                evenColumnBuilder.Clear();
-                                oddColumnBuilder.Clear();
-
                                 // Draw text after end of selection
                                 while (column < Columns)
                                 {
                                     if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedData();
-                                        if (column % 2 == 0)
-                                        {
-                                            evenColumnBuilder.Append(textToFormat);
-                                            evenColumnBuilder.Append(' ', _CharsBetweenDataColumns);
-
-                                            oddColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
-                                        }
-                                        else
-                                        {
-                                            oddColumnBuilder.Append(textToFormat);
-                                            oddColumnBuilder.Append(' ', _CharsBetweenDataColumns);
-
-                                            evenColumnBuilder.Append(' ', textToFormat.Length + _CharsBetweenDataColumns);
-                                        }
+                                        var brush = (column % 2 == 0) ? Foreground : AlternatingDataColumnTextBrush;
+                                        if (brush is SolidColorBrush s)
+                                            _TextPaint.Color = s.Color.ToSKColor();
+                                        DrawTextAccuracy(canvas, _TextPaint, origin, textToFormat);
+                                        origin.X += (float)((textToFormat.Length + _CharsBetweenDataColumns) * _TextMeasure.Width);
                                     }
                                     else
                                     {
-                                        evenColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
-                                        oddColumnBuilder.Append(' ', cachedDataColumnCharWidth + _CharsBetweenDataColumns);
+                                        origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
                                     }
 
                                     ++column;
                                 }
-
-                                {
-                                    if (Foreground is SolidColorBrush s)
-                                    {
-                                        _TextPaint.Color = s.Color.ToSKColor();
-                                    }
-                                    DrawTextAccuracy(canvas, _TextPaint, origin, evenColumnBuilder.ToString());
-                                }
-
-                                {
-                                    if (AlternatingDataColumnTextBrush is SolidColorBrush s)
-                                    {
-                                        _TextPaint.Color = s.Color.ToSKColor();
-                                    }
-                                    DrawTextAccuracy(canvas, _TextPaint, origin, oddColumnBuilder.ToString());
-                                }
-
-                                origin.X += oddColumnBuilder.Length * _TextMeasure.Width;
                             }
                         }
 

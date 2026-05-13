@@ -1,4 +1,4 @@
-﻿using HexBox.WinUI.Library.EndianConvert;
+using HexBox.WinUI.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -276,7 +276,15 @@ namespace HexBox.WinUI
         private Rect _TextRect;
 
         private int _AddressColumnCharWidth;
-        private int _DataColumnCharWidth;
+
+        /// <summary>
+        /// Gets the character width of a data column based on current DataType, DataFormat, and DataSignedness.
+        /// </summary>
+        private int _DataColumnCharWidth => DataType >= DataType.Float_32
+            ? _floatCharWidths[DataType]
+            : DataFormat == DataFormat.Hexadecimal
+                ? 2 * DataWidth
+                : _decimalCharWidths[(DataType, DataSignedness)];
 
         private SKPaint _TextPaint;
         private SKPaint _LinePaint;
@@ -410,9 +418,18 @@ namespace HexBox.WinUI
             DependencyProperty.Register("DataType", typeof(DataType), typeof(HexBox), new PropertyMetadata(DataType.Int_1, OnDataTypeChanged));
 
         /// <summary>
-        /// Gets or sets the width of the data to display.
+        /// Gets the byte width of the current data type.
         /// </summary>
-        private int DataWidth = 1;
+        private int DataWidth => DataType switch
+        {
+            DataType.Int_1 => 1,
+            DataType.Int_2 => 2,
+            DataType.Int_4 => 4,
+            DataType.Int_8 => 8,
+            DataType.Float_32 => 4,
+            DataType.Float_64 => 8,
+            _ => 1,
+        };
 
         /// <summary>
         /// Gets a value indicating whether the user has made any selection within the control.
@@ -976,6 +993,10 @@ namespace HexBox.WinUI
                     canvas.DrawLine(p0, p1, _LinePaint);
                 }
 
+                // Clip highlight/selection rendering to below the header
+                canvas.Save();
+                canvas.ClipRect(new SKRect(0, _HeaderHeight, (float)(view.ActualWidth * _dpiScale), (float)(view.ActualHeight * _dpiScale)));
+
                 if (ShowData)
                 {
                     var p0 = _DataRect.TopLeft().ToSKPoint();
@@ -1081,6 +1102,8 @@ namespace HexBox.WinUI
                         DrawSelectionGeometry(canvas, SelectionBrush, _TextPaint, sp0, sp1, SelectionArea.Text);
                     }
                 }
+
+                canvas.Restore();
 
                 SKPoint origin = default;
                 origin.Y = _HeaderHeight + _TextMeasure.Height * 3 / 4; /* left bottom to right top */
@@ -1623,7 +1646,11 @@ namespace HexBox.WinUI
 
             if (e.PointerDeviceType == PointerDeviceType.Mouse)
             {
-                OnMouseDoubleClick(e.GetPosition(_Canvas));
+                var position = e.GetPosition(_Canvas);
+                // Ignore double-clicks in the header area
+                if (position.Y * _dpiScale < _HeaderHeight)
+                    return;
+                OnMouseDoubleClick(position);
             }
         }
 
@@ -1787,6 +1814,13 @@ namespace HexBox.WinUI
             if (_HighlightState == SelectionArea.None && CapturePointer(e.Pointer))
             {
                 Point position = e.GetCurrentPoint(_Canvas).Position;
+
+                // Ignore clicks in the header area
+                if (position.Y * _dpiScale < _HeaderHeight)
+                {
+                    ReleasePointerCapture(e.Pointer);
+                    return;
+                }
 
                 Point addressVerticalLinePoint0 = CalculateAddressVerticalLinePoint0();
                 Point dataVerticalLinePoint0 = CalculateDataVerticalLinePoint0();
@@ -1980,34 +2014,6 @@ namespace HexBox.WinUI
         private static void OnDataTypeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var HexBox = (HexBox)d;
-
-            switch (HexBox.DataType)
-            {
-            case DataType.Int_1:
-                HexBox.DataWidth = 1;
-                break;
-
-            case DataType.Int_2:
-                HexBox.DataWidth = 2;
-                break;
-
-            case DataType.Int_4:
-                HexBox.DataWidth = 4;
-                break;
-
-            case DataType.Int_8:
-                HexBox.DataWidth = 8;
-                break;
-
-            case DataType.Float_32:
-                HexBox.DataWidth = 4;
-                break;
-
-            case DataType.Float_64:
-                HexBox.DataWidth = 8;
-                break;
-            }
-
             HexBox.Reflush();
         }
 
@@ -2025,13 +2031,6 @@ namespace HexBox.WinUI
         private void Reflush()
         {
             _AddressColumnCharWidth = _addressCharWidths[AddressFormat];
-
-            if (DataType < DataType.Float_32)
-                _DataColumnCharWidth = DataFormat == DataFormat.Hexadecimal
-                    ? 2 * DataWidth
-                    : _decimalCharWidths[(DataType, DataSignedness)];
-            else
-                _DataColumnCharWidth = _floatCharWidths[DataType];
 
             if (_Canvas != null)
             {

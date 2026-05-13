@@ -34,6 +34,7 @@ namespace HexBox.WinUI.Demo
         public event PropertyChangedEventHandler? PropertyChanged;
 
         private bool _EnforceMode = false;
+        private bool _ShowHeader = true;
 
         public bool EnforceMode
         {
@@ -43,6 +44,18 @@ namespace HexBox.WinUI.Demo
                 if (_EnforceMode != value)
                 {
                     _EnforceMode = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        public bool ShowHeader
+        {
+            get { return _ShowHeader; }
+            set
+            {
+                if (_ShowHeader != value)
+                {
+                    _ShowHeader = value;
                     OnPropertyChanged();
                 }
             }
@@ -208,14 +221,16 @@ namespace HexBox.WinUI.Demo
                 List<HexBox.HighlightedRegion> HighlightedRegions = [];
                 Color[] cols = [Colors.DeepSkyBlue, Colors.Aquamarine, Colors.DarkSalmon];
                 int offset = 0x2f2;
+                int step = 3 * 28;
                 for (int i = 0; i < 3; i++)
                 {
                     HexBox.HighlightedRegion r = new()
                     {
-                        Start = offset + 3*i*29 + i,
-                        Length = 3*29,
+                        Start = offset,
+                        Length = step,
                         Color = new SolidColorBrush() { Color = cols[i] }
                     };
+                    offset += step;
                     HighlightedRegions.Add(r);
                 }
                 HexViewer.HighlightedRegions = HighlightedRegions;

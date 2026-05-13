@@ -5,5 +5,6 @@
   "Columns/Text": "Columns",
   "ThemeTB/Text": "Theme",
   "LangTB/Text": "Language",
-  "FileSize/Text": "File Size"
+  "FileSize/Text": "File Size",
+  "ShowHeader/Content": "Show Header"
 }

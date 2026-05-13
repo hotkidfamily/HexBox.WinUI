@@ -90,6 +90,10 @@
                           Name="EnforceModeCheckBox"
                           Content="{x:Bind LocalStrings.FixedView, Mode=OneWay}"
                           IsChecked="{x:Bind EnforceMode, Mode=TwoWay}" />
+                <CheckBox VerticalContentAlignment="Center"
+                          Name="ShowHeaderCheckBox"
+                          Content="{x:Bind LocalStrings.ShowHeader, Mode=OneWay}"
+                          IsChecked="{x:Bind ShowHeader, Mode=TwoWay}" />
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="{x:Bind LocalStrings.Columns, Mode=OneWay}" VerticalAlignment="Center" />
                     <TextBlock Foreground="Red"
@@ -116,11 +120,12 @@
         <hb:HexBox  Grid.Row="2"
                     x:Name="HexViewer"
                     Columns="{x:Bind Columns, Mode=OneWay}"
-                    Margin="4"
-                    BorderBrush="Blue"
+                    Margin="0"
+                    BorderBrush="Transparent"
                     Background="Transparent"
-                    EnforceProperties="{x:Bind EnforceMode, Mode=OneWay}"
-                    BorderThickness="1"
+                    Enforce="{x:Bind EnforceMode, Mode=OneWay}"
+                    ShowHeader="{x:Bind ShowHeader, Mode=OneWay}"
+                    BorderThickness="4"
                     FontFamily="Monaco"
                     FontSize="14">
         </hb:HexBox>

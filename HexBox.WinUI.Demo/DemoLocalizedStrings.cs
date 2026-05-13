@@ -16,6 +16,7 @@ namespace HexBox.WinUI.Demo
             [nameof(ThemeTB)] = "ThemeTB/Text",
             [nameof(LangTB)] = "LangTB/Text",
             [nameof(FixedView)] = "FixedView/Content",
+            [nameof(ShowHeader)] = "ShowHeader/Content",
             [nameof(Columns)] = "Columns/Text",
             [nameof(FileSize)] = "FileSize/Text",
         };
@@ -48,6 +49,7 @@ namespace HexBox.WinUI.Demo
         public string ThemeTB => _values[nameof(ThemeTB)];
         public string LangTB => _values[nameof(LangTB)];
         public string FixedView => _values[nameof(FixedView)];
+        public string ShowHeader => _values[nameof(ShowHeader)];
         public string Columns => _values[nameof(Columns)];
         public string FileSize => _values[nameof(FileSize)];
     }

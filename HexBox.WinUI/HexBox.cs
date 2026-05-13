@@ -143,7 +143,7 @@ namespace HexBox.WinUI
         /// Determines whether the user can change the layout and data format.
         /// </summary>
         public static readonly DependencyProperty EnforcePropertiesProperty =
-            DependencyProperty.Register(nameof(EnforceProperties), typeof(bool), typeof(HexBox),
+            DependencyProperty.Register(nameof(Enforce), typeof(bool), typeof(HexBox),
                 new PropertyMetadata(false, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
@@ -453,7 +453,7 @@ namespace HexBox.WinUI
                 }
                 else
                 {
-                    return SelectionStart - SelectionEnd + _BytesPerColumn;
+                    return SelectionStart - SelectionEnd + DataWidth;
                 }
             }
         }
@@ -487,7 +487,7 @@ namespace HexBox.WinUI
         /// <summary>
         /// Gets or sets a value indicating whether the user can change the layout and data format or not.
         /// </summary>
-        public bool EnforceProperties
+        public bool Enforce
         {
             get => (bool)GetValue(EnforcePropertiesProperty);
             set => SetValue(EnforcePropertiesProperty, value);
@@ -581,8 +581,6 @@ namespace HexBox.WinUI
 
         private double _SelectionBoxTextYPadding => 0;
 
-        private int _BytesPerColumn => DataWidth;
-
         private int _BytesPerRow => DataWidth * Columns;
 
         private float _headerHeight => ShowHeader ? _TextMeasure.Height : 0;
@@ -654,7 +652,7 @@ namespace HexBox.WinUI
                 long savedDataSourcePositionBeforeReadingData = DataSource.BaseStream.Position;
 
                 // Adjust wrong SelectionEnd after selecting down or left to right
-                long selectionEnd = SelectionStart < SelectionEnd ? SelectionEnd - _BytesPerColumn : SelectionEnd;
+                long selectionEnd = SelectionStart < SelectionEnd ? SelectionEnd - DataWidth : SelectionEnd;
 
                 DataSource.BaseStream.Position = Math.Min(SelectionStart, selectionEnd);
 
@@ -1105,7 +1103,7 @@ namespace HexBox.WinUI
                 {
                     if (ShowAddress)
                     {
-                        if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                        if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                         {
                             var textToFormat = GetFormattedAddressText(Address + (ulong)DataSource.BaseStream.Position);
 
@@ -1136,7 +1134,7 @@ namespace HexBox.WinUI
                         // Draw text up until selection start point
                         while (column < Columns)
                         {
-                            if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                            if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                             {
                                 if (DataSource.BaseStream.Position >= SelectedOffset)
                                 {
@@ -1194,7 +1192,7 @@ namespace HexBox.WinUI
                             // Draw text starting from selection start point
                             while (column < Columns)
                             {
-                                if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                                if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                 {
                                     if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
                                     {
@@ -1232,7 +1230,7 @@ namespace HexBox.WinUI
                                 // Draw text after end of selection
                                 while (column < Columns)
                                 {
-                                    if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                                    if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedData();
                                         if (column % 2 == 0)
@@ -1300,7 +1298,7 @@ namespace HexBox.WinUI
                         // Draw text up until selection start point
                         while (column < Columns)
                         {
-                            if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                            if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                             {
                                 if (DataSource.BaseStream.Position >= SelectedOffset)
                                 {
@@ -1331,7 +1329,7 @@ namespace HexBox.WinUI
                             // Draw text starting from selection start point
                             while (column < Columns)
                             {
-                                if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                                if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                 {
                                     if (DataSource.BaseStream.Position >= SelectedOffset + SelectionLength)
                                     {
@@ -1363,7 +1361,7 @@ namespace HexBox.WinUI
                                 // Draw text after end of selection
                                 while (column < Columns)
                                 {
-                                    if (DataSource.BaseStream.Position + _BytesPerColumn <= DataSource.BaseStream.Length)
+                                    if (DataSource.BaseStream.Position + DataWidth <= DataSource.BaseStream.Length)
                                     {
                                         var textToFormat = ReadFormattedText();
                                         builder.Append(textToFormat);
@@ -1502,10 +1500,10 @@ namespace HexBox.WinUI
                     else
                     {
                         SelectionStart += _BytesPerRow;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        SelectionEnd = SelectionStart + DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
 
@@ -1520,10 +1518,10 @@ namespace HexBox.WinUI
 
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
-                            SelectionStart = SelectionEnd - _BytesPerColumn;
+                            SelectionStart = SelectionEnd - DataWidth;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        ScrollToOffset(SelectionEnd - DataWidth);
                     }
                     else
                     {
@@ -1531,10 +1529,10 @@ namespace HexBox.WinUI
 
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
-                            SelectionStart = SelectionEnd - _BytesPerColumn;
+                            SelectionStart = SelectionEnd - DataWidth;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        ScrollToOffset(SelectionEnd - DataWidth);
                     }
 
                     e.Handled = true;
@@ -1551,10 +1549,10 @@ namespace HexBox.WinUI
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
                             SelectionStart = SelectionEnd;
-                            SelectionEnd = SelectionStart + _BytesPerColumn;
+                            SelectionEnd = SelectionStart + DataWidth;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        ScrollToOffset(SelectionEnd - DataWidth);
                     }
                     else
                     {
@@ -1568,10 +1566,10 @@ namespace HexBox.WinUI
                         if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                         {
                             SelectionStart = SelectionEnd;
-                            SelectionEnd = SelectionStart + _BytesPerColumn;
+                            SelectionEnd = SelectionStart + DataWidth;
                         }
 
-                        ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                        ScrollToOffset(SelectionEnd - DataWidth);
                     }
 
                     e.Handled = true;
@@ -1583,15 +1581,15 @@ namespace HexBox.WinUI
                 {
                     if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                     {
-                        SelectionEnd -= _BytesPerColumn;
+                        SelectionEnd -= DataWidth;
                     }
                     else
                     {
-                        SelectionStart -= _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        SelectionStart -= DataWidth;
+                        SelectionEnd = SelectionStart + DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
 
@@ -1604,10 +1602,10 @@ namespace HexBox.WinUI
 
                     if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                     {
-                        SelectionStart = SelectionEnd - _BytesPerColumn;
+                        SelectionStart = SelectionEnd - DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
                     break;
@@ -1619,11 +1617,11 @@ namespace HexBox.WinUI
 
                     if (!IsKeyDown(VirtualKey.LeftShift) && !IsKeyDown(VirtualKey.RightShift))
                     {
-                        SelectionStart = SelectionEnd - _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        SelectionStart = SelectionEnd - DataWidth;
+                        SelectionEnd = SelectionStart + DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
                     break;
@@ -1633,15 +1631,15 @@ namespace HexBox.WinUI
                 {
                     if (IsKeyDown(VirtualKey.LeftShift) || IsKeyDown(VirtualKey.RightShift))
                     {
-                        SelectionEnd += _BytesPerColumn;
+                        SelectionEnd += DataWidth;
                     }
                     else
                     {
-                        SelectionStart += _BytesPerColumn;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        SelectionStart += DataWidth;
+                        SelectionEnd = SelectionStart + DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
                     break;
@@ -1656,10 +1654,10 @@ namespace HexBox.WinUI
                     else
                     {
                         SelectionStart -= _BytesPerRow;
-                        SelectionEnd = SelectionStart + _BytesPerColumn;
+                        SelectionEnd = SelectionStart + DataWidth;
                     }
 
-                    ScrollToOffset(SelectionEnd - _BytesPerColumn);
+                    ScrollToOffset(SelectionEnd - DataWidth);
 
                     e.Handled = true;
                     break;
@@ -1762,13 +1760,13 @@ namespace HexBox.WinUI
                     if (SelectionStart > SelectionEnd && _pointerMoveSelectionAdjustment != SelectionAdjustment.Up)
                     {
                         // If moving up and SelectionStart was previously adjusted down or not adjusted, then set SelectionStart to end of row.
-                        SelectionStart = SelectionStart + (_BytesPerRow - _BytesPerColumn);
+                        SelectionStart = SelectionStart + (_BytesPerRow - DataWidth);
                         _pointerMoveSelectionAdjustment = SelectionAdjustment.Up;
                     }
                     else if (SelectionStart < SelectionEnd && _pointerMoveSelectionAdjustment == SelectionAdjustment.Up)
                     {
                         // If moving down and SelectionStart was previously adjusted up, then set SelectionStart to start of row.
-                        SelectionStart = SelectionStart - (_BytesPerRow - _BytesPerColumn);
+                        SelectionStart = SelectionStart - (_BytesPerRow - DataWidth);
                         _pointerMoveSelectionAdjustment = SelectionAdjustment.Down;
                     }
                     break;
@@ -1778,7 +1776,7 @@ namespace HexBox.WinUI
                 {
                     if (currentMouseOverOffset >= SelectionStart)
                     {
-                        SelectionEnd = currentMouseOverOffset + _BytesPerColumn;
+                        SelectionEnd = currentMouseOverOffset + DataWidth;
                     }
                     else
                     {
@@ -1864,7 +1862,7 @@ namespace HexBox.WinUI
                 {
                     SelectionStart = ConvertPositionToOffset(position);
 
-                    SelectionEnd = SelectionStart + _BytesPerColumn;
+                    SelectionEnd = SelectionStart + DataWidth;
                 }
             }
         }
@@ -1958,10 +1956,10 @@ namespace HexBox.WinUI
                 long selectionStart = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
-                selectionStart -= selectionStart % HexBox._BytesPerColumn;
+                selectionStart -= selectionStart % HexBox.DataWidth;
 
                 // Selection start cannot be at the end of the stream so adjust by data width number of bytes
-                value = selectionStart.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox._BytesPerColumn * HexBox._BytesPerColumn - HexBox._BytesPerColumn);
+                value = selectionStart.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox.DataWidth * HexBox.DataWidth - HexBox.DataWidth);
             }
             else
             {
@@ -1980,10 +1978,10 @@ namespace HexBox.WinUI
                 long selectionEnd = (long)value;
 
                 // Selection offset cannot start in the middle of the data width
-                selectionEnd -= selectionEnd % HexBox._BytesPerColumn;
+                selectionEnd -= selectionEnd % HexBox.DataWidth;
 
                 // Unlike selection start the selection end can be at the end of the stream
-                value = selectionEnd.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox._BytesPerColumn * HexBox._BytesPerColumn);
+                value = selectionEnd.Clamp(0, HexBox.DataSource.BaseStream.Length / HexBox.DataWidth * HexBox.DataWidth);
             }
             else
             {
@@ -2603,7 +2601,7 @@ namespace HexBox.WinUI
 
         private int CalculateTextColumnCharWidth()
         {
-            return _BytesPerColumn;
+            return DataWidth;
         }
 
         private Point CalculateTextVerticalLinePoint0()
@@ -2801,7 +2799,7 @@ namespace HexBox.WinUI
                     --position.Y;
                 }
 
-                offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                offset += ((long)position.Y * Columns + (long)position.X) * DataWidth;
             }
 
             break;
@@ -2838,7 +2836,7 @@ namespace HexBox.WinUI
                     --position.Y;
                 }
 
-                offset += ((long)position.Y * Columns + (long)position.X) * _BytesPerColumn;
+                offset += ((long)position.Y * Columns + (long)position.X) * DataWidth;
             }
 
             break;
@@ -2864,7 +2862,7 @@ namespace HexBox.WinUI
                 position.Y = _AddressRect.Top;
 
                 // Normalize requested offset to a zero based column
-                long normalizedColumn = (offset - Offset) / _BytesPerColumn;
+                long normalizedColumn = (offset - Offset) / DataWidth;
 
                 position.X += (normalizedColumn % Columns + Columns) % Columns * (CalculateDataColumnCharWidth() + _CharsBetweenDataColumns) * _TextMeasure.Width;
 
@@ -2888,7 +2886,7 @@ namespace HexBox.WinUI
                 position.Y = _DataRect.Top;
 
                 // Normalize requested offset to a zero based column
-                long normalizedColumn = (offset - Offset) / _BytesPerColumn;
+                long normalizedColumn = (offset - Offset) / DataWidth;
 
                 position.X += (normalizedColumn % Columns + Columns) % Columns * CalculateTextColumnCharWidth() * _TextMeasure.Width;
 
@@ -2913,13 +2911,6 @@ namespace HexBox.WinUI
             }
 
             return position;
-        }
-
-        private bool IsOffsetVisible(long offset)
-        {
-            long maxBytesDisplayed = _BytesPerRow * MaxVisibleRows;
-
-            return Offset <= offset && Offset + maxBytesDisplayed >= offset;
         }
 
         private LocalizedStrings _localStrings = new();

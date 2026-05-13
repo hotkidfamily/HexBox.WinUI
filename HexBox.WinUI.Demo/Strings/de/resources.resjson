@@ -5,5 +5,6 @@
   "Columns/Text": "Spalten",
   "ThemeTB/Text": "Thema",
   "LangTB/Text": "Sprache",
-  "FileSize/Text": "Dateigröße"
+  "FileSize/Text": "Dateigröße",
+  "ShowHeader/Content": "Spaltenkopf anzeigen"
 }

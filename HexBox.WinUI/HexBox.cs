@@ -167,6 +167,14 @@ namespace HexBox.WinUI
             DependencyProperty.Register(nameof(ShowText), typeof(bool), typeof(HexBox),
                 new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
 
+        public static readonly DependencyProperty ShowHeaderProperty =
+            DependencyProperty.Register(nameof(ShowHeader), typeof(bool), typeof(HexBox),
+                new PropertyMetadata(true, OnPropertyChangedInvalidateVisual));
+
+        public static readonly DependencyProperty HeaderBrushProperty =
+            DependencyProperty.Register(nameof(HeaderBrush), typeof(SolidColorBrush), typeof(HexBox),
+                new PropertyMetadata(new SolidColorBrush(Colors.Gray), OnPropertyChangedInvalidateVisual));
+
         /// <summary>
         /// Defines the brush used for the fill of the vertical separator line between the areas.
         /// </summary>
@@ -516,6 +524,26 @@ namespace HexBox.WinUI
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to show the column header row.
+        /// </summary>
+        public bool ShowHeader
+        {
+            get => (bool)GetValue(ShowHeaderProperty);
+
+            set => SetValue(ShowHeaderProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the brush used to display the column header text.
+        /// </summary>
+        public SolidColorBrush HeaderBrush
+        {
+            get => (SolidColorBrush)GetValue(HeaderBrushProperty);
+
+            set => SetValue(HeaderBrushProperty, value);
+        }
+
+        /// <summary>
         /// Gets or sets the brush used to display the vertical separator line between the control areas.
         /// </summary>
         public SolidColorBrush VerticalSeparatorLineBrush
@@ -556,6 +584,8 @@ namespace HexBox.WinUI
         private int _BytesPerColumn => DataWidth;
 
         private int _BytesPerRow => DataWidth * Columns;
+
+        private float _headerHeight => ShowHeader ? _TextMeasure.Height : 0;
 
         public class HighlightedRegion
         {
@@ -934,7 +964,9 @@ namespace HexBox.WinUI
 
                             var max_visible = Math.Min(hlSection.End, viewLimited);
 
-                            Point hlsP0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Data);
+                            var hlStart = Math.Max(hlSection.Start, Offset);
+
+                            Point hlsP0 = ConvertOffsetToPosition(hlStart, SelectionArea.Data);
                             Point hlsP1 = ConvertOffsetToPosition(max_visible, SelectionArea.Data);
 
                             if (max_visible % _BytesPerRow == 0)
@@ -957,7 +989,7 @@ namespace HexBox.WinUI
                     var p0 = new Point(_TextRect.Left, _TextRect.Top);
                     var p1 = new Point(_TextRect.Right, _TextRect.Bottom);
 
-                    canvas.DrawLine(p0.ToSKPoint(), p1.ToSKPoint(), _LinePaint);
+                    //canvas.DrawLine(p0.ToSKPoint(), p1.ToSKPoint(), _LinePaint);
 
                     if (HighlightedRegions.Count != 0 && MaxVisibleRows > 0 && Columns > 0)
                     {
@@ -969,7 +1001,9 @@ namespace HexBox.WinUI
 
                             var max_visible = Math.Min(hlSection.End, viewLimited);
 
-                            Point hlsP0 = ConvertOffsetToPosition(hlSection.Start, SelectionArea.Text);
+                            var hlStart = Math.Max(hlSection.Start, Offset);
+
+                            Point hlsP0 = ConvertOffsetToPosition(hlStart, SelectionArea.Text);
                             Point hlsP1 = ConvertOffsetToPosition(max_visible, SelectionArea.Text);
 
                             if (max_visible % _BytesPerRow == 0)
@@ -1022,7 +1056,50 @@ namespace HexBox.WinUI
                 }
 
                 SKPoint origin = default;
-                origin.Y = _TextMeasure.Height * 3 / 4; /* left bottom to right top */
+                origin.Y = _headerHeight + _TextMeasure.Height * 3 / 4; /* left bottom to right top */
+
+                if (ShowHeader)
+                {
+                    if (HeaderBrush is SolidColorBrush hb)
+                        _TextPaint.Color = hb.Color.ToSKColor();
+
+                    var headerY = _TextMeasure.Height * 3 / 4;
+
+                    float headerX = 0;
+
+                    if (ShowAddress)
+                    {
+                        headerX += (float)((CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width);
+                    }
+
+                    if (ShowData)
+                    {
+                        headerX += (float)(_CharsBetweenSections * _TextMeasure.Width);
+
+                        var dataColCharWidth = CalculateDataColumnCharWidth();
+                        for (int i = 0; i < Columns; i++)
+                        {
+                            canvas.DrawText(i.ToString("X2"), headerX, headerY, _TextPaint);
+                            headerX += (float)((dataColCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
+                        }
+
+                        headerX += (float)((_CharsBetweenSections - _CharsBetweenDataColumns) * _TextMeasure.Width);
+                    }
+
+                    if (ShowText)
+                    {
+                        headerX += (float)(_CharsBetweenSections * _TextMeasure.Width);
+
+                        var textColCharWidth = CalculateTextColumnCharWidth();
+                        for (int i = 0; i < Columns; i++)
+                        {
+                            canvas.DrawText((i % 16).ToString("X1"), headerX, headerY, _TextPaint);
+                            headerX += (float)(textColCharWidth * _TextMeasure.Width);
+                        }
+                    }
+
+                    canvas.DrawLine(0, _headerHeight, headerX, _headerHeight, _LinePaint);
+                }
 
                 for (var row = 0; row < MaxVisibleRows; ++row)
                 {
@@ -2481,6 +2558,8 @@ namespace HexBox.WinUI
                 point1.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
+            point1.Y = _headerHeight;
+
             return point1;
         }
 
@@ -2493,7 +2572,7 @@ namespace HexBox.WinUI
                 point2.X = (CalculateAddressColumnCharWidth() + _CharsBetweenSections) * _TextMeasure.Width;
             }
 
-            point2.Y = Math.Min(_TextMeasure.Height * (MaxVisibleRows+1), _Canvas.ActualHeight * _dpiScale);
+            point2.Y = _headerHeight + Math.Min(_TextMeasure.Height * MaxVisibleRows, _Canvas.ActualHeight * _dpiScale - _headerHeight);
 
             return point2;
         }
@@ -2598,7 +2677,7 @@ namespace HexBox.WinUI
 
                 _TextMeasure.Bottom = _TextMeasure.Height; /* 2 * line font height */
 
-                maxVisibleRows = Math.Max(0, (int)(_Canvas.ActualHeight * _dpiScale / _TextMeasure.Height));
+                maxVisibleRows = Math.Max(0, (int)((_Canvas.ActualHeight * _dpiScale - _headerHeight) / _TextMeasure.Height));
 
                 if (ShowData || ShowText)
                 {
@@ -2678,7 +2757,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_AddressRect.Top, _AddressRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y /= _TextMeasure.Height;
+                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {
@@ -2714,7 +2793,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_DataRect.Top, _DataRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y /= _TextMeasure.Height;
+                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {
@@ -2751,7 +2830,7 @@ namespace HexBox.WinUI
                 position.Y = position.Y.Clamp(_TextRect.Top, _TextRect.Bottom);
 
                 // Convert the Y coordinate to the row number
-                position.Y /= _TextMeasure.Height;
+                position.Y = (position.Y - _headerHeight) / _TextMeasure.Height;
 
                 if (position.Y >= MaxVisibleRows)
                 {

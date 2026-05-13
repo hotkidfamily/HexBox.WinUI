@@ -1388,7 +1388,7 @@ namespace HexBox.WinUI
             else if (offset >= Offset + maxBytesDisplayed)
             {
                 // Target is below viewport — align viewport bottom to target row
-                Offset = ((offset - maxBytesDisplayed + _BytesPerRow) / _BytesPerRow) * _BytesPerRow + _BytesPerRow;
+                Offset = (offset / _BytesPerRow - MaxVisibleRows + 1) * _BytesPerRow;
             }
         }
 

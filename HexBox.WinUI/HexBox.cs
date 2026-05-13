@@ -1,4 +1,4 @@
-using HexBox.WinUI.Library.EndianConvert;
+﻿using HexBox.WinUI.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;

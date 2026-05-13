@@ -15,11 +15,11 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 * template styling of the control
 * monospaced Font is not required.
 * highlight regions
-* shortcut
-* themes
+* shortcut (content menu/select/copy ...)
+* themes (light/dark/highcontrast)
 * **dynamic** localization
-* dpi 
-* columns header
+* DPI support 
+* columns header (show/hide)
 
 ## Preview
 * Operators
@@ -30,6 +30,11 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 
 * Menu
 ![Menu](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Menu.png)
+
+* Theme
+![Light](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Light.png)
+
+![Dark](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Dark.png)
 
 ## Thanks
 Fork from [HexView.Wpf](https://github.com/fjeremic/HexView.Wpf.git)

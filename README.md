@@ -5,20 +5,21 @@
 A WinUI3 control for displaying binary data in a traditional hex view.
 
 ## Features
-* Supports viewing different data types, formats, signedness
-* Supports showing/hiding sections of the control
-* Supports selection and copying
-* Supports mouse scrolling and keyboard navigation
-* Supports fixed and arbitrary column widths via binding
-* Able to adaptively display columns upon resizing the control
-* Built in context menu for controlling display of data
-* Supports template styling of the control
-* Monospaced Font is not required.
-* Supports highlight regions
-* Supports shortcut
-* Supports Theme
-* Supports localization
-* supports DPI 
+* viewing different data types, formats, signedness
+* showing/hiding sections of the control
+* selection and copying
+* mouse scrolling and keyboard navigation
+* fixed and arbitrary column widths via binding
+* able to adaptively display columns upon resizing the control
+* built in context menu for controlling display of data
+* template styling of the control
+* monospaced Font is not required.
+* highlight regions
+* shortcut
+* themes
+* **dynamic** localization
+* dpi 
+* columns header
 
 ## Preview
 * Operators

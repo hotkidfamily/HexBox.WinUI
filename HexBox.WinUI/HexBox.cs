@@ -291,6 +291,12 @@ namespace HexBox.WinUI
         private SKRect _TextMeasure;
         private SKTypeface _TextTypeFace;
 
+        // Cached pixel widths (recomputed in UpdateState)
+        private float _pxSectionGap;      // _CharsBetweenSections * charWidth
+        private float _pxAddressWidth;    // (_AddressColumnCharWidth + _CharsBetweenSections) * charWidth
+        private float _pxDataColStride;   // (_DataColumnCharWidth + _CharsBetweenDataColumns) * charWidth
+        private float _pxTextColStride;   // textColumnCharWidth * charWidth
+
         private SKXamlCanvas _Canvas;
         private string _CanvasName = "ElementCanvas";
 
@@ -819,7 +825,7 @@ namespace HexBox.WinUI
             point0.Y -=  selectionBoxPadding.Y;
             point1.Y +=  selectionBoxPadding.Y;
 
-            var ps_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
+            var ps_CharsBetweenSections = _pxSectionGap;
 
             SKPath path = new();
             SKPoint[] points;
@@ -1058,6 +1064,7 @@ namespace HexBox.WinUI
                             {
                                 hlsP1.X = p1.X - _CharsBetweenSections * _TextMeasure.Width;
                                 hlsP1.Y = Math.Max(hlsP0.Y, hlsP1.Y - _TextMeasure.Height);
+
                             }
 
                             DrawSelectionGeometry(canvas, hlSection.Color, _TextPaint, hlsP0, hlsP1, SelectionArea.Text);
@@ -1074,7 +1081,7 @@ namespace HexBox.WinUI
 
                         if ((SelectedOffset + SelectionLength) % _BytesPerRow == 0)
                         {
-                            sp1.X = _DataRect.Left - _CharsBetweenSections * _TextMeasure.Width;
+                            sp1.X = _DataRect.Left - _pxSectionGap;
                             sp1.Y = Math.Max(sp0.Y, sp1.Y-_TextMeasure.Height);
                         }
                         else
@@ -1095,7 +1102,7 @@ namespace HexBox.WinUI
 
                         if ((SelectedOffset + SelectionLength) % _BytesPerRow == 0)
                         {
-                            sp1.X = _TextRect.Left - _CharsBetweenSections * _TextMeasure.Width;
+                            sp1.X = _TextRect.Left - _pxSectionGap;
                             sp1.Y -= _TextMeasure.Height;
                         }
 
@@ -1119,18 +1126,17 @@ namespace HexBox.WinUI
 
                     if (ShowAddress)
                     {
-                        headerX += (float)((_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width);
+                        headerX += _pxAddressWidth;
                     }
 
                     if (ShowData)
                     {
-                        headerX += (float)(_CharsBetweenSections * _TextMeasure.Width);
+                        headerX += _pxSectionGap;
 
-                        var dataColCharWidth = _DataColumnCharWidth;
                         for (int i = 0; i < Columns; i++)
                         {
                             canvas.DrawText(i.ToString("X2"), headerX, headerY, _TextPaint);
-                            headerX += (float)((dataColCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
+                            headerX += _pxDataColStride;
                         }
 
                         headerX += (float)((_CharsBetweenSections - _CharsBetweenDataColumns) * _TextMeasure.Width);
@@ -1138,13 +1144,12 @@ namespace HexBox.WinUI
 
                     if (ShowText)
                     {
-                        headerX += (float)(_CharsBetweenSections * _TextMeasure.Width);
+                        headerX += _pxSectionGap;
 
-                        var textColCharWidth = CalculateTextColumnCharWidth();
                         for (int i = 0; i < Columns; i++)
                         {
                             canvas.DrawText((i % 16).ToString("X1"), headerX, headerY, _TextPaint);
-                            headerX += (float)(textColCharWidth * _TextMeasure.Width);
+                            headerX += _pxTextColStride;
                         }
                     }
 
@@ -1165,7 +1170,7 @@ namespace HexBox.WinUI
                             }
                             canvas.DrawText(textToFormat, origin.X, origin.Y, _TextPaint);
 
-                            origin.X += (float)((_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width);
+                            origin.X += _pxAddressWidth;
                         }
                     }
 
@@ -1173,9 +1178,7 @@ namespace HexBox.WinUI
 
                     if (ShowData)
                     {
-                        origin.X += (float)(_CharsBetweenSections * _TextMeasure.Width);
-
-                        var cachedDataColumnCharWidth = _DataColumnCharWidth;
+                        origin.X += _pxSectionGap;
 
                         var column = 0;
 
@@ -1196,9 +1199,9 @@ namespace HexBox.WinUI
                             }
                             else
                             {
-                                origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
+                                origin.X += _pxDataColStride;
                             }
-
+                            
                             ++column;
                         }
 
@@ -1218,11 +1221,10 @@ namespace HexBox.WinUI
                                     DrawTextAccuracy(canvas, _TextPaint, origin, textToFormat);
                                     origin.X += (float)((textToFormat.Length + _CharsBetweenDataColumns) * _TextMeasure.Width);
                                 }
-                                else
-                                {
-                                    origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
+								else
+								{
+                                	origin.X += _pxDataColStride;
                                 }
-
                                 ++column;
                             }
 
@@ -1242,9 +1244,8 @@ namespace HexBox.WinUI
                                     }
                                     else
                                     {
-                                        origin.X += (float)((cachedDataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width);
+                                    	origin.X += _pxDataColStride;
                                     }
-
                                     ++column;
                                 }
                             }
@@ -1256,7 +1257,7 @@ namespace HexBox.WinUI
 
                     if (ShowText)
                     {
-                        origin.X += (float)(_CharsBetweenSections * _TextMeasure.Width);
+                        origin.X += _pxSectionGap;
 
                         if (ShowData)
                         {
@@ -2163,7 +2164,7 @@ namespace HexBox.WinUI
 
             if (ShowAddress)
             {
-                point1.X = (_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width;
+                point1.X = _pxAddressWidth;
             }
 
             point1.Y = _HeaderHeight;
@@ -2177,7 +2178,7 @@ namespace HexBox.WinUI
 
             if (ShowAddress)
             {
-                point2.X = (_AddressColumnCharWidth + _CharsBetweenSections) * _TextMeasure.Width;
+                point2.X = _pxAddressWidth;
             }
 
             point2.Y = _HeaderHeight + Math.Min(_TextMeasure.Height * MaxVisibleRows, _Canvas.ActualHeight * _dpiScale - _HeaderHeight);
@@ -2209,10 +2210,7 @@ namespace HexBox.WinUI
             return point2;
         }
 
-        private int CalculateTextColumnCharWidth()
-        {
-            return DataWidth;
-        }
+
 
         private Point CalculateTextVerticalLinePoint0()
         {
@@ -2220,7 +2218,7 @@ namespace HexBox.WinUI
 
             if (ShowText)
             {
-                point1.X += (_CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + _CharsBetweenSections) * _TextMeasure.Width;
+                point1.X += (2 * _CharsBetweenSections + _BytesPerRow) * _TextMeasure.Width;
             }
 
             return point1;
@@ -2232,7 +2230,7 @@ namespace HexBox.WinUI
 
             if (ShowText)
             {
-                point2.X += (_CharsBetweenSections + CalculateTextColumnCharWidth() * Columns + _CharsBetweenSections) * _TextMeasure.Width;
+                point2.X += (2 * _CharsBetweenSections + _BytesPerRow) * _TextMeasure.Width;
             }
 
             return point2;
@@ -2241,8 +2239,18 @@ namespace HexBox.WinUI
         private void UpdateState()
         {
             UpdateMaxVisibleRowsAndColumns();
+            UpdatePixelWidths();
             UpdateScrollBar();
             UpdateColumnsLayout();
+        }
+
+        private void UpdatePixelWidths()
+        {
+            var cw = _TextMeasure.Width;
+            _pxSectionGap = _CharsBetweenSections * cw;
+            _pxAddressWidth = (_AddressColumnCharWidth + _CharsBetweenSections) * cw;
+            _pxDataColStride = (_DataColumnCharWidth + _CharsBetweenDataColumns) * cw;
+            _pxTextColStride = DataWidth * cw;
         }
 
         private void UpdateColumnsLayout()
@@ -2310,7 +2318,7 @@ namespace HexBox.WinUI
 
                     if (ShowText)
                     {
-                        charsPerColumn += CalculateTextColumnCharWidth();
+                        charsPerColumn += DataWidth;
                     }
 
                     if (charsPerColumn != 0)
@@ -2380,7 +2388,7 @@ namespace HexBox.WinUI
 
             case SelectionArea.Data:
             {
-                var pix_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
+                var pix_CharsBetweenSections = _pxSectionGap;
 
                 // Clamp the X coordinate to within the data region
                 position.X = position.X.Clamp(_AddressRect.Left + pix_CharsBetweenSections, _DataRect.Left - pix_CharsBetweenSections);
@@ -2389,7 +2397,7 @@ namespace HexBox.WinUI
                 position.X -= _AddressRect.Left + pix_CharsBetweenSections;
 
                 // Convert the X coordinate to the column number
-                position.X /= (_DataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width;
+                position.X /= _pxDataColStride;
 
                 if (position.X >= Columns)
                 {
@@ -2416,7 +2424,7 @@ namespace HexBox.WinUI
 
             case SelectionArea.Text:
             {
-                var pix_CharsBetweenSections = _CharsBetweenSections *_TextMeasure.Width;
+                var pix_CharsBetweenSections = _pxSectionGap;
 
                 // Clamp the X coordinate to within the text region
                 position.X = position.X.Clamp(_DataRect.Left + pix_CharsBetweenSections, _TextRect.Left - pix_CharsBetweenSections);
@@ -2425,7 +2433,7 @@ namespace HexBox.WinUI
                 position.X -= _DataRect.Left + pix_CharsBetweenSections;
 
                 // Convert the X coordinate to the column number
-                position.X /= CalculateTextColumnCharWidth() * _TextMeasure.Width;
+                position.X /= _pxTextColStride;
 
                 if (position.X >= Columns)
                 {
@@ -2468,13 +2476,13 @@ namespace HexBox.WinUI
             {
             case SelectionArea.Data:
             {
-                position.X = _AddressRect.Left + _CharsBetweenSections * _TextMeasure.Width;
+                position.X = _AddressRect.Left + _pxSectionGap;
                 position.Y = _AddressRect.Top;
 
                 // Normalize requested offset to a zero based column
                 long normalizedColumn = (offset - Offset) / DataWidth;
 
-                position.X += (normalizedColumn % Columns + Columns) % Columns * (_DataColumnCharWidth + _CharsBetweenDataColumns) * _TextMeasure.Width;
+                position.X += (normalizedColumn % Columns + Columns) % Columns * _pxDataColStride;
 
                 if (normalizedColumn < 0)
                 {
@@ -2492,13 +2500,13 @@ namespace HexBox.WinUI
 
             case SelectionArea.Text:
             {
-                position.X = _DataRect.Left + _CharsBetweenSections * _TextMeasure.Width;
+                position.X = _DataRect.Left + _pxSectionGap;
                 position.Y = _DataRect.Top;
 
                 // Normalize requested offset to a zero based column
                 long normalizedColumn = (offset - Offset) / DataWidth;
 
-                position.X += (normalizedColumn % Columns + Columns) % Columns * CalculateTextColumnCharWidth() * _TextMeasure.Width;
+                position.X += (normalizedColumn % Columns + Columns) % Columns * _pxTextColStride;
 
                 if (normalizedColumn < 0)
                 {

@@ -1,10 +1,11 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <WinEx:WindowEx x:Class="HexBox.WinUI.Demo.MainWindow"
                 xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                 xmlns:local="using:HexBox.WinUI.Demo"
                 xmlns:WinEx="using:WinUIEx"
                 xmlns:hb="using:HexBox.WinUI"
+                xmlns:convert="using:CommunityToolkit.WinUI.Converters"
                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
                 mc:Ignorable="d"
@@ -14,6 +15,13 @@
           HorizontalAlignment="Stretch"
           Name="Root"
           Background="{ThemeResource AppBarBackgroundThemeBrush}">
+        <Grid.Resources>
+            <convert:BoolNegationConverter x:Key="BoolNegationConverter" />
+            <hb:BigEndianConverter x:Key="BigEndianConverter" />
+            <hb:HexboxDataFormatConverter x:Key="HexboxDataFormatConverter" />
+            <hb:HexboxDataSignednessConverter x:Key="HexboxDataSignednessConverter" />
+            <hb:HexboxDataTypeConverter x:Key="HexboxDataTypeConverter" />
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="72" />
@@ -128,6 +136,70 @@
                     BorderThickness="1"
                     FontFamily="Monaco"
                     FontSize="14">
+            <hb:HexBox.ContextMenuFlyout>
+                <MenuFlyout>
+                    <MenuFlyout.Items>
+                        <MenuFlyoutItem Icon="Copy"
+                                        Text="Copy"
+                                        Command="{Binding CopyCommand}" />
+                        <MenuFlyoutItem Icon="Font"
+                                        Text="Copy Text"
+                                        Command="{Binding CopyTextCommand}" />
+                        <MenuFlyoutItem Icon="SelectAll"
+                                        Text="Select All"
+                                        Command="{Binding SelectAllCommand}" />
+                        <MenuFlyoutSeparator />
+                        <MenuFlyoutSubItem Text="Address">
+                            <ToggleMenuFlyoutItem Text="Hide Address"
+                                                  IsChecked="{Binding ShowAddress, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem Text="Data">
+                            <ToggleMenuFlyoutItem Text="Hide Data"
+                                                  IsChecked="{Binding ShowData, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="1-Byte Integer"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_1}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="2-Byte Integer"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_2}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="4-Byte Integer"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_4}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="8-Byte Integer"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Int_8}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="4-Byte Float"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_32}" />
+                            <RadioMenuFlyoutItem GroupName="DataType"
+                                                 Text="8-Byte Float"
+                                                 IsChecked="{Binding DataType, Mode=TwoWay, Converter={StaticResource HexboxDataTypeConverter}, ConverterParameter=Float_64}" />
+                            <MenuFlyoutSeparator />
+                            <ToggleMenuFlyoutItem Text="Signed"
+                                                  IsChecked="{Binding DataSignedness, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Signed}" />
+                            <ToggleMenuFlyoutItem Text="Unsigned"
+                                                  IsChecked="{Binding DataSignedness, Mode=TwoWay, Converter={StaticResource HexboxDataSignednessConverter}, ConverterParameter=Unsigned}" />
+                            <MenuFlyoutSeparator />
+                            <ToggleMenuFlyoutItem Text="Decimal"
+                                                  IsChecked="{Binding DataFormat, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Decimal}" />
+                            <ToggleMenuFlyoutItem Text="Hexadecimal"
+                                                  IsChecked="{Binding DataFormat, Mode=TwoWay, Converter={StaticResource HexboxDataFormatConverter}, ConverterParameter=Hexadecimal}" />
+                            <MenuFlyoutSeparator />
+                            <ToggleMenuFlyoutItem Text="Big Endian"
+                                                  IsChecked="{Binding Endianness, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=BigEndian}" />
+                            <ToggleMenuFlyoutItem Text="Little Endian"
+                                                  IsChecked="{Binding Endianness, Mode=TwoWay, Converter={StaticResource BigEndianConverter}, ConverterParameter=LittleEndian}" />
+                        </MenuFlyoutSubItem>
+                        <MenuFlyoutSubItem Text="Text">
+                            <ToggleMenuFlyoutItem Text="Hide Text"
+                                                  IsChecked="{Binding ShowText, Mode=TwoWay, Converter={StaticResource BoolNegationConverter}}" />
+                            <ToggleMenuFlyoutItem Text="ASCII"
+                                                  IsChecked="{Binding ShowText, Mode=TwoWay}"
+                                                  IsEnabled="False" />
+                        </MenuFlyoutSubItem>
+                    </MenuFlyout.Items>
+                </MenuFlyout>
+            </hb:HexBox.ContextMenuFlyout>
         </hb:HexBox>
     </Grid>
 </WinEx:WindowEx>

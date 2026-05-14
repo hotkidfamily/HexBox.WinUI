@@ -1,4 +1,4 @@
-﻿using HexBox.WinUI.Library.EndianConvert;
+using HexBox.WinUI.Library.EndianConvert;
 using Microsoft.UI.Xaml.Data;
 using System;
 
@@ -38,6 +38,11 @@ namespace HexBox.WinUI
         {
             if (value is bool b && parameter is string c)
             {
+                if (!b)
+                {
+                    return Microsoft.UI.Xaml.DependencyProperty.UnsetValue;
+                }
+
                 if(c == "Int_1")
                 {
                     return DataType.Int_1;

@@ -1,4 +1,4 @@
-﻿using HexBox.WinUI.Library.EndianConvert;
+using HexBox.WinUI.Library.EndianConvert;
 using Microsoft.UI;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
@@ -190,6 +190,13 @@ namespace HexBox.WinUI
                 new PropertyMetadata(TextFormat.Ascii, OnPropertyChangedInvalidateVisual));
 
         /// <summary>
+        /// Defines a custom context menu flyout. When set, overrides the default built-in context menu.
+        /// </summary>
+        public static readonly DependencyProperty ContextMenuFlyoutProperty =
+            DependencyProperty.Register(nameof(ContextMenuFlyout), typeof(MenuFlyout), typeof(HexBox),
+                new PropertyMetadata(null, OnContextMenuFlyoutChanged));
+
+        /// <summary>
         /// Gets the <see cref="SelectAll"/> command.
         /// </summary>
         public ICommand SelectAllCommand
@@ -299,6 +306,7 @@ namespace HexBox.WinUI
 
         private SKXamlCanvas _Canvas;
         private string _CanvasName = "ElementCanvas";
+        private MenuFlyout _defaultContextFlyout;
 
         private SelectionArea _HighlightBegin = SelectionArea.None;
         private SelectionArea _HighlightState = SelectionArea.None;
@@ -635,6 +643,15 @@ namespace HexBox.WinUI
             set => SetValue(TextFormatProperty, value);
         }
 
+        /// <summary>
+        /// Gets or sets a custom context menu flyout. When set, overrides the default built-in context menu.
+        /// </summary>
+        public MenuFlyout ContextMenuFlyout
+        {
+            get => (MenuFlyout)GetValue(ContextMenuFlyoutProperty);
+            set => SetValue(ContextMenuFlyoutProperty, value);
+        }
+
         private Point _SelectionBoxDataPadding => new(_CharsBetweenDataColumns * _TextMeasure.Width / 2, 0);
         private Point _SelectionBoxTextPadding => new(0, 0);
 
@@ -747,6 +764,13 @@ namespace HexBox.WinUI
                 CopyTextCommand = new RelayCommand(CopyTextExecuted, CopyCanExecute);
                 SelectAllCommand = new RelayCommand(SelectAllExecuted, SelectAllCanExecute);
                 _Canvas.PaintSurface += Canvas_PaintSurface;
+
+                _defaultContextFlyout = _Canvas.ContextFlyout as MenuFlyout;
+                if (ContextMenuFlyout != null)
+                {
+                    SetFlyoutDataContext(ContextMenuFlyout, this);
+                    _Canvas.ContextFlyout = ContextMenuFlyout;
+                }
             }
             else
             {
@@ -1880,6 +1904,40 @@ namespace HexBox.WinUI
             var HexBox = (HexBox)d;
 
             HexBox.Reflush();
+        }
+
+        private static void OnContextMenuFlyoutChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var hexBox = (HexBox)d;
+            if (hexBox._Canvas != null)
+            {
+                var flyout = (MenuFlyout)e.NewValue;
+                if (flyout != null)
+                {
+                    SetFlyoutDataContext(flyout, hexBox);
+                }
+                hexBox._Canvas.ContextFlyout = flyout ?? hexBox._defaultContextFlyout;
+            }
+        }
+
+        private static void SetFlyoutDataContext(MenuFlyout flyout, HexBox hexBox)
+        {
+            foreach (var item in flyout.Items)
+            {
+                SetMenuItemDataContext(item, hexBox);
+            }
+        }
+
+        private static void SetMenuItemDataContext(MenuFlyoutItemBase item, HexBox hexBox)
+        {
+            item.DataContext = hexBox;
+            if (item is MenuFlyoutSubItem subItem)
+            {
+                foreach (var child in subItem.Items)
+                {
+                    SetMenuItemDataContext(child, hexBox);
+                }
+            }
         }
 
         private static void OnSelectionEndChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

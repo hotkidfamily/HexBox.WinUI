@@ -32,9 +32,9 @@ A WinUI3 control for displaying binary data in a traditional hex view.
 ![Menu](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Menu.png)
 
 * Theme
-![Light](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Light.png)
+- ![Light](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Light.png)
 
-![Dark](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Dark.png)
+- ![Dark](https://raw.githubusercontent.com/hotkidfamily/HexBox.WinUI/master/docs/HexBox.WinUI.Theme.Dark.png)
 
 ## Thanks
 Fork from [HexView.Wpf](https://github.com/fjeremic/HexView.Wpf.git)
